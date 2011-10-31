@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-//import java.util.Set;
-//import java.util.Properties;
 import java.util.Date;
 
 import java.text.SimpleDateFormat;
@@ -21,15 +19,9 @@ import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
 
-//import hudson.DescriptorExtensionList;
-
-
-
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-//import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
@@ -44,10 +36,6 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.IGitAPI;
 import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.Revision;
-
-//import hudson.plugins.git.GitSCM.DescriptorImpl;
-
-//import hudson.plugins.git.GitTool;
 
 
 public class GitParameterDefinition extends ParameterDefinition  {
@@ -111,6 +99,10 @@ public class GitParameterDefinition extends ParameterDefinition  {
 				}
 			}
 		}
+                
+                if("".equals(strValue)) {
+                    strValue = defaultValue;
+                }
 
 		GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue);
 		return gitParameterValue;
@@ -121,11 +113,11 @@ public class GitParameterDefinition extends ParameterDefinition  {
 		String defValue = getDefaultValue();
 		if (!StringUtils.isBlank(defValue)) {
                     
-			return new GitParameterValue(getName(), defaultValue);
+			return new GitParameterValue(getName(), defValue);
 		}
 		return super.getDefaultParameterValue();
 	}
-
+        
   
     @Override
 	public String getType() {
@@ -137,7 +129,7 @@ public class GitParameterDefinition extends ParameterDefinition  {
 	}
 
 	public String getDefaultValue() {
-		return this.defaultValue;
+		return defaultValue;
 	}
 
 	public void setDefaultValue(String defaultValue) {
@@ -150,8 +142,7 @@ public class GitParameterDefinition extends ParameterDefinition  {
                     if (project.getSomeWorkspace() == null) {
                         errorMessage = "noWorkspace";
                         break;
-                    }
-                    
+                    }                    
                     
                     SCM scm = project.getScm();
                     
