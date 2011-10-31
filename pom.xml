@@ -10,7 +10,7 @@
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>git-parameter</artifactId>  
   <packaging>hpi</packaging>
-  <version>0.1</version>
+  <version>0.1-SNAPSHOT</version>
   <name>Git Parameter Plug-In</name>
   <url>https://github.com/lukanus/git-parameter</url>
 
@@ -100,19 +100,6 @@
   </pluginRepositories>
   
     <dependencies>
-        <!--
-        <dependency>
-            <groupId>org.jenkinsci.plugins</groupId>
-            <artifactId>git</artifactId>
-            <version>1.1.11</version>
-            <type>hpi</type>
-            <type>hpi</type>
-        </dependency> -->
-        <!--<dependency>
-            <groupId>org.jvnet.hudson.main</groupId>
-            <artifactId>maven-plugin</artifactId>
-            <version>1.434</version>
-        </dependency>-->
         <dependency>
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>git</artifactId>
