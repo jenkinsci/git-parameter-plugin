@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>1.434</version><!-- which version of Hudson is this plugin built against? -->
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.jenkins-ci.plugins</groupId>
+  <artifactId>git-parameter</artifactId>  
+  <packaging>hpi</packaging>
+  <version>0.1</version>
+  <name>Git Parameter Plug-In</name>
+  <url>https://github.com/lukanus/git-parameter</url>
+
+
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0-beta-1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <goals>deploy</goals>
+        </configuration>
+      </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.3.2</version>
+            <configuration>
+                <source>1.6</source>
+                <target>1.6</target>
+            </configuration>
+        </plugin>
+    </plugins>
+  </build>
+  
+  
+
+
+    <scm>
+    <connection>scm:git:ssh://github.com/lukanus/git-parameter.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/lukanus/git-parameter.git</developerConnection>
+    <url>https://github.com/lukanus/git-parameter</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  <developers>
+      <developer>
+        <id>lukanus</id>
+        <name>Łukasz Miłkowski</name>
+      </developer>
+  </developers>
+  
+
+  <repositories>
+    <repository>
+      <id>jgit-repository</id>
+      <name>Eclipse JGit Repository</name>
+      <url>http://download.eclipse.org/jgit/maven</url>
+    </repository>
+    
+    <repository>
+      <id>guice-maven</id>
+      <name>guice maven</name>
+      <url>http://guice-maven.googlecode.com/svn/trunk</url>
+    </repository>
+    
+    <repository>
+        <id>maven.jenkins-ci.org.git</id>
+        <url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
+    </repository>
+        
+    <repository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </repository>
+    
+  </repositories>
+  
+  <pluginRepositories>
+    <pluginRepository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+  
+    <dependencies>
+        <!--
+        <dependency>
+            <groupId>org.jenkinsci.plugins</groupId>
+            <artifactId>git</artifactId>
+            <version>1.1.11</version>
+            <type>hpi</type>
+            <type>hpi</type>
+        </dependency> -->
+        <!--<dependency>
+            <groupId>org.jvnet.hudson.main</groupId>
+            <artifactId>maven-plugin</artifactId>
+            <version>1.434</version>
+        </dependency>-->
+        <dependency>
+            <groupId>org.jenkinsci.plugins</groupId>
+            <artifactId>git</artifactId>
+            <version>1.1.11</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.spearce</groupId>
+            <artifactId>jgit</artifactId>
+            <version>0.4-47e4af3</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>jenkins-core</artifactId>
+            <version>1.434</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+    
+  <distributionManagement>
+    <repository>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
+  
+</project>

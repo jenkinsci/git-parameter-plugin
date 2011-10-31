@@ -1,0 +1,8 @@
+<!--
+  This view is used to render the plugin list page.
+
+  Since we don't really have anything dynamic here, let's just use static HTML. 
+-->
+<div>
+  Adds ability to choose from git repository revisions or tags
+</div>

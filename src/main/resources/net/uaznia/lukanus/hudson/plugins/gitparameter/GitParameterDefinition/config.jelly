@@ -1,0 +1,32 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:entry title="Name" field="name">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="Description" field="description">
+    <f:textbox />
+  </f:entry>
+  <f:entry name="type" title="Parameter Type" field="type">
+    <select name="type">
+        <j:choose>
+            <j:when test="${instance.type eq 'PT_TAG'}">
+                <option value="PT_TAG" selected="selected">Tag</option>
+            </j:when>
+            <j:otherwise>
+    	       <option value="PT_TAG">Tag</option>
+    	    </j:otherwise>
+    	</j:choose>
+    	<j:choose>
+    	   <j:when test="${instance.type eq 'PT_REVISION'}">       
+    	       <option value="PT_REVISION" selected="selected">Revision</option>
+    	   </j:when>
+    	   <j:otherwise>
+               <option value="PT_REVISION">Revision</option>
+           </j:otherwise>    
+    	</j:choose>   
+    </select>
+  </f:entry>
+
+  <f:entry title="Default Value" field="defaultValue">
+    <f:textbox />
+  </f:entry>
+</j:jelly>
