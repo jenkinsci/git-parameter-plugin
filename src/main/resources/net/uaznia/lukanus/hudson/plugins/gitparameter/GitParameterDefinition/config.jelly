@@ -26,6 +26,10 @@
     </select>
   </f:entry>
 
+  <f:entry title="Branch" field="branch">
+    <f:textbox />
+  </f:entry>
+
   <f:entry title="Default Value" field="defaultValue">
     <f:textbox />
   </f:entry>

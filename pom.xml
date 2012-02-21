@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.434</version><!-- which version of Hudson is this plugin built against? -->
+    <version>1.451</version><!-- which version of Hudson is this plugin built against? -->
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>org.jenkinsci.plugins</groupId>
             <artifactId>git</artifactId>
-            <version>1.1.11</version>
+            <version>1.1.15</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -115,7 +115,14 @@
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>jenkins-core</artifactId>
-            <version>1.434</version>
+            <version>1.451</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.8.5</version>
+            <scope>test</scope>
             <type>jar</type>
         </dependency>
     </dependencies>

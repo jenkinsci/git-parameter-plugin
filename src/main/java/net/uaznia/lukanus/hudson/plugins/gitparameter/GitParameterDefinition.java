@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Date;
-
+import java.util.UUID;
 import java.text.SimpleDateFormat;
 
 
@@ -15,6 +15,7 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.ParameterValue;
 import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
@@ -38,12 +39,13 @@ import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.Revision;
 
 
-public class GitParameterDefinition extends ParameterDefinition  {
-	private static final long serialVersionUID = 9157832967140868127L;
+public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
+	private static final long serialVersionUID = 9157832967140868122L;
 
 	public static final String PARAMETER_TYPE_TAG = "PT_TAG";
-
 	public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
+        
+        private final UUID uuid;
 
 	@Extension
 	public static class DescriptorImpl extends ParameterDescriptor {
@@ -55,8 +57,9 @@ public class GitParameterDefinition extends ParameterDefinition  {
 
               
 	private String type;
-        private String errorMessage;
+        private String branch;
         
+        private String errorMessage;        
 	private String defaultValue;        
         
         private Map<String, String> revisionMap;
@@ -64,13 +67,15 @@ public class GitParameterDefinition extends ParameterDefinition  {
 
 	@DataBoundConstructor
 	public GitParameterDefinition(String name,
-        String type, String defaultValue,
-        String description
+                String type, String defaultValue,
+                String description, String branch
         ) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
-                              
+                this.branch = branch;
+                
+                this.uuid = UUID.randomUUID();               
 	}
         
 
@@ -111,8 +116,7 @@ public class GitParameterDefinition extends ParameterDefinition  {
 	@Override
 	public ParameterValue getDefaultParameterValue() {
 		String defValue = getDefaultValue();
-		if (!StringUtils.isBlank(defValue)) {
-                    
+		if (!StringUtils.isBlank(defValue)) {                    
 			return new GitParameterValue(getName(), defValue);
 		}
 		return super.getDefaultParameterValue();
@@ -123,10 +127,24 @@ public class GitParameterDefinition extends ParameterDefinition  {
 	public String getType() {
 		return type;
 	}
+    
         
 	public void setType(String type) {
+            if(type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION) ) {
 		this.type = type;
+            } else {
+                this.errorMessage = "wrongType";
+                
+            }
 	}
+        
+        public String getBranch() {
+                return this.branch;
+        }
+        
+        public void setBranch(String nameOfBranch) {
+                this.branch = nameOfBranch;
+        }
 
 	public String getDefaultValue() {
 		return defaultValue;
@@ -136,17 +154,61 @@ public class GitParameterDefinition extends ParameterDefinition  {
 		this.defaultValue = defaultValue;
 	}
 
+        
+        public AbstractProject<?,?> getParentProject() {
+            AbstractProject<?,?> context = null;
+            List<AbstractProject> jobs = Hudson.getInstance().getItems(AbstractProject.class);
+
+            for(AbstractProject<?,?> project : jobs) {
+                ParametersDefinitionProperty property = (ParametersDefinitionProperty) project.getProperty(ParametersDefinitionProperty.class);
+
+                if(property != null) {
+                    List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
+
+                    if(parameterDefinitions != null) {
+                        for(ParameterDefinition pd : parameterDefinitions) {
+
+                            if(pd instanceof GitParameterDefinition && 
+                                ((GitParameterDefinition) pd).compareTo(this) == 0) {
+                                
+                                context = project;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }  
+            
+            return context;
+        }
+        
+        @Override
+        public int compareTo(GitParameterDefinition pd) {
+            if(pd.uuid.equals(uuid)) {
+                return 0;
+            }
+            
+            return -1;
+        }
+          
+        
 	public void generateContents(String contenttype) {
             
-	        for (AbstractProject<?,?> project : Hudson.getInstance().getItems(AbstractProject.class)) {
+          AbstractProject<?,?> project = getParentProject();
+            
+            
+	       // for (AbstractProject<?,?> project : Hudson.getInstance().getItems(AbstractProject.class)) {
                     if (project.getSomeWorkspace() == null) {
-                        errorMessage = "noWorkspace";
-                        break;
+                        this.errorMessage = "noWorkspace";
                     }                    
                     
                     SCM scm = project.getScm();
                     
-                    if (scm instanceof GitSCM); else continue;
+                    //if (scm instanceof GitSCM); else continue;
+                    if (scm instanceof GitSCM) {
+                        this.errorMessage = "notGit";
+                    }
+                    
                     
                     GitSCM git = (GitSCM) scm;
                     
@@ -165,13 +227,26 @@ public class GitParameterDefinition extends ParameterDefinition  {
                     for (RemoteConfig repository : git.getRepositories()) {
                         for (URIish remoteURL : repository.getURIs()) {
                             
-                        IGitAPI newgit = new GitAPI(defaultGitExe, project.getSomeWorkspace(), TaskListener.NULL, environment);
+                        IGitAPI newgit = new GitAPI(defaultGitExe, project.getSomeWorkspace(), TaskListener.NULL, environment, new String());
+                      // for later use  
+                //        if(this.branch != null && !this.branch.isEmpty()) {
+                  //          newgit.checkoutBranch(this.branch, null);
+                    //    }
+                        
                         newgit.fetch();
                         
                         if(type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
                             revisionMap = new HashMap<String, String>();
                             
-                            List<ObjectId> oid = newgit.revListAll();                        
+                            
+                        List<ObjectId> oid;   
+                        
+                        if(this.branch != null && !this.branch.isEmpty()) {
+                             oid = newgit.revListBranch(this.branch);                        
+                        } else {
+                             oid = newgit.revListAll();                        
+                        }
+                            
                                 
                             for(ObjectId noid: oid) {
                                 Revision r = new Revision(noid);
@@ -204,7 +279,7 @@ public class GitParameterDefinition extends ParameterDefinition  {
                             
                         }
                     }
-                 }
+            //     }
                 
 	}
         
