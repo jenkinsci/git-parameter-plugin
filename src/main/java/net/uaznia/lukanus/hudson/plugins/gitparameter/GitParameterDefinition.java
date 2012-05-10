@@ -1,42 +1,41 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Date;
-import java.util.UUID;
-import java.text.SimpleDateFormat;
-
-
-
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.AbstractProject;
 import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
+import hudson.plugins.git.GitAPI;
+import hudson.plugins.git.IGitAPI;
+import hudson.plugins.git.Revision;
+import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-
-
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.lib.ObjectId;
-
-import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.IGitAPI;
-import hudson.plugins.git.GitAPI;
-import hudson.plugins.git.Revision;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
@@ -227,7 +226,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     for (RemoteConfig repository : git.getRepositories()) {
                         for (URIish remoteURL : repository.getURIs()) {
                             
-                        IGitAPI newgit = new GitAPI(defaultGitExe, project.getSomeWorkspace(), TaskListener.NULL, environment, new String());
+                        final IGitAPI newgit = new GitAPI(defaultGitExe, project.getSomeWorkspace(), TaskListener.NULL, environment, new String());
                       // for later use  
                 //        if(this.branch != null && !this.branch.isEmpty()) {
                   //          newgit.checkoutBranch(this.branch, null);
@@ -236,7 +235,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         newgit.fetch();
                         
                         if(type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                            revisionMap = new HashMap<String, String>();
+                            //Use a LinkedHashMap so revisions order is preserved
+                            revisionMap = new LinkedHashMap<String, String>();
                             
                             
                         List<ObjectId> oid;   
@@ -246,7 +246,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         } else {
                              oid = newgit.revListAll();                        
                         }
-                            
                                 
                             for(ObjectId noid: oid) {
                                 Revision r = new Revision(noid);
@@ -268,8 +267,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                                 }
                                 revisionMap.put(r.getSha1String(), r.getSha1String() + " " + author + " " + goodDate);
                             }
-                        } else if(type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {         
-                            tagMap = new HashMap<String, String>();
+                        } else if(type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {        
+                            //Use TreeMap so that the tags are sorted alphabetically
+                            tagMap = new TreeMap<String, String>();
                              
                             //Set<String> tagNameList = newgit.getTagNames("*");
                             for(String tagName: newgit.getTagNames("*")) {
