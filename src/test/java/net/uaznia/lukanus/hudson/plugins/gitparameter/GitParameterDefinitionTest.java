@@ -145,7 +145,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
-
     }
 
     /**
@@ -206,7 +205,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     }
 
     @Test
-    public void testGetRevisionMap()
+    public void testGetBranchMap()
     {
        /*
          GitParameterDefinition instance = new GitParameterDefinition("name", "PT_BRANCH", "defaultValue", "description", "branch");

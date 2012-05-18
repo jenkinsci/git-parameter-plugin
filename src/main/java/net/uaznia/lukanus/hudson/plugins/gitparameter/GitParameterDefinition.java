@@ -11,7 +11,6 @@ import hudson.scm.SCM;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
