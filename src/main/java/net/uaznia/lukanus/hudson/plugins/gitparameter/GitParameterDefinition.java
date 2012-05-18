@@ -2,7 +2,12 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.TaskListener;
 import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.IGitAPI;
@@ -10,7 +15,12 @@ import hudson.plugins.git.Revision;
 import hudson.scm.SCM;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -21,8 +31,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class GitParameterDefinition
-    extends ParameterDefinition
-    implements Comparable<GitParameterDefinition> {
+        extends ParameterDefinition
+        implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
 
     public static final String PARAMETER_TYPE_TAG      = "PT_TAG";
@@ -51,10 +61,8 @@ public class GitParameterDefinition
 
     @DataBoundConstructor
     public GitParameterDefinition(String name,
-                String type, String defaultValue,
-                String description, String branch
-        )
-    {
+                                  String type, String defaultValue,
+                                  String description, String branch) {
         super(name, description);
         this.type = type;
         this.defaultValue = defaultValue;
@@ -143,7 +151,7 @@ public class GitParameterDefinition
         List<AbstractProject> jobs = Hudson.getInstance().getItems(AbstractProject.class);
 
         for (AbstractProject<?,?> project : jobs) {
-            ParametersDefinitionProperty property = (ParametersDefinitionProperty) project.getProperty(ParametersDefinitionProperty.class);
+            ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
 
             if (property != null) {
                 List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
@@ -214,10 +222,12 @@ public class GitParameterDefinition
 
                     List<ObjectId> oid;
 
-                    if (this.branch != null && !this.branch.isEmpty())
+                    if (this.branch != null && !this.branch.isEmpty()) {
                         oid = newgit.revListBranch(this.branch);
-                    else
+                    }
+                    else {
                         oid = newgit.revListAll();
+                    }
 
                     for (ObjectId noid: oid) {
                         Revision r = new Revision(noid);
