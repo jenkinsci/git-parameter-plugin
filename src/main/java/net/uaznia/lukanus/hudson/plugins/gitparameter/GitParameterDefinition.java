@@ -61,7 +61,8 @@ implements Comparable<GitParameterDefinition>
     public GitParameterDefinition(String name,
                 String type, String defaultValue,
                 String description, String branch
-        ) {
+        )
+    {
         super(name, description);
         this.type = type;
         this.defaultValue = defaultValue;
