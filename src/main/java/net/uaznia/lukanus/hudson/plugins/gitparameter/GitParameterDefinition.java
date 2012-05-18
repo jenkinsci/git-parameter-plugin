@@ -11,7 +11,6 @@ import hudson.scm.SCM;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
@@ -33,8 +32,6 @@ implements Comparable<GitParameterDefinition>
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
 
     private final UUID uuid;
-
-    private final static Logger LOG = Logger.getLogger(GitParameterDefinition.class.getName());
 
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor
@@ -297,12 +294,16 @@ implements Comparable<GitParameterDefinition>
                 }
                 else if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH))
                 {
-                    branchMap = new HashMap<String, String>();
+                    branchMap = new TreeMap<String, String>();
 
-                    for (hudson.plugins.git.Branch branch : newgit.getBranches())
+                    for (hudson.plugins.git.Branch gitBranch : newgit.getBranches())
                     {
-                        LOG.info("Branch " + branch.getName() + " found...");
-                        branchMap.put(branch.getName(), branch.getName());
+                        String branchName = gitBranch.getName();
+
+                        if ("master".equals(branchName))
+                            continue;
+
+                        branchMap.put(branchName, branchName);
                     }
                 }
             }
