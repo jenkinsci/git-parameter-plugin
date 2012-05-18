@@ -18,13 +18,11 @@ import static org.mockito.Mockito.mock;
  * @author lukanus
  */
 public class GitParameterDefinitionTest extends HudsonTestCase  {
-
     public GitParameterDefinitionTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-
     }
 
     @AfterClass
@@ -69,7 +67,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
         JSONObject jO = JSONObject.fromObject(jsonR);
 
-
         GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch");
 
         ParameterValue result = instance.createValue(request,jO);
@@ -82,7 +79,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
      */
     @Test
     public void testGetDefaultParameterValue() {
-
         // TODO review the generated test code and remove the default call to fail.
         //fail("The test case is a prototype.");
     }
@@ -98,11 +94,9 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         String result = instance.getType();
         assertEquals(expResult, result);
 
-
         instance.setType(expResult);
         result = instance.getType();
         assertEquals(expResult, result);
-
     }
 
     /**
@@ -152,13 +146,12 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
      */
     @Test
     public void testGenerateContents() {
-
-//        System.out.println("generateContents");
-  //      String contenttype = "";
-    //    GitParameterDefinition instance = null;
-      //  instance.generateContents(contenttype);
-
-
+        /*
+        System.out.println("generateContents");
+        String contenttype = "";
+        GitParameterDefinition instance = null;
+        instance.generateContents(contenttype);
+        */
     }
 
     /**
@@ -172,7 +165,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         String result = instance.getErrorMessage();
         assertEquals(expResult, result);*/
         // TODO review the generated test code and remove the default call to fail.
-
     }
 
     /**
@@ -180,13 +172,12 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
      */
     @Test
     public void testGetRevisionMap() {
-   //     System.out.println("getRevisionMap");
-   //     GitParameterDefinition instance = null;
-   //     Map expResult = null;
-   //     Map result = instance.getRevisionMap();
-   //     assertEquals(expResult, result);
+        // System.out.println("getRevisionMap");
+        // GitParameterDefinition instance = null;
+        // Map expResult = null;
+        // Map result = instance.getRevisionMap();
+        // assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
-
     }
 
     /**
@@ -195,8 +186,8 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     @Test
     public void testGetTagMap() {
         System.out.println("Test of getTagMap method");
-   /*      GitParameterDefinition instance = new GitParameterDefinition("name","PT_TAG","defaultValue","description","branch");
-
+        /*
+        GitParameterDefinition instance = new GitParameterDefinition("name","PT_TAG","defaultValue","description","branch");
         Map<String,String> result = instance.getTagMap();
         //assertEquals(expResult, result);
         if(!result.isEmpty()) {
@@ -205,8 +196,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     }
 
     @Test
-    public void testGetBranchMap()
-    {
+    public void testGetBranchMap() {
        /*
          GitParameterDefinition instance = new GitParameterDefinition("name", "PT_BRANCH", "defaultValue", "description", "branch");
         Map<String, String> result = instance.getBranchMap();
