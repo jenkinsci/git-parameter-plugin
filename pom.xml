@@ -45,9 +45,9 @@
   </build>
 
   <scm>
-    <connection>scm:git:ssh://github.com/jcmuller/git-parameter.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jcmuller/git-parameter.git</developerConnection>
-    <url>https://github.com/jcmuller/git-parameter</url>
+    <connection>scm:git:ssh://github.com/lukanus/git-parameter.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/lukanus/git-parameter.git</developerConnection>
+    <url>https://github.com/lukanus/git-parameter</url>
   </scm>
 
   <properties>
@@ -57,7 +57,7 @@
   <developers>
       <developer>
         <id>lukanus</id>
-        <name>?ukasz Mi?kowski</name>
+        <name>Łukasz Miłkowski</name>
       </developer>
       <developer>
         <id>jcmuller</id>
