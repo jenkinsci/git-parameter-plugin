@@ -12,7 +12,7 @@
   <packaging>hpi</packaging>
   <version>0.3-SNAPSHOT</version>
   <name>Git Parameter Plug-In</name>
-  <url>https://github.com/jcmuller/git-parameter</url>
+  <url>https://github.com/lukanus/git-parameter</url>
 
   <build>
     <pluginManagement>
