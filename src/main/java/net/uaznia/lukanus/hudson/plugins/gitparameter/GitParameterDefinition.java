@@ -233,7 +233,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                   //          newgit.checkoutBranch(this.branch, null);
                     //    }
                         
-                        newgit.fetch();
+                        newgit.fetch(repository);
                         
                         if(type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
                             revisionMap = new HashMap<String, String>();
