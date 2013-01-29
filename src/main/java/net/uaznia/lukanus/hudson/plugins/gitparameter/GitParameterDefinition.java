@@ -34,6 +34,7 @@ import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.lib.ObjectId;
 
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.GitTool;
 import hudson.plugins.git.IGitAPI;
 import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.Revision;
@@ -213,9 +214,15 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     GitSCM git = (GitSCM) scm;
                     
                     String defaultGitExe = File.separatorChar != '/' ? "git.exe" : "git";
-                    GitSCM.DescriptorImpl desc = (GitSCM.DescriptorImpl) git.getDescriptor();
-                    if (desc.getOldGitExe() != null) {
-                        defaultGitExe = desc.getOldGitExe();
+
+                    hudson.plugins.git.GitTool.DescriptorImpl descriptor = (hudson.plugins.git.GitTool.DescriptorImpl) Hudson.getInstance().getDescriptor(GitTool.class);
+                    GitTool[] installations = descriptor.getInstallations();
+
+                    for (GitTool gt: installations){
+                    	if (gt.getGitExe()!=null) {
+                    		defaultGitExe = gt.getGitExe();
+                    		break;
+                    	}
                     }
                     
                     EnvVars environment = null;
