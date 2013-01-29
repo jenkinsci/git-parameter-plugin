@@ -1,7 +1,5 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import hudson.EnvVars;
-import hudson.model.AbstractBuild;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.model.StringParameterValue;
