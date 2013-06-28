@@ -33,6 +33,7 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.lib.ObjectId;
 
+import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
 import hudson.plugins.git.IGitAPI;
@@ -240,7 +241,12 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                   //          newgit.checkoutBranch(this.branch, null);
                     //    }
                         
-                        newgit.fetch();
+                        try {
+                            newgit.fetch();                        	
+                        } catch(GitException ge){
+                        	// fetch fails when workspace is empty, run clone
+                        	newgit.clone(repository);
+                        }
                         
                         if(type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
                             revisionMap = new HashMap<String, String>();
