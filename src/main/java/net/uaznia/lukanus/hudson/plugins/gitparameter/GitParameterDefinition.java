@@ -1,44 +1,28 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Date;
-import java.util.UUID;
-import java.text.SimpleDateFormat;
-
-
-
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.AbstractProject;
-import hudson.model.ParameterValue;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
-import hudson.scm.SCM;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-
-
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.lib.ObjectId;
-
+import hudson.model.*;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
-import hudson.plugins.git.IGitAPI;
-import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.Revision;
+import hudson.scm.SCM;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.plugins.gitclient.Git;
+import org.jenkinsci.plugins.gitclient.GitClient;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
@@ -194,7 +178,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
           
         
-	public void generateContents(String contenttype) {
+	public void generateContents(String contenttype) throws IOException, InterruptedException {
             
           AbstractProject<?,?> project = getParentProject();
             
@@ -234,20 +218,23 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     
                     for (RemoteConfig repository : git.getRepositories()) {
                         for (URIish remoteURL : repository.getURIs()) {
-                            
-                        IGitAPI newgit = new GitAPI(defaultGitExe, project.getSomeWorkspace(), TaskListener.NULL, environment, new String());
-                      // for later use  
+
+                            GitClient newgit = new Git(TaskListener.NULL, environment)
+                                                    .using(defaultGitExe)
+                                                    .in(project.getSomeWorkspace()).getClient();
+
+                      // for later use
                 //        if(this.branch != null && !this.branch.isEmpty()) {
                   //          newgit.checkoutBranch(this.branch, null);
                     //    }
-                        
+
                         try {
-                            newgit.fetch();                        	
+                            newgit.fetch_();
                         } catch(GitException ge){
                         	// fetch fails when workspace is empty, run clone
-                        	newgit.clone(repository);
+                        	newgit.clone_();
                         }
-                        
+
                         if(type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
                             revisionMap = new HashMap<String, String>();
                             
@@ -255,7 +242,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         List<ObjectId> oid;   
                         
                         if(this.branch != null && !this.branch.isEmpty()) {
-                             oid = newgit.revListBranch(this.branch);                        
+                             oid = newgit.revList(this.branch);
                         } else {
                              oid = newgit.revListAll();                        
                         }
@@ -263,7 +250,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                                 
                             for(ObjectId noid: oid) {
                                 Revision r = new Revision(noid);
-                                List<String> test3 = newgit.showRevision(r);
+                                List<String> test3 = newgit.showRevision(r.getSha1());
                                 String[] authorDate = test3.get(3).split(">");
                                 String author = authorDate[0].replaceFirst("author ", "").replaceFirst("committer ", "") + ">";
                                 String goodDate = null;
@@ -300,14 +287,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return errorMessage;
         }
         
-	public Map<String, String> getRevisionMap() {
+	public Map<String, String> getRevisionMap() throws IOException, InterruptedException {
             if( revisionMap == null || revisionMap.isEmpty()){
                 generateContents(PARAMETER_TYPE_REVISION);
             }
             return revisionMap;
         }
         
-        public Map<String, String> getTagMap() {
+        public Map<String, String> getTagMap() throws IOException, InterruptedException {
             if( tagMap == null || tagMap.isEmpty()){
                 generateContents(PARAMETER_TYPE_TAG);
             }
