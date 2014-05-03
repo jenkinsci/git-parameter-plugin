@@ -15,6 +15,7 @@ h2. ChangeLog
 
 upcoming Version 0.3
 
+* Display month not minutes in date. Add HH.mm. Display only first 8 chars of SHA1 (Niklaus Giger)
 * Merging SortMode from graeme-hill
 * Add backup pluginRepository (Gabor Liptak)
 * Use GitTool to query configured location of the git executable (gliptak)

@@ -299,14 +299,14 @@ public class GitParameterDefinition extends ParameterDefinition implements
 							Date date = new Date();
 							date.setTime(timestamp);
 
-							goodDate = new SimpleDateFormat("yyyy:mm:dd")
+							goodDate = new SimpleDateFormat("yyyy:MM:dd HH:mm")
 									.format(date);
 
 						} catch (Exception e) {
 							e.toString();
 						}
-						revisionMap.put(r.getSha1String(), r.getSha1String()
-								+ " " + author + " " + goodDate);
+						revisionMap.put(r.getSha1String().substring(0, 8) + " "
+								+ goodDate + " " + author);
 					}
 				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
 
