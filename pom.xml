@@ -1,143 +1,145 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>1.554.1</version><!-- which version of Hudson is this plugin built against? -->
-    <relativePath>../pom.xml</relativePath>
-  </parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.jenkins-ci.plugins</groupId>
+		<artifactId>plugin</artifactId>
+		<version>1.554.1</version><!--version of jenkins this plugin is built against? -->
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-  <artifactId>git-parameter</artifactId>  
-  <packaging>hpi</packaging>
-  <version>0.3-SNAPSHOT</version>
-  <name>Git Parameter Plug-In</name>
-  <url>https://github.com/jenkinsci/git-parameter-plugin</url>
-
-
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.0-beta-1</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <configuration>
-          <goals>deploy</goals>
-        </configuration>
-      </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-                <source>1.6</source>
-                <target>1.6</target>
-            </configuration>
-        </plugin>
-    </plugins>
-  </build>
-  
-  
+	<artifactId>git-parameter</artifactId>
+	<packaging>hpi</packaging>
+	<version>0.3-SNAPSHOT</version>
+	<name>Git Parameter Plug-In</name>
+	<url>https://github.com/jenkinsci/git-parameter-plugin</url>
 
 
-    <scm>
-    <connection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/git-parameter-plugin</url>
-  </scm>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
-  <developers>
-      <developer>
-        <id>ngiger</id>
-        <name>Niklaus Giger</name>
-      </developer>
-      <developer>
-        <id>lukanus</id>
-        <name>Łukasz Miłkowski</name>
-      </developer>
-  </developers>
-  
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.0-beta-1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-  <repositories>
-    <repository>
-      <id>jgit-repository</id>
-      <name>Eclipse JGit Repository</name>
-      <url>http://download.eclipse.org/jgit/maven</url>
-    </repository>
-    
-    <repository>
-      <id>guice-maven</id>
-      <name>guice maven</name>
-      <url>http://guice-maven.googlecode.com/svn/trunk</url>
-    </repository>
-    
-    <repository>
-        <id>maven.jenkins-ci.org.git</id>
-        <url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
-    </repository>
-        
-    <repository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
-    </repository>
-    
-  </repositories>
-  
-  <pluginRepositories>
-    <pluginRepository>
-        <id>repo.jenkins-ci.org</id>
-        <url>http://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>m.g.o-public</id>
-      <url>http://maven.glassfish.org/content/groups/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
-  
-    <dependencies>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>git</artifactId>
-            <version>2.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.spearce</groupId>
-            <artifactId>jgit</artifactId>
-            <version>0.4-47e4af3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-core</artifactId>
-            <version>1.554.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>1.8.5</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-    
-  <distributionManagement>
-    <repository>
-      <id>maven.jenkins-ci.org</id>
-      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
-    </repository>
-  </distributionManagement>
-  
-  <organization>
-  	<name>Jenkins-CI</name>
-  	<url>http://jenkins-ci.org/</url>
-  </organization>
+
+
+
+	<scm>
+		<connection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</developerConnection>
+		<url>https://github.com/jenkinsci/git-parameter-plugin</url>
+	</scm>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+	<developers>
+		<developer>
+			<id>ngiger</id>
+			<name>Niklaus Giger</name>
+			<email>niklaus.giger@member.fsf.org</email>
+		</developer>
+		<developer>
+			<id>lukanus</id>
+			<name>Łukasz Miłkowski</name>
+		</developer>
+	</developers>
+
+
+	<repositories>
+		<repository>
+			<id>jgit-repository</id>
+			<name>Eclipse JGit Repository</name>
+			<url>http://download.eclipse.org/jgit/maven</url>
+		</repository>
+
+		<repository>
+			<id>guice-maven</id>
+			<name>guice maven</name>
+			<url>http://guice-maven.googlecode.com/svn/trunk</url>
+		</repository>
+
+		<repository>
+			<id>maven.jenkins-ci.org.git</id>
+			<url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
+		</repository>
+
+		<repository>
+			<id>m.g.o-public</id>
+			<url>http://maven.glassfish.org/content/groups/public/</url>
+		</repository>
+
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>m.g.o-public</id>
+			<url>http://maven.glassfish.org/content/groups/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>git</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.spearce</groupId>
+			<artifactId>jgit</artifactId>
+			<version>0.4-47e4af3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jenkins-ci.main</groupId>
+			<artifactId>jenkins-core</artifactId>
+			<version>1.554.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>1.8.5</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<distributionManagement>
+		<repository>
+			<id>maven.jenkins-ci.org</id>
+			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
+
+	<organization>
+		<name>Jenkins-CI</name>
+		<url>http://jenkins-ci.org/</url>
+	</organization>
 </project>
