@@ -1,0 +1,9 @@
+The following people have contributed to this Jenkins-CI plugin
+
+* Łukasz Miłkowski <lukanus@uaznia.net> (Original author)
+* Gabor Liptak <gliptak@gmail.com>
+* Nicolas De Loof<nicolas.deloof@gmail.com>
+* christ66<schristou88@gmail.com>
+* Niklaus Giger<niklaus.giger@member.fsf.org>
+
+

@@ -4,13 +4,33 @@ Under https://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin you find 
 
 * Plug-Info (useage)
 * Known Limitations/Bugs
-* ChangeLog
 
 Here you find information relevant for developer for this plugin. 
 
 * Visit https://wiki.jenkins-ci.org/display/JENKINS/Hosting+Plugins for "information about developing Jenkins-Plugins":https://wiki.jenkins-ci.org/display/JENKINS/Hosting+Plugins
 
 * You may checkout/clone this project and build it by simply calling @mvn clean install@ in the root of the checkout. Test your changes by going to your Jenkins-CI site and import the generated @target/git-parameter.hpi@ by going to your base URL + @jenkins/pluginManager/advanced@. There you find an option to upload a plugin.
+
+h2. ChangeLog
+
+upcoming Version 0.3
+
+* Add backup pluginRepository (Gabor Liptak)
+* Use GitTool to query configured location of the git executable (gliptak)
+* Upgrade to git 2.2.0. (christ66)
+* Run clone when fetch fails on workspace empty (Gabor Liptak)
+* Build against latest stable Jenkins-CI version 1.554.1
+* New maintainer/developer
+
+02/21/12 Version 0.2
+
+* Corrected error - plugin wasn't showing anything after change of main Git Plugin
+* Corrected major disfunctionality - plugin now it showing revisions only from correct job/project.
+* Adding support for choosing branch from which revisions/tags are returned
+
+11/01/11 Version 0.1
+
+* Initial Release
 
 h2. TODO:
 
