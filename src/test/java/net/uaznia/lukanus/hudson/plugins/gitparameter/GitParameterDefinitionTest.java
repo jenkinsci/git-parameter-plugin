@@ -6,10 +6,6 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.model.ParameterValue;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.apache.commons.io.FileUtils;
-import hudson.model.*;
-import hudson.tasks.Shell;
-
 import static org.mockito.Mockito.*;
 
 
@@ -17,7 +13,6 @@ import java.util.Map;
 import java.util.HashMap;
 import net.sf.json.JSONObject;
 import org.junit.*;
-import static org.junit.Assert.*;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
