@@ -1,12 +1,16 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Date;
 import java.util.UUID;
 import java.text.SimpleDateFormat;
+
+
+
 
 
 
@@ -19,7 +23,6 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.scm.SCM;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -192,7 +195,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
           
         
-	public void generateContents(String contenttype) {
+	public void generateContents(String contenttype) throws IOException, InterruptedException {
             
           AbstractProject<?,?> project = getParentProject();
             
@@ -287,14 +290,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return errorMessage;
         }
         
-	public Map<String, String> getRevisionMap() {
+	public Map<String, String> getRevisionMap() throws IOException, InterruptedException {
             if( revisionMap == null || revisionMap.isEmpty()){
                 generateContents(PARAMETER_TYPE_REVISION);
             }
             return revisionMap;
         }
         
-        public Map<String, String> getTagMap() {
+        public Map<String, String> getTagMap() throws IOException, InterruptedException {
             if( tagMap == null || tagMap.isEmpty()){
                 generateContents(PARAMETER_TYPE_TAG);
             }
