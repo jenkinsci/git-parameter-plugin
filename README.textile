@@ -15,6 +15,7 @@ h2. ChangeLog
 
 upcoming Version 0.3
 
+* Merging SortMode from graeme-hill
 * Add backup pluginRepository (Gabor Liptak)
 * Use GitTool to query configured location of the git executable (gliptak)
 * Upgrade to git 2.2.0. (christ66)
@@ -33,6 +34,8 @@ upcoming Version 0.3
 * Initial Release
 
 h2. TODO:
+
+* With an empty workspace the tags get not listed
 
 * Merge pending pull requests
 ** https://github.com/jenkinsci/git-parameter-plugin/pulls (4 pull request on May-03-2014)
