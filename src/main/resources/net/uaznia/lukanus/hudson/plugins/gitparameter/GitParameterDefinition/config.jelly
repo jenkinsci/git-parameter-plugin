@@ -29,6 +29,14 @@
   <f:entry title="Branch" field="branch">
     <f:textbox />
   </f:entry>
+  
+  <f:entry title="Tag filter" field="tagFilter">
+    <f:textbox />
+  </f:entry>
+  
+  <f:entry name="sortMode" title="Tag sort mode" field="sortMode">
+  	<f:enum>${it}</f:enum>
+  </f:entry>
 
   <f:entry title="Default Value" field="defaultValue">
     <f:textbox />

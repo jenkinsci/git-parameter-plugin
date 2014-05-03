@@ -1,35 +1,43 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Date;
-import java.util.UUID;
-import java.text.SimpleDateFormat;
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.AbstractProject;
 import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Hudson;
-import hudson.model.TaskListener;
+import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.GitException;
+import hudson.plugins.git.IGitAPI;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
 import hudson.scm.SCM;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -52,6 +60,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	private String type;
 	private String branch;
+	private String tagFilter;
+	private SortMode sortMode;
 
 	private String errorMessage;
 	private String defaultValue;
@@ -61,13 +71,20 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
-			String defaultValue, String description, String branch) {
+			String defaultValue, String description, String branch,
+			String tagFilter, SortMode sortMode) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.branch = branch;
-
 		this.uuid = UUID.randomUUID();
+		this.sortMode = sortMode;
+
+		if (isNullOrWhitespace(tagFilter)) {
+			this.tagFilter = "*";
+		} else {
+			this.tagFilter = tagFilter;
+		}
 	}
 
 	@Override
@@ -136,6 +153,22 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		this.branch = nameOfBranch;
 	}
 
+	public SortMode getSortMode() {
+		return this.sortMode;
+	}
+
+	public void setSortMode(SortMode sortMode) {
+		this.sortMode = sortMode;
+	}
+
+	public String getTagFilter() {
+		return this.tagFilter;
+	}
+
+	public void setTagFilter(String tagFilter) {
+		this.tagFilter = tagFilter;
+	}
+
 	public String getDefaultValue() {
 		return defaultValue;
 	}
@@ -159,6 +192,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 				if (parameterDefinitions != null) {
 					for (ParameterDefinition pd : parameterDefinitions) {
+
 						if (pd instanceof GitParameterDefinition
 								&& ((GitParameterDefinition) pd)
 										.compareTo(this) == 0) {
@@ -187,6 +221,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			InterruptedException {
 
 		AbstractProject<?, ?> project = getParentProject();
+
 		// for (AbstractProject<?,?> project :
 		// Hudson.getInstance().getItems(AbstractProject.class)) {
 		if (project.getSomeWorkspace() == null) {
@@ -203,16 +238,14 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		GitSCM git = (GitSCM) scm;
 
 		String defaultGitExe = File.separatorChar != '/' ? "git.exe" : "git";
-
 		hudson.plugins.git.GitTool.DescriptorImpl descriptor = (hudson.plugins.git.GitTool.DescriptorImpl) Hudson
 				.getInstance().getDescriptor(GitTool.class);
 		GitTool[] installations = descriptor.getInstallations();
-
 		for (GitTool gt : installations) {
 			if (gt.getGitExe() != null) {
-				defaultGitExe = gt.getGitExe();
-				break;
 			}
+			defaultGitExe = gt.getGitExe();
+			break;
 		}
 
 		EnvVars environment = null;
@@ -225,10 +258,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 		for (RemoteConfig repository : git.getRepositories()) {
 			for (URIish remoteURL : repository.getURIs()) {
+
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
 						.getClient();
-
 				// for later use
 				// if(this.branch != null && !this.branch.isEmpty()) {
 				// newgit.checkoutBranch(this.branch, null);
@@ -240,9 +273,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					// fetch fails when workspace is empty, run clone
 					newgit.clone_();
 				}
-
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-					revisionMap = new HashMap<String, String>();
+					revisionMap = new LinkedHashMap<String, String>();
 
 					List<ObjectId> oid;
 
@@ -277,10 +309,22 @@ public class GitParameterDefinition extends ParameterDefinition implements
 								+ " " + author + " " + goodDate);
 					}
 				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
-					tagMap = new HashMap<String, String>();
 
-					// Set<String> tagNameList = newgit.getTagNames("*");
-					for (String tagName : newgit.getTagNames("*")) {
+					// use a LinkedHashMap so that keys are ordered as inserted
+					tagMap = new LinkedHashMap<String, String>();
+
+					Set<String> tagSet = newgit.getTagNames(tagFilter);
+					ArrayList<String> orderedTagNames;
+
+					if (this.getSortMode().getIsSorting()) {
+						orderedTagNames = sortTagNames(tagSet);
+						if (this.getSortMode().getIsDescending())
+							Collections.reverse(orderedTagNames);
+					} else {
+						orderedTagNames = new ArrayList<String>(tagSet);
+					}
+
+					for (String tagName : orderedTagNames) {
 						tagMap.put(tagName, tagName);
 					}
 				}
@@ -289,6 +333,19 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 		// }
 
+	}
+
+	public ArrayList<String> sortTagNames(Set<String> tagSet) {
+
+		ArrayList<String> tags = new ArrayList<String>(tagSet);
+
+		if (!this.getSortMode().getIsUsingSmartSort()) {
+			Collections.sort(tags);
+		} else {
+			Collections.sort(tags, new SmartNumberStringComparer());
+		}
+
+		return tags;
 	}
 
 	public String getErrorMessage() {
@@ -311,4 +368,115 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		return tagMap;
 	}
 
+	private static boolean isNullOrWhitespace(String s) {
+		return s == null || isWhitespace(s);
+
+	}
+
+	private static boolean isWhitespace(String s) {
+		int length = s.length();
+		for (int i = 0; i < length; i++) {
+			if (!Character.isWhitespace(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	enum SortMode {
+		NONE, ASCENDING_SMART, DESCENDING_SMART, ASCENDING, DESCENDING;
+
+		public boolean getIsUsingSmartSort() {
+			return this == SortMode.ASCENDING_SMART
+					|| this == SortMode.DESCENDING_SMART;
+		}
+
+		public boolean getIsDescending() {
+			return this == SortMode.DESCENDING
+					|| this == SortMode.DESCENDING_SMART;
+		}
+
+		public boolean getIsSorting() {
+			return this != SortMode.NONE;
+		}
+	}
+
+	/**
+	 * Compares strings but treats a sequence of digits as a single character.
+	 */
+	static class SmartNumberStringComparer implements Comparator<String> {
+
+		/**
+		 * Gets the token starting at the given index. It will return the first
+		 * char if it is not a digit, otherwise it will return all consecutive
+		 * digits starting at index.
+		 * 
+		 * @param str
+		 *            The string to extract token from
+		 * @param index
+		 *            The start location
+		 */
+		private String getToken(String str, int index) {
+			char nextChar = str.charAt(index++);
+			String token = String.valueOf(nextChar);
+
+			// if the first char wasn't a digit then we're already done
+			if (!Character.isDigit(nextChar))
+				return token;
+
+			// the first char was a digit so continue until end of string or non
+			// digit
+			while (index < str.length()) {
+				nextChar = str.charAt(index++);
+
+				if (!Character.isDigit(nextChar))
+					break;
+
+				token += nextChar;
+			}
+
+			return token;
+		}
+
+		/**
+		 * True if the string only contains digits
+		 */
+		private boolean stringContainsInteger(String str) {
+			for (int charIndex = 0; charIndex < str.length(); charIndex++) {
+				if (!Character.isDigit(str.charAt(charIndex)))
+					return false;
+			}
+			return true;
+		}
+
+		public int compare(String a, String b) {
+
+			int aIndex = 0;
+			int bIndex = 0;
+
+			while (aIndex < a.length() && bIndex < b.length()) {
+				String aToken = getToken(a, aIndex);
+				String bToken = getToken(b, bIndex);
+				int difference;
+
+				if (stringContainsInteger(aToken)
+						&& stringContainsInteger(bToken)) {
+					int aInt = Integer.parseInt(aToken);
+					int bInt = Integer.parseInt(bToken);
+					difference = aInt - bInt;
+				} else {
+					difference = aToken.compareTo(bToken);
+				}
+
+				if (difference != 0)
+					return difference;
+
+				aIndex += aToken.length();
+				bIndex += bToken.length();
+			}
+
+			return new Integer(a.length()).compareTo(new Integer(b.length()));
+		}
+
+	}
 }
