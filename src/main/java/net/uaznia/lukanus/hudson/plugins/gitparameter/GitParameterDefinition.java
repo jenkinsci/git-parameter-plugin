@@ -2,15 +2,14 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.ParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.plugins.git.GitAPI;
 import hudson.plugins.git.GitException;
-import hudson.plugins.git.IGitAPI;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
@@ -28,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -49,6 +50,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
 
 	private final UUID uuid;
+	private static final Logger LOGGER = Logger
+			.getLogger(GitParameterDefinition.class.getName());
 
 	@Extension
 	public static class DescriptorImpl extends ParameterDescriptor {
@@ -183,7 +186,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
-			ParametersDefinitionProperty property = (ParametersDefinitionProperty) project
+			ParametersDefinitionProperty property = project
 					.getProperty(ParametersDefinitionProperty.class);
 
 			if (property != null) {
@@ -267,6 +270,23 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				// newgit.checkoutBranch(this.branch, null);
 				// }
 
+				FilePath wsDir = project.getSomeBuildWithWorkspace()
+						.getWorkspace().absolutize();
+				if (!wsDir.exists()) {
+					LOGGER.log(Level.INFO, "generateContents create Ws "
+							+ wsDir + " for " + remoteURL);
+					wsDir.mkdirs();
+					if (!wsDir.exists()) {
+						LOGGER.log(Level.SEVERE,
+								"generateContents wsDir.mkdirs() failed ");
+						return;
+					}
+					newgit.init();
+					LOGGER.log(Level.INFO, "generateContents init done");
+					newgit.clone(remoteURL.toASCIIString(), "origin", false, null);
+					LOGGER.log(Level.INFO, "generateContents clone done");
+				}
+				newgit.checkout();
 				try {
 					newgit.fetch_();
 				} catch (GitException ge) {
