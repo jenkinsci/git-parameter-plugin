@@ -8,6 +8,14 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+  <licenses>
+    <license>
+      <name>The MIT License (MIT)</name>
+      <url>http://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
 	<artifactId>git-parameter</artifactId>
 	<packaging>hpi</packaging>
 	<version>0.3-SNAPSHOT</version>
