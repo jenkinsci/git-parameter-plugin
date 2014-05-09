@@ -9,7 +9,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
@@ -35,6 +34,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
+import org.jenkinsci.plugins.gitclient.FetchCommand;
 import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
 import org.eclipse.jgit.transport.RemoteConfig;
@@ -260,30 +260,46 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 
 		for (RemoteConfig repository : git.getRepositories()) {
-			LOGGER.log(Level.INFO, "generateContents contenttype " + contenttype + " RemoteConfig " + repository.getURIs());
+			LOGGER.log(Level.INFO, "generateContents contenttype "
+					+ contenttype + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
-
+				LOGGER.log(Level.WARNING, "generateContents remoteURL "
+						+ remoteURL);
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
 						.getClient();
+				FilePath wsDir = null;
+				if (project.getSomeBuildWithWorkspace() != null) {
+					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
+					if (wsDir == null || !wsDir.exists()) {
+						LOGGER.log(Level.WARNING,
+								"generateContents create wsDir " + wsDir
+										+ " for " + remoteURL);
+						wsDir.mkdirs();
+						if (!wsDir.exists()) {
+							LOGGER.log(Level.SEVERE,
+									"generateContents wsDir.mkdirs() failed ");
+							return;
+						}
+						newgit.init();
 
-				FilePath wsDir = project.getSomeBuildWithWorkspace()
-						.getWorkspace().absolutize();
-				if (!wsDir.exists()) {
-					LOGGER.log(Level.WARNING, "generateContents create Ws "
-							+ wsDir + " for " + remoteURL);
-					wsDir.mkdirs();
-					if (!wsDir.exists()) {
-						LOGGER.log(Level.SEVERE,
-								"generateContents wsDir.mkdirs() failed ");
-						return;
+						newgit.clone(remoteURL.toASCIIString(), "origin",
+								false, null);
+						LOGGER.log(Level.INFO, "generateContents clone done");
+					} else {
+						LOGGER.log(Level.WARNING, "generateContents wsDir "
+								+ wsDir);
+
 					}
-					newgit.init();
-					newgit.clone(remoteURL.toASCIIString(), "origin", false, null);
-					LOGGER.log(Level.INFO, "generateContents clone done");
+				} else {
+					// probably our first build. We cannot yet fill in any
+					// values.
+					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
+					return;
 				}
-				newgit.checkout();
-				newgit.fetch_();
+				FetchCommand fetch = newgit.fetch_().from(remoteURL,
+						repository.getFetchRefSpecs());
+				fetch.execute();
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					revisionMap = new LinkedHashMap<String, String>();
 
@@ -368,13 +384,13 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public Map<String, String> getRevisionMap() throws IOException,
 			InterruptedException {
-			generateContents(PARAMETER_TYPE_REVISION);
+		generateContents(PARAMETER_TYPE_REVISION);
 		return revisionMap;
 	}
 
 	public Map<String, String> getTagMap() throws IOException,
 			InterruptedException {
-			generateContents(PARAMETER_TYPE_TAG);
+		generateContents(PARAMETER_TYPE_TAG);
 		return tagMap;
 	}
 
