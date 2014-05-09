@@ -9,6 +9,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.GitTool;
@@ -220,6 +221,35 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		return -1;
 	}
 
+	public String prettyRevisionInfo(GitClient newgit, Revision r) {
+		List<String> test3 = null;
+		try {
+			test3 = newgit.showRevision(r.getSha1());
+		} catch (GitException e1) {
+			return "";
+		} catch (InterruptedException e1) {
+			return "";
+		}
+		String[] authorDate = test3.get(3).split(">");
+		String author = authorDate[0].replaceFirst("author ", "").replaceFirst(
+				"committer ", "")
+				+ ">";
+		String goodDate = null;
+		try {
+			String totmp = authorDate[1].trim().split("\\+")[0].trim();
+			long timestamp = Long.parseLong(totmp, 10) * 1000;
+			Date date = new Date();
+			date.setTime(timestamp);
+
+			goodDate = new SimpleDateFormat("yyyy:MM:dd HH:mm").format(date);
+
+		} catch (Exception e) {
+			e.toString();
+		}
+		return r.getSha1String().substring(0, 8) + " " + goodDate + " "
+				+ author;
+	}
+
 	public void generateContents(String contenttype) throws IOException,
 			InterruptedException {
 
@@ -263,8 +293,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			LOGGER.log(Level.INFO, "generateContents contenttype "
 					+ contenttype + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
-				LOGGER.log(Level.WARNING, "generateContents remoteURL "
-						+ remoteURL);
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
 						.getClient();
@@ -282,14 +310,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 							return;
 						}
 						newgit.init();
-
 						newgit.clone(remoteURL.toASCIIString(), "origin",
 								false, null);
 						LOGGER.log(Level.INFO, "generateContents clone done");
-					} else {
-						LOGGER.log(Level.WARNING, "generateContents wsDir "
-								+ wsDir);
-
 					}
 				} else {
 					// probably our first build. We cannot yet fill in any
@@ -313,31 +336,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					for (ObjectId noid : oid) {
 						Revision r = new Revision(noid);
-						List<String> test3 = newgit.showRevision(r.getSha1());
-						String[] authorDate = test3.get(3).split(">");
-						String author = authorDate[0].replaceFirst("author ",
-								"").replaceFirst("committer ", "")
-								+ ">";
-						String goodDate = null;
-						try {
-							String totmp = authorDate[1].trim().split("\\+")[0]
-									.trim();
-							long timestamp = Long.parseLong(totmp, 10) * 1000;
-							Date date = new Date();
-							date.setTime(timestamp);
-
-							goodDate = new SimpleDateFormat("yyyy:MM:dd HH:mm")
-									.format(date);
-
-						} catch (Exception e) {
-							e.toString();
-						}
-						revisionMap.put(r.getSha1String(), r.getSha1String()
-								.substring(0, 8)
-								+ " "
-								+ goodDate
-								+ " "
-								+ author);
+						revisionMap.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
 				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
 
