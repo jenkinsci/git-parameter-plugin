@@ -260,20 +260,17 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 
 		for (RemoteConfig repository : git.getRepositories()) {
+			LOGGER.log(Level.INFO, "generateContents contenttype " + contenttype + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
 
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
 						.getClient();
-				// for later use
-				// if(this.branch != null && !this.branch.isEmpty()) {
-				// newgit.checkoutBranch(this.branch, null);
-				// }
 
 				FilePath wsDir = project.getSomeBuildWithWorkspace()
 						.getWorkspace().absolutize();
 				if (!wsDir.exists()) {
-					LOGGER.log(Level.INFO, "generateContents create Ws "
+					LOGGER.log(Level.WARNING, "generateContents create Ws "
 							+ wsDir + " for " + remoteURL);
 					wsDir.mkdirs();
 					if (!wsDir.exists()) {
@@ -282,17 +279,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						return;
 					}
 					newgit.init();
-					LOGGER.log(Level.INFO, "generateContents init done");
 					newgit.clone(remoteURL.toASCIIString(), "origin", false, null);
 					LOGGER.log(Level.INFO, "generateContents clone done");
 				}
 				newgit.checkout();
-				try {
-					newgit.fetch_();
-				} catch (GitException ge) {
-					// fetch fails when workspace is empty, run clone
-					newgit.clone_();
-				}
+				newgit.fetch_();
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					revisionMap = new LinkedHashMap<String, String>();
 
@@ -354,9 +345,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 
 			}
+			break;
 		}
-		// }
-
 	}
 
 	public ArrayList<String> sortTagNames(Set<String> tagSet) {
@@ -378,17 +368,13 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public Map<String, String> getRevisionMap() throws IOException,
 			InterruptedException {
-		if (revisionMap == null || revisionMap.isEmpty()) {
 			generateContents(PARAMETER_TYPE_REVISION);
-		}
 		return revisionMap;
 	}
 
 	public Map<String, String> getTagMap() throws IOException,
 			InterruptedException {
-		if (tagMap == null || tagMap.isEmpty()) {
 			generateContents(PARAMETER_TYPE_TAG);
-		}
 		return tagMap;
 	}
 
