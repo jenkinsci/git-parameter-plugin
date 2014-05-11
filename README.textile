@@ -15,9 +15,10 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
-upcoming Version 0.3
+09/05/14 Version 0.3
 
-* With an empty workspace the tags are calculated after we made a checkout. This may take a long time. A better approach needs a new feature in the git-client-plugin, which is planned.
+* Runs a fetch each time the user enters the "Build with parameter".
+* With an empty workspace the tags are calculated after we made a checkout. This may take a long time. 
 * Added MIT-LICENSE.txt to use the same license as Jenkins-CI.
 * Added Contributors.textile
 * Display month not minutes in date. Add HH.mm. Display only first 8 chars of SHA1 (Niklaus Giger)
@@ -41,7 +42,7 @@ upcoming Version 0.3
 
 h2. TODO:
 
-* Add a new method listRemoteTags(URL) to git-client-plugin to use. Will speed up listing tags when workspace is empty and cloning takes a long time.
+* Add a new method listRemoteTags(URL) to git-client-plugin to use. Will speed up listing tags and avoids cloning/fetching the content.
 
 * Merge pending pull requests
 ** https://github.com/jenkinsci/git-parameter-plugin/pulls (4 pull request on May-03-2014)
