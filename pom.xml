@@ -8,21 +8,20 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-  <licenses>
-    <license>
-      <name>The MIT License (MIT)</name>
-      <url>http://opensource.org/licenses/MIT</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>The MIT License (MIT)</name>
+			<url>http://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<artifactId>git-parameter</artifactId>
+	<version>0.3</version>
 	<packaging>hpi</packaging>
-	<version>0.3-SNAPSHOT</version>
 	<name>Git Parameter Plug-In</name>
-	<url>https://github.com/jenkinsci/git-parameter-plugin</url>
-
-
+	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
+	<url>http://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin</url>
 
 	<build>
 		<pluginManagement>
@@ -54,30 +53,10 @@
 	</build>
 
 
-
-
-	<scm>
-		<connection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:jenkinsci/git-parameter-plugin.git</developerConnection>
-		<url>https://github.com/jenkinsci/git-parameter-plugin</url>
-	</scm>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
-	<developers>
-		<developer>
-			<id>ngiger</id>
-			<name>Niklaus Giger</name>
-			<email>niklaus.giger@member.fsf.org</email>
-		</developer>
-		<developer>
-			<id>lukanus</id>
-			<name>Łukasz Miłkowski</name>
-		</developer>
-	</developers>
-
 
 	<repositories>
 		<repository>
@@ -93,27 +72,23 @@
 		</repository>
 
 		<repository>
-			<id>maven.jenkins-ci.org.git</id>
-			<url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
-		</repository>
-
-		<repository>
-			<id>m.g.o-public</id>
-			<url>http://maven.glassfish.org/content/groups/public/</url>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
 		</repository>
 
 	</repositories>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>m.g.o-public</id>
-			<url>http://maven.glassfish.org/content/groups/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
+	<developers>
+		<developer>
+			<id>ngiger</id>
+			<name>Niklaus Giger</name>
+			<email>niklaus.giger@member.fsf.org</email>
+		</developer>
+		<developer>
+			<id>lukanus</id>
+			<name>Łukasz Miłkowski</name>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -145,6 +120,20 @@
 			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
 		</repository>
 	</distributionManagement>
+
+	<scm>
+		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<organization>
 		<name>Jenkins-CI</name>
