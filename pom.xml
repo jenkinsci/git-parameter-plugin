@@ -17,7 +17,7 @@
 	</licenses>
 
 	<artifactId>git-parameter</artifactId>
-	<version>0.3</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
