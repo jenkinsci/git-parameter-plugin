@@ -16,7 +16,7 @@
 	</licenses>
 
 	<artifactId>git-parameter</artifactId>
-	<version>0.3.2-SNAPSHOT</version>
+	<version>0.3.2</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
@@ -128,6 +128,7 @@
     <connection>scm:git:https://github.com/jenkinsci/git-parameter-plugin.git</connection>    
     <developerConnection>scm:git:https://github.com/jenkinsci/git-parameter-plugin.git</developerConnection>    
     <url>https://github.com/jenkinsci/git-parameter-plugin</url>
+    <tag>git-parameter-0.3.2</tag>
   </scm>
 
 	<pluginRepositories>
