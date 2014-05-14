@@ -16,7 +16,7 @@
 	</licenses>
 
 	<artifactId>git-parameter</artifactId>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.3.2-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
@@ -33,14 +33,18 @@
 			</plugins>
 		</pluginManagement>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<goals>deploy</goals>
-				</configuration>
-			</plugin>
-			<plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>${maven-release-plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>1.9</version>
+          </dependency>
+        </dependencies>
+        </plugin>
+      <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
