@@ -15,6 +15,8 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+14/05/14 Version 0.3.2 (Code is same 0.3, needed because mvn release:prepare release:perform did not work)
+14/05/14 Version 0.3.1 (Code is same 0.3, needed because mvn release:prepare release:perform did not work)
 09/05/14 Version 0.3
 
 * Runs a fetch each time the user enters the "Build with parameter".
@@ -50,6 +52,10 @@ h2. TODO:
 
 * Fix the pending issues from
 ** https://github.com/lukanus/git-parameter/issues (12 issues on May-03-2014)
+
+* Allow traductions by converting all html stuff to jelly
+* Add explanation when configuring the sort mode
+* Allow regular expressions when sorting.
 
 
 h2. Development history:
