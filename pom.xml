@@ -1,20 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.554.1</version><!--version of jenkins this plugin is built against? -->
-		<relativePath>../pom.xml</relativePath>
+		<!-- Baseline Jenkins version you use to build and test the plugin. Users 
+			must have this version or newer to run. -->
+		<version>1.554.1</version>
 	</parent>
 
-	<licenses>
-		<license>
-			<name>The MIT License (MIT)</name>
-			<url>http://opensource.org/licenses/MIT</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
+	<groupId>org.jenkins-ci.tools</groupId>
 	<artifactId>git-parameter</artifactId>
 	<version>0.3.3-SNAPSHOT</version>
 	<packaging>hpi</packaging>
@@ -22,63 +17,18 @@
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin</url>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>1.0-beta-1</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>${maven-release-plugin.version}</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.scm</groupId>
-            <artifactId>maven-scm-provider-gitexe</artifactId>
-            <version>1.9</version>
-          </dependency>
-        </dependencies>
-        </plugin>
-      <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
 
 	<repositories>
-		<repository>
-			<id>jgit-repository</id>
-			<name>Eclipse JGit Repository</name>
-			<url>http://download.eclipse.org/jgit/maven</url>
-		</repository>
-
-		<repository>
-			<id>guice-maven</id>
-			<name>guice maven</name>
-			<url>http://guice-maven.googlecode.com/svn/trunk</url>
-		</repository>
-
 		<repository>
 			<id>repo.jenkins-ci.org</id>
 			<url>http://repo.jenkins-ci.org/public/</url>
 		</repository>
-
 	</repositories>
 
 	<developers>
@@ -93,16 +43,23 @@
 		</developer>
 	</developers>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<dependencies>
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>credentials</artifactId>
+			<version>1.9.4</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
 			<version>2.2.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.spearce</groupId>
-			<artifactId>jgit</artifactId>
-			<version>0.4-47e4af3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.main</groupId>
@@ -117,29 +74,10 @@
 		</dependency>
 	</dependencies>
 
-	<distributionManagement>
-		<repository>
-			<id>maven.jenkins-ci.org</id>
-			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
-		</repository>
-	</distributionManagement>
+	<scm>
+		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+	</scm>
 
-  <scm>
-    <connection>scm:git:https://github.com/jenkinsci/git-parameter-plugin.git</connection>    
-    <developerConnection>scm:git:https://github.com/jenkinsci/git-parameter-plugin.git</developerConnection>    
-    <url>https://github.com/jenkinsci/git-parameter-plugin</url>
-    <tag>git-parameter-0.3.2</tag>
-  </scm>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
-
-	<organization>
-		<name>Jenkins-CI</name>
-		<url>http://jenkins-ci.org/</url>
-	</organization>
 </project>
