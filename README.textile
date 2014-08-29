@@ -15,6 +15,12 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+Upcoming 0.3.3
+
+* Minimized pom.xml as suggested by Jesse Glick
+* Removed LICENSE.txt as suggested by Jesse Glick
+
+
 14/05/14 Version 0.3.2 (Code is same 0.3, needed because mvn release:prepare release:perform did not work)
 14/05/14 Version 0.3.1 (Code is same 0.3, needed because mvn release:prepare release:perform did not work)
 09/05/14 Version 0.3
@@ -46,16 +52,14 @@ h2. TODO:
 
 * Add a new method listRemoteTags(URL) to git-client-plugin to use. Will speed up listing tags and avoids cloning/fetching the content.
 
-* Merge pending pull requests
-** https://github.com/jenkinsci/git-parameter-plugin/pulls (4 pull request on May-03-2014)
-** https://github.com/lukanus/git-parameter/pulls (3 pull request on May-03-2014)
-
 * Fix the pending issues from
-** https://github.com/lukanus/git-parameter/issues (12 issues on May-03-2014)
+** Even though the GIT SCM module has the ability to provide "credentials" (SSH key) for the repository, the git-parameter plugin doesn't seem to use them. "Issue lukanus":https://github.com/lukanus/git-parameter/issues/14
 
-* Allow traductions by converting all html stuff to jelly
+* Allow translations by converting all html stuff to jelly
 * Add explanation when configuring the sort mode
 * Allow regular expressions when sorting.
+
+* Better testing. How to we test the configuration dialog? How do we test whether correct tags are listed when a user triggers a build?
 
 
 h2. Development history:
