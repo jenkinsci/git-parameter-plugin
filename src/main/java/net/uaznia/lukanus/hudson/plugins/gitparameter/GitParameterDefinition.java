@@ -183,7 +183,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
-		List<AbstractProject> jobs = Hudson.getInstance().getItems(
+		List<AbstractProject> jobs = Hudson.getInstance().getAllItems(
 				AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
