@@ -5,6 +5,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import static org.mockito.Mockito.mock;
+
+import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import hudson.model.ParametersDefinitionProperty;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.SortMode;
 
@@ -23,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.MockFolder;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -324,5 +328,23 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         if(!result.isEmpty()) {
             fail();
         }*/
+    }
+
+    @Test
+    public void testSearchInFolders() throws Exception {
+      super.setUp();
+      MockFolder folder = jenkins.createProject(MockFolder.class, "folder");
+      FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
+
+      GitParameterDefinition gitParameterDefinition = new GitParameterDefinition("name",
+              "asdf",
+              "other",
+              "description",
+              "branch",
+              "*",
+              SortMode.NONE);
+      job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
+
+      assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
     }
 }
