@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jenkins.model.Jenkins;
+import hudson.util.ListBoxModel;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -43,7 +44,9 @@ import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class GitParameterDefinition extends ParameterDefinition implements
@@ -59,14 +62,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	private static final Logger LOGGER = Logger
 			.getLogger(GitParameterDefinition.class.getName());
 
-	@Extension
-	public static class DescriptorImpl extends ParameterDescriptor {
-		@Override
-		public String getDisplayName() {
-			return "Git Parameter";
-		}
-	}
-
 	private String type;
 	private String branch;
 	private String tagFilter;
@@ -74,10 +69,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	private String errorMessage;
 	private String defaultValue;
-
-	private Map<String, String> revisionMap;
-	private Map<String, String> tagMap;
-	private Map<String, String> branchMap;
 
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
@@ -254,22 +245,15 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				+ author;
 	}
 
-	public void generateContents(String contenttype) throws IOException,
-			InterruptedException {
+	public Map<String, String> generateContents(AbstractProject<?,?> project, GitSCM git)
+			throws IOException, InterruptedException {
 
-		AbstractProject<?, ?> project = getParentProject();
-
+		Map<String, String> paramList = new LinkedHashMap<String, String>();
+		// for (AbstractProject<?,?> project :
+		// Hudson.getInstance().getItems(AbstractProject.class)) {
 		if (project.getSomeWorkspace() == null) {
 			this.errorMessage = "noWorkspace";
 		}
-
-		SCM scm = project.getScm();
-
-		if (scm instanceof GitSCM) {
-			this.errorMessage = "notGit";
-		}
-
-		GitSCM git = (GitSCM) scm;
 
 		String defaultGitExe = File.separatorChar != '/' ? "git.exe" : "git";
 		hudson.plugins.git.GitTool.DescriptorImpl descriptor = (hudson.plugins.git.GitTool.DescriptorImpl) Hudson
@@ -292,7 +276,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 		for (RemoteConfig repository : git.getRepositories()) {
 			LOGGER.log(Level.INFO, "generateContents contenttype "
-					+ contenttype + " RemoteConfig " + repository.getURIs());
+					+ type + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
@@ -306,9 +290,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 										+ " for " + remoteURL);
 						wsDir.mkdirs();
 						if (!wsDir.exists()) {
-							LOGGER.log(Level.SEVERE,
-									"generateContents wsDir.mkdirs() failed ");
-							return;
+							LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
+							String errMsg = "!Failed To Create Workspace";
+							return Collections.singletonMap(errMsg, errMsg);
 						}
 						newgit.init();
 						newgit.clone(remoteURL.toASCIIString(), "origin",
@@ -319,13 +303,13 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					// probably our first build. We cannot yet fill in any
 					// values.
 					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
-					return;
+					String errMsg = "!No workspace. Please build the project at least once";
+					return Collections.singletonMap(errMsg, errMsg);
 				}
 				FetchCommand fetch = newgit.fetch_().from(remoteURL,
 						repository.getFetchRefSpecs());
 				fetch.execute();
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-					revisionMap = new LinkedHashMap<String, String>();
 
 					List<ObjectId> oid;
 
@@ -337,54 +321,29 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					for (ObjectId noid : oid) {
 						Revision r = new Revision(noid);
-						revisionMap.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
+						paramList.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
-				} else {
-                    if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                        // use a LinkedHashMap so that keys are ordered as inserted
-                        tagMap = new LinkedHashMap<String, String>();
+				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
 
-                        Set<String> tagSet = newgit.getTagNames(tagFilter);
-                        ArrayList<String> orderedTagNames;
+					Set<String> tagSet = newgit.getTagNames(tagFilter);
+					ArrayList<String> orderedTagNames;
 
-                        if (this.getSortMode().getIsSorting()) {
-                            orderedTagNames = sortByName(tagSet);
-                            if (this.getSortMode().getIsDescending())
-                                Collections.reverse(orderedTagNames);
-                        } else {
-                            orderedTagNames = new ArrayList<String>(tagSet);
-                        }
+					if (this.getSortMode().getIsSorting()) {
+						orderedTagNames = sortByName(tagSet);
+						if (this.getSortMode().getIsDescending())
+							Collections.reverse(orderedTagNames);
+					} else {
+						orderedTagNames = new ArrayList<String>(tagSet);
+					}
 
-                        for (String tagName : orderedTagNames) {
-                            tagMap.put("tags/" + tagName, tagName);
-                        }
-                    }
-                    if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                        branchMap = new LinkedHashMap<String, String>();
-
-                        Set<String> branchSet = new HashSet<String>();
-                        for (Branch branch : newgit.getRemoteBranches()) {
-                            branchSet.add(branch.getName());
-                        }
-
-                        List<String> orderedBranchNames;
-                        if (this.getSortMode().getIsSorting()) {
-                            orderedBranchNames = sortByName(branchSet);
-                            if (this.getSortMode().getIsDescending())
-                                Collections.reverse(orderedBranchNames);
-                        } else {
-                            orderedBranchNames = new ArrayList<String>(branchSet);
-                        }
-
-                        for (String branchName : orderedBranchNames) {
-                            branchMap.put(branchName, branchName);
-                        }
-                    }
-                }
-
+					for (String tagName : orderedTagNames) {
+						paramList.put(tagName, tagName);
+					}
+				}
 			}
 			break;
 		}
+		return paramList;
 	}
 
 	public ArrayList<String> sortByName(Set<String> set) {
@@ -403,24 +362,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public String getErrorMessage() {
 		return errorMessage;
 	}
-
-	public Map<String, String> getRevisionMap() throws IOException,
-			InterruptedException {
-		generateContents(PARAMETER_TYPE_REVISION);
-		return revisionMap;
-	}
-
-	public Map<String, String> getTagMap() throws IOException,
-			InterruptedException {
-		generateContents(PARAMETER_TYPE_TAG);
-		return tagMap;
-	}
-
-    public Map<String, String> getBranchMap() throws IOException,
-            InterruptedException {
-        generateContents(PARAMETER_TYPE_BRANCH);
-        return branchMap;
-    }
 
 	private static boolean isNullOrWhitespace(String s) {
 		return s == null || isWhitespace(s);
@@ -533,4 +474,56 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 
 	}
+
+	@Override
+	public DescriptorImpl getDescriptor() {
+		return (DescriptorImpl) super.getDescriptor();
+	}
+
+	@Extension
+	public static class DescriptorImpl extends ParameterDescriptor {
+		private GitSCM scm;
+
+		@Override
+		public String getDisplayName() {
+			return "Git Parameter";
+		}
+
+		public ListBoxModel doFillValueItems(@AncestorInPath AbstractProject<?,?> project,
+				@QueryParameter String param) throws IOException, InterruptedException {
+			ListBoxModel items = new ListBoxModel();
+
+			scm = getProjectSCM(project);
+			if (scm == null) {
+				items.add("!No Git repository configured in SCM configuration");
+				return items;
+			}
+
+			ParametersDefinitionProperty prop = project.getProperty(ParametersDefinitionProperty.class);
+			if (prop != null) {
+				ParameterDefinition def = prop.getParameterDefinition(param);
+				if (def instanceof GitParameterDefinition) {
+					GitParameterDefinition paramDef = (GitParameterDefinition) def;
+					Map<String, String> paramList = paramDef.generateContents(project, scm);
+					for (String value : paramList.values()) {
+						items.add(value);
+					}
+				}
+			}
+			return items;
+		}
+
+		public GitSCM getProjectSCM(AbstractProject<?,?> project) {
+			SCM projectScm = null;
+			if (project != null) {
+				projectScm = project.getScm();
+			}
+
+			if (projectScm instanceof GitSCM) {
+				return (GitSCM) projectScm;
+			}
+			return null;
+		}
+	}
+
 }
