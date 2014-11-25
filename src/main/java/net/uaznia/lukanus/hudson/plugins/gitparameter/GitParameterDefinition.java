@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -183,8 +184,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
-		List<AbstractProject> jobs = Hudson.getInstance().getItems(
-				AbstractProject.class);
+		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
 			ParametersDefinitionProperty property = project
@@ -255,15 +255,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 		AbstractProject<?, ?> project = getParentProject();
 
-		// for (AbstractProject<?,?> project :
-		// Hudson.getInstance().getItems(AbstractProject.class)) {
 		if (project.getSomeWorkspace() == null) {
 			this.errorMessage = "noWorkspace";
 		}
 
 		SCM scm = project.getScm();
 
-		// if (scm instanceof GitSCM); else continue;
 		if (scm instanceof GitSCM) {
 			this.errorMessage = "notGit";
 		}
