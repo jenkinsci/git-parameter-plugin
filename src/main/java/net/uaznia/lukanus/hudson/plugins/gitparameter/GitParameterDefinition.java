@@ -273,9 +273,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		GitTool[] installations = descriptor.getInstallations();
 		for (GitTool gt : installations) {
 			if (gt.getGitExe() != null) {
+				defaultGitExe = gt.getGitExe();
+				break;
 			}
-			defaultGitExe = gt.getGitExe();
-			break;
 		}
 
 		EnvVars environment = null;
