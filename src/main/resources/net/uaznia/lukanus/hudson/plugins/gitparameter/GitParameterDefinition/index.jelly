@@ -17,6 +17,16 @@
                         </j:forEach>  
                     </select>
             	</j:when>
+                <j:when test="${it.type eq 'PT_BRANCH'}">
+                    <input type="hidden" name="name" value="${it.name}" />
+                    <select name="value" size="5" width="200px">
+                        <j:forEach var="val" items="${it.branchMap}" >
+                            <j:choose>
+                                <option value="${val.key}">${val.value}</option>
+                            </j:choose>
+                        </j:forEach>
+                    </select>
+                </j:when>
             	<j:when test="${it.type eq 'PT_REVISION'}">
             	    <input type="hidden" name="name" value="${it.name}" />
                     <select name="value" size="5" width="200px">
