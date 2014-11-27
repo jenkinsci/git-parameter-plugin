@@ -53,6 +53,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public static final String PARAMETER_TYPE_TAG = "PT_TAG";
 	public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
 	public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
+	public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
 
 	private final UUID uuid;
 	private static final Logger LOGGER = Logger
@@ -145,7 +146,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setType(String type) {
-		if (type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION) || type.equals(PARAMETER_TYPE_BRANCH)) {
+		if (type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION) ||
+                type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)) {
 			this.type = type;
 		} else {
 			this.errorMessage = "wrongType";
@@ -337,44 +339,46 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						Revision r = new Revision(noid);
 						revisionMap.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
-				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
+				} else {
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        // use a LinkedHashMap so that keys are ordered as inserted
+                        tagMap = new LinkedHashMap<String, String>();
 
-					// use a LinkedHashMap so that keys are ordered as inserted
-					tagMap = new LinkedHashMap<String, String>();
+                        Set<String> tagSet = newgit.getTagNames(tagFilter);
+                        ArrayList<String> orderedTagNames;
 
-					Set<String> tagSet = newgit.getTagNames(tagFilter);
-					ArrayList<String> orderedTagNames;
+                        if (this.getSortMode().getIsSorting()) {
+                            orderedTagNames = sortByName(tagSet);
+                            if (this.getSortMode().getIsDescending())
+                                Collections.reverse(orderedTagNames);
+                        } else {
+                            orderedTagNames = new ArrayList<String>(tagSet);
+                        }
 
-					if (this.getSortMode().getIsSorting()) {
-						orderedTagNames = sortByName(tagSet);
-						if (this.getSortMode().getIsDescending())
-							Collections.reverse(orderedTagNames);
-					} else {
-						orderedTagNames = new ArrayList<String>(tagSet);
-					}
-
-					for (String tagName : orderedTagNames) {
-						tagMap.put(tagName, tagName);
-					}
-				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)) {
-                    branchMap = new LinkedHashMap<String, String>();
-
-                    Set<String> branchSet = new HashSet<String>();
-                    for (Branch branch : newgit.getRemoteBranches()) {
-                        branchSet.add(branch.getName());
+                        for (String tagName : orderedTagNames) {
+                            tagMap.put("tags/" + tagName, tagName);
+                        }
                     }
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        branchMap = new LinkedHashMap<String, String>();
 
-                    List<String> orderedBranchNames;
-                    if (this.getSortMode().getIsSorting()) {
-                        orderedBranchNames = sortByName(branchSet);
-                        if (this.getSortMode().getIsDescending())
-                            Collections.reverse(orderedBranchNames);
-                    } else {
-                        orderedBranchNames = new ArrayList<String>(branchSet);
-                    }
+                        Set<String> branchSet = new HashSet<String>();
+                        for (Branch branch : newgit.getRemoteBranches()) {
+                            branchSet.add(branch.getName());
+                        }
 
-                    for (String branchName : orderedBranchNames) {
-                        branchMap.put(branchName, branchName);
+                        List<String> orderedBranchNames;
+                        if (this.getSortMode().getIsSorting()) {
+                            orderedBranchNames = sortByName(branchSet);
+                            if (this.getSortMode().getIsDescending())
+                                Collections.reverse(orderedBranchNames);
+                        } else {
+                            orderedBranchNames = new ArrayList<String>(branchSet);
+                        }
+
+                        for (String branchName : orderedBranchNames) {
+                            branchMap.put(branchName, branchName);
+                        }
                     }
                 }
 

@@ -9,8 +9,8 @@
             <j:choose>
             	<j:when test="${it.type eq 'PT_TAG'}">
             	    <input type="hidden" name="name" value="${it.name}" />
-                    <select name="value" size="5" width="200px">
-            		<j:forEach var="val" items="${it.tagMap}" >
+                    <select name="value" size="5" width="400px">
+            		    <j:forEach var="val" items="${it.tagMap}" >
                             <j:choose>
                                 <option value="${val.key}">${val.value}</option>
                             </j:choose>
@@ -19,7 +19,7 @@
             	</j:when>
                 <j:when test="${it.type eq 'PT_BRANCH'}">
                     <input type="hidden" name="name" value="${it.name}" />
-                    <select name="value" size="5" width="200px">
+                    <select name="value" size="5" width="400px">
                         <j:forEach var="val" items="${it.branchMap}" >
                             <j:choose>
                                 <option value="${val.key}">${val.value}</option>
@@ -27,9 +27,29 @@
                         </j:forEach>
                     </select>
                 </j:when>
+                <j:when test="${it.type eq 'PT_BRANCH_TAG'}">
+                    <input type="hidden" name="name" value="${it.name}" />
+                    <select name="value" width="400px">
+                        <option value="" selected="selected">Select value</option>
+                        <optgroup label="Branch">
+                            <j:forEach var="val" items="${it.branchMap}" >
+                                <j:choose>
+                                    <option value="${val.key}">${val.value}</option>
+                                </j:choose>
+                            </j:forEach>
+                        </optgroup>
+                        <optgroup label="Tag">
+                            <j:forEach var="val" items="${it.tagMap}" >
+                                <j:choose>
+                                    <option value="${val.key}">${val.value}</option>
+                                </j:choose>
+                            </j:forEach>
+                        </optgroup>
+                    </select>
+                </j:when>
             	<j:when test="${it.type eq 'PT_REVISION'}">
             	    <input type="hidden" name="name" value="${it.name}" />
-                    <select name="value" size="5" width="200px">
+                    <select name="value" size="5" width="400px">
             		<j:forEach var="val" items="${it.revisionMap}" >
                             <j:choose>
                                 <option value="${val.key}">${val.value}</option>
