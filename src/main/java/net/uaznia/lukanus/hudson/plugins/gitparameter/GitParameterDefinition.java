@@ -18,15 +18,7 @@ import hudson.scm.SCM;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -255,13 +247,13 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 		AbstractProject<?, ?> project = getParentProject();
 
-		if (project.getSomeWorkspace() == null) {
+		if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION) && project.getSomeWorkspace() == null) {
 			this.errorMessage = "noWorkspace";
 		}
 
 		SCM scm = project.getScm();
 
-		if (scm instanceof GitSCM) {
+		if (!(scm instanceof GitSCM)) {
 			this.errorMessage = "notGit";
 		}
 
@@ -279,48 +271,51 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 
 		EnvVars environment = null;
-
 		try {
-			environment = project.getSomeBuildWithWorkspace().getEnvironment(
-					TaskListener.NULL);
+			environment = project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
 		} catch (Exception e) {
 		}
+
+		GitClient newgit = new Git(TaskListener.NULL, environment)
+				.using(defaultGitExe).in(project.getSomeWorkspace())
+				.getClient();
+
 
 		for (RemoteConfig repository : git.getRepositories()) {
 			LOGGER.log(Level.INFO, "generateContents contenttype "
 					+ contenttype + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
-				GitClient newgit = new Git(TaskListener.NULL, environment)
-						.using(defaultGitExe).in(project.getSomeWorkspace())
-						.getClient();
-				FilePath wsDir = null;
-				if (project.getSomeBuildWithWorkspace() != null) {
-					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
-					if (wsDir == null || !wsDir.exists()) {
-						LOGGER.log(Level.WARNING,
-								"generateContents create wsDir " + wsDir
-										+ " for " + remoteURL);
-						wsDir.mkdirs();
-						if (!wsDir.exists()) {
-							LOGGER.log(Level.SEVERE,
-									"generateContents wsDir.mkdirs() failed ");
-							return;
-						}
-						newgit.init();
-						newgit.clone(remoteURL.toASCIIString(), "origin",
-								false, null);
-						LOGGER.log(Level.INFO, "generateContents clone done");
-					}
-				} else {
-					// probably our first build. We cannot yet fill in any
-					// values.
-					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
-					return;
-				}
-				FetchCommand fetch = newgit.fetch_().from(remoteURL,
-						repository.getFetchRefSpecs());
-				fetch.execute();
+
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
+
+					FilePath wsDir = null;
+					if (project.getSomeBuildWithWorkspace() != null) {
+						wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
+						if (wsDir == null || !wsDir.exists()) {
+							LOGGER.log(Level.WARNING,
+									"generateContents create wsDir " + wsDir
+											+ " for " + remoteURL);
+							wsDir.mkdirs();
+							if (!wsDir.exists()) {
+								LOGGER.log(Level.SEVERE,
+										"generateContents wsDir.mkdirs() failed ");
+								return;
+							}
+							newgit.init();
+							newgit.clone(remoteURL.toASCIIString(), "origin",
+									false, null);
+							LOGGER.log(Level.INFO, "generateContents clone done");
+						}
+					} else {
+						// probably our first build. We cannot yet fill in any
+						// values.
+						LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
+						return;
+					}
+					FetchCommand fetch = newgit.fetch_().from(remoteURL,
+							repository.getFetchRefSpecs());
+					fetch.execute();
+
 					revisionMap = new LinkedHashMap<String, String>();
 
 					List<ObjectId> oid;
@@ -335,14 +330,21 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						Revision r = new Revision(noid);
 						revisionMap.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
+
 				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
 
-					// use a LinkedHashMap so that keys are ordered as inserted
+
+					Set<String> refs = // newgit.getTagNames(tagFilter);
+							newgit.getRemoteReferences(remoteURL.toPrivateString(), tagFilter, false, true).keySet();
+
+					Set<String> tagSet = new HashSet<String>();
+					for (String ref : refs) {
+						tagSet.add(ref.substring("refs/tags/".length()));
+					}
+
+							// use a LinkedHashMap so that keys are ordered as inserted
 					tagMap = new LinkedHashMap<String, String>();
-
-					Set<String> tagSet = newgit.getTagNames(tagFilter);
 					ArrayList<String> orderedTagNames;
-
 					if (this.getSortMode().getIsSorting()) {
 						orderedTagNames = sortTagNames(tagSet);
 						if (this.getSortMode().getIsDescending())
