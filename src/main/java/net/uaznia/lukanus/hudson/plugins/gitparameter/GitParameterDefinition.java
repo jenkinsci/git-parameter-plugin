@@ -137,8 +137,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setType(String type) {
-		if (type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION) ||
-                type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)) {
+		if (type.equals(PARAMETER_TYPE_TAG)
+				|| type.equals(PARAMETER_TYPE_REVISION)
+				|| type.equals(PARAMETER_TYPE_BRANCH)
+				|| type.equals(PARAMETER_TYPE_TAG_BRANCH)) {
 			this.type = type;
 		} else {
 			this.errorMessage = "wrongType";
@@ -179,7 +181,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
-		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
+		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(
+				AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
 			ParametersDefinitionProperty property = project
@@ -207,7 +210,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		return context;
 	}
 
-	@Override
 	public int compareTo(GitParameterDefinition pd) {
 		if (pd.uuid.equals(uuid)) {
 			return 0;
@@ -245,8 +247,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				+ author;
 	}
 
-	public Map<String, String> generateContents(AbstractProject<?,?> project, GitSCM git)
-			throws IOException, InterruptedException {
+	public Map<String, String> generateContents(AbstractProject<?, ?> project,
+			GitSCM git) throws IOException, InterruptedException {
 
 		Map<String, String> paramList = new LinkedHashMap<String, String>();
 		// for (AbstractProject<?,?> project :
@@ -275,8 +277,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 
 		for (RemoteConfig repository : git.getRepositories()) {
-			LOGGER.log(Level.INFO, "generateContents contenttype "
-					+ type + " RemoteConfig " + repository.getURIs());
+			LOGGER.log(Level.INFO, "generateContents contenttype " + type
+					+ " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
 				GitClient newgit = new Git(TaskListener.NULL, environment)
 						.using(defaultGitExe).in(project.getSomeWorkspace())
@@ -290,7 +292,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 										+ " for " + remoteURL);
 						wsDir.mkdirs();
 						if (!wsDir.exists()) {
-							LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
+							LOGGER.log(Level.SEVERE,
+									"generateContents wsDir.mkdirs() failed.");
 							String errMsg = "!Failed To Create Workspace";
 							return Collections.singletonMap(errMsg, errMsg);
 						}
@@ -310,7 +313,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						repository.getFetchRefSpecs());
 				fetch.execute();
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-
 					List<ObjectId> oid;
 
 					if (this.branch != null && !this.branch.isEmpty()) {
@@ -321,9 +323,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					for (ObjectId noid : oid) {
 						Revision r = new Revision(noid);
-						paramList.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
+						paramList.put(r.getSha1String(),
+								prettyRevisionInfo(newgit, r));
 					}
-				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
+				}
+				if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)
+						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 
 					Set<String> tagSet = newgit.getTagNames(tagFilter);
 					ArrayList<String> orderedTagNames;
@@ -338,6 +343,27 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					for (String tagName : orderedTagNames) {
 						paramList.put(tagName, tagName);
+					}
+				}
+				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
+						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+
+					Set<String> branchSet = new HashSet<String>();
+					for (Branch branch : newgit.getRemoteBranches()) {
+						paramList.put(branch.getName(), branch.getName());
+					}
+
+					List<String> orderedBranchNames;
+					if (this.getSortMode().getIsSorting()) {
+						orderedBranchNames = sortByName(branchSet);
+						if (this.getSortMode().getIsDescending())
+							Collections.reverse(orderedBranchNames);
+					} else {
+						orderedBranchNames = new ArrayList<String>(branchSet);
+					}
+
+					for (String branchName : orderedBranchNames) {
+						paramList.put(branchName, branchName);
 					}
 				}
 			}
@@ -489,8 +515,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			return "Git Parameter";
 		}
 
-		public ListBoxModel doFillValueItems(@AncestorInPath AbstractProject<?,?> project,
-				@QueryParameter String param) throws IOException, InterruptedException {
+		public ListBoxModel doFillValueItems(
+				@AncestorInPath AbstractProject<?, ?> project,
+				@QueryParameter String param) throws IOException,
+				InterruptedException {
 			ListBoxModel items = new ListBoxModel();
 
 			scm = getProjectSCM(project);
@@ -499,21 +527,24 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				return items;
 			}
 
-			ParametersDefinitionProperty prop = project.getProperty(ParametersDefinitionProperty.class);
+			ParametersDefinitionProperty prop = project
+					.getProperty(ParametersDefinitionProperty.class);
 			if (prop != null) {
 				ParameterDefinition def = prop.getParameterDefinition(param);
 				if (def instanceof GitParameterDefinition) {
 					GitParameterDefinition paramDef = (GitParameterDefinition) def;
-					Map<String, String> paramList = paramDef.generateContents(project, scm);
-					for (String value : paramList.values()) {
-						items.add(value);
+					Map<String, String> paramList = paramDef.generateContents(
+							project, scm);
+
+					for (Map.Entry<String, String> entry : paramList.entrySet()) {
+						items.add(entry.getValue(), entry.getKey());
 					}
 				}
 			}
 			return items;
 		}
 
-		public GitSCM getProjectSCM(AbstractProject<?,?> project) {
+		public GitSCM getProjectSCM(AbstractProject<?, ?> project) {
 			SCM projectScm = null;
 			if (project != null) {
 				projectScm = project.getScm();
