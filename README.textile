@@ -15,8 +15,11 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
-Upcoming 0.3.3
+01/16/2015 Version 0.4.0
 
+* Possibility to select branch, tag or branch (Alban Dericbourg)
+* Keep complex logics in jelly as less as possible (Yestin Sun)
+* support folders (Nicolas De Loof)
 * Minimized pom.xml as suggested by Jesse Glick
 * Removed LICENSE.txt as suggested by Jesse Glick
 
