@@ -9,6 +9,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public static final String PARAMETER_TYPE_TAG = "PT_TAG";
 	public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
+	public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
+	public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
 
 	private final UUID uuid;
 	private static final Logger LOGGER = Logger
@@ -73,6 +77,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	private Map<String, String> revisionMap;
 	private Map<String, String> tagMap;
+	private Map<String, String> branchMap;
 
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
@@ -141,12 +146,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setType(String type) {
-		if (type.equals(PARAMETER_TYPE_TAG)
-				|| type.equals(PARAMETER_TYPE_REVISION)) {
+		if (type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION) ||
+                type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)) {
 			this.type = type;
 		} else {
 			this.errorMessage = "wrongType";
-
 		}
 	}
 
@@ -335,35 +339,57 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						Revision r = new Revision(noid);
 						revisionMap.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
-				} else if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)) {
+				} else {
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        // use a LinkedHashMap so that keys are ordered as inserted
+                        tagMap = new LinkedHashMap<String, String>();
 
-					// use a LinkedHashMap so that keys are ordered as inserted
-					tagMap = new LinkedHashMap<String, String>();
+                        Set<String> tagSet = newgit.getTagNames(tagFilter);
+                        ArrayList<String> orderedTagNames;
 
-					Set<String> tagSet = newgit.getTagNames(tagFilter);
-					ArrayList<String> orderedTagNames;
+                        if (this.getSortMode().getIsSorting()) {
+                            orderedTagNames = sortByName(tagSet);
+                            if (this.getSortMode().getIsDescending())
+                                Collections.reverse(orderedTagNames);
+                        } else {
+                            orderedTagNames = new ArrayList<String>(tagSet);
+                        }
 
-					if (this.getSortMode().getIsSorting()) {
-						orderedTagNames = sortTagNames(tagSet);
-						if (this.getSortMode().getIsDescending())
-							Collections.reverse(orderedTagNames);
-					} else {
-						orderedTagNames = new ArrayList<String>(tagSet);
-					}
+                        for (String tagName : orderedTagNames) {
+                            tagMap.put("tags/" + tagName, tagName);
+                        }
+                    }
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        branchMap = new LinkedHashMap<String, String>();
 
-					for (String tagName : orderedTagNames) {
-						tagMap.put(tagName, tagName);
-					}
-				}
+                        Set<String> branchSet = new HashSet<String>();
+                        for (Branch branch : newgit.getRemoteBranches()) {
+                            branchSet.add(branch.getName());
+                        }
+
+                        List<String> orderedBranchNames;
+                        if (this.getSortMode().getIsSorting()) {
+                            orderedBranchNames = sortByName(branchSet);
+                            if (this.getSortMode().getIsDescending())
+                                Collections.reverse(orderedBranchNames);
+                        } else {
+                            orderedBranchNames = new ArrayList<String>(branchSet);
+                        }
+
+                        for (String branchName : orderedBranchNames) {
+                            branchMap.put(branchName, branchName);
+                        }
+                    }
+                }
 
 			}
 			break;
 		}
 	}
 
-	public ArrayList<String> sortTagNames(Set<String> tagSet) {
+	public ArrayList<String> sortByName(Set<String> set) {
 
-		ArrayList<String> tags = new ArrayList<String>(tagSet);
+		ArrayList<String> tags = new ArrayList<String>(set);
 
 		if (!this.getSortMode().getIsUsingSmartSort()) {
 			Collections.sort(tags);
@@ -389,6 +415,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		generateContents(PARAMETER_TYPE_TAG);
 		return tagMap;
 	}
+
+    public Map<String, String> getBranchMap() throws IOException,
+            InterruptedException {
+        generateContents(PARAMETER_TYPE_BRANCH);
+        return branchMap;
+    }
 
 	private static boolean isNullOrWhitespace(String s) {
 		return s == null || isWhitespace(s);

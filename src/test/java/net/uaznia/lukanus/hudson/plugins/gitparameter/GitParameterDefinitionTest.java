@@ -119,7 +119,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     	tags.add("v_1.0.0.0");
     	tags.add("v_1.0.0.10");
     	
-    	ArrayList<String> orderedTags = instance.sortTagNames(tags);
+    	ArrayList<String> orderedTags = instance.sortByName(tags);
     	
     	assertEquals("v_1.0.0.0", orderedTags.get(0));
     	assertEquals("v_1.0.0.2", orderedTags.get(1));
@@ -138,7 +138,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     	tags.add("v_1.0.0.0");
     	tags.add("v_1.0.0.10");
     	
-    	ArrayList<String> orderedTags = instance.sortTagNames(tags);
+    	ArrayList<String> orderedTags = instance.sortByName(tags);
     	
     	assertEquals("v_1.0.0.0", orderedTags.get(0));
     	assertEquals("v_1.0.0.10", orderedTags.get(1));
