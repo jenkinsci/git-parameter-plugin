@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.MockFolder;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -400,6 +401,24 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
         super.tearDown();
     }
+
+    @Test
+    public void testSearchInFolders() throws Exception {
+        super.setUp();
+        MockFolder folder = jenkins.createProject(MockFolder.class, "folder");
+        FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
+
+        GitParameterDefinition gitParameterDefinition = new GitParameterDefinition("name",
+                "asdf",
+                "other",
+                "description",
+                "branch",
+                "*",
+                SortMode.NONE);
+        job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
+        assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
+    }
+    
 
     private boolean isListBoxItem(ListBoxModel items, String item) {
         boolean itemExists = false;
