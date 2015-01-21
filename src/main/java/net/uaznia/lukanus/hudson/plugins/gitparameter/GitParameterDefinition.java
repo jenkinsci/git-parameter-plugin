@@ -3,12 +3,7 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.ParameterValue;
-import hudson.model.TaskListener;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParametersDefinitionProperty;
+import hudson.model.*;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
@@ -186,10 +181,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
-		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(
-				AbstractProject.class);
+		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
+			if (!(project instanceof TopLevelItem)) continue;
+			
 			ParametersDefinitionProperty property = project
 					.getProperty(ParametersDefinitionProperty.class);
 
