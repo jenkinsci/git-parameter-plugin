@@ -417,6 +417,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
                 SortMode.NONE);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
         assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
+        super.tearDown();
     }
     
 
