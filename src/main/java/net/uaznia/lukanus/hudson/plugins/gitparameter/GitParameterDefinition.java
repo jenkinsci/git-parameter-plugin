@@ -8,12 +8,9 @@ import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.GitTool;
 import hudson.scm.SCM;
-import hudson.security.ACL;
 import hudson.util.ListBoxModel;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,16 +35,11 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
-import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
-import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 
 public class GitParameterDefinition extends ParameterDefinition implements
 		Comparable<GitParameterDefinition> {
@@ -258,17 +250,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			this.errorMessage = "noWorkspace";
 		}
 
-		String defaultGitExe = File.separatorChar != '/' ? "git.exe" : "git";
-		hudson.plugins.git.GitTool.DescriptorImpl descriptor = (hudson.plugins.git.GitTool.DescriptorImpl) Hudson
-				.getInstance().getDescriptor(GitTool.class);
-		GitTool[] installations = descriptor.getInstallations();
-		for (GitTool gt : installations) {
-			if (gt.getGitExe() != null) {
-				defaultGitExe = gt.getGitExe();
-				break;
-			}
-		}
-
 		EnvVars environment = null;
 
 		try {
@@ -281,13 +262,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			LOGGER.log(Level.INFO, "generateContents contenttype " + type
 					+ " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
-				GitClient newgit = new Git(TaskListener.NULL, environment)
-						.using(defaultGitExe).in(project.getSomeWorkspace())
-						.getClient();
-				List<StandardUsernameCredentials> credentials = CredentialsProvider
-						.lookupCredentials(StandardUsernameCredentials.class,
-								project, ACL.SYSTEM, URIRequirementBuilder
-										.fromUri(remoteURL.toString()).build());
+				GitClient newgit = git.createClient(TaskListener.NULL, environment, new Run(project) {}, project.getSomeWorkspace());
 				FilePath wsDir = null;
 				if (project.getSomeBuildWithWorkspace() != null) {
 					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
@@ -313,10 +288,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
 					String errMsg = "!No workspace. Please build the project at least once";
 					return Collections.singletonMap(errMsg, errMsg);
-				}
-				for (StandardUsernameCredentials aCredential : credentials) {
-					newgit.setCredentials(aCredential);
-					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace setCredentials "+ aCredential.getDescription());
 				}
 
 				FetchCommand fetch = newgit.fetch_().from(remoteURL,
