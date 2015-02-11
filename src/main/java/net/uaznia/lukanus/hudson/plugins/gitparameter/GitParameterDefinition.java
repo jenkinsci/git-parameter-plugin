@@ -3,12 +3,19 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.*;
+import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.model.AbstractProject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Run;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
@@ -25,6 +32,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -57,6 +66,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	private String type;
 	private String branch;
 	private String tagFilter;
+	private String branchfilter;
+	
 	private SortMode sortMode;
 
 	private String errorMessage;
@@ -65,18 +76,24 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
 			String defaultValue, String description, String branch,
-			String tagFilter, SortMode sortMode) {
+			String branchfilter, String tagFilter, SortMode sortMode) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.branch = branch;
 		this.uuid = UUID.randomUUID();
 		this.sortMode = sortMode;
-
+		
 		if (isNullOrWhitespace(tagFilter)) {
 			this.tagFilter = "*";
 		} else {
 			this.tagFilter = tagFilter;
+		}
+		
+		if (isNullOrWhitespace(branchfilter)) {
+			this.branchfilter = "*";
+		} else {
+			this.branchfilter = branchfilter;
 		}
 	}
 
@@ -169,6 +186,31 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
+	}
+	
+	public String getBranchfilter() {
+		return branchfilter;
+	}
+
+	public void setBranchfilter(String branchfilter) {
+		// Accept "*" as a wilcard
+		if (!"*".equals(branchfilter)) {
+			try {
+				Pattern.compile(branchfilter);
+			} catch (PatternSyntaxException e) {
+				throw new RuntimeException("Not valid branch filter input. It must be a valid regular expression.", e);
+			}
+		}
+		this.branchfilter = branchfilter;
+	}
+	
+	public FormValidation doCheckBranchfilter(@QueryParameter String value) {
+		try {
+			Pattern.compile(value); // Validate we've got a valid regex.
+		} catch (PatternSyntaxException e) {
+			return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
+		}
+		return FormValidation.ok();
 	}
 
 	public AbstractProject<?, ?> getParentProject() {
@@ -331,7 +373,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					Set<String> branchSet = new HashSet<String>();
 					for (Branch branch : newgit.getRemoteBranches()) {
-						paramList.put(branch.getName(), branch.getName());
+						// It'd be nice if we could filter on remote branches via the GitClient,
+						// but that's not an option.
+						final String branchName = branch.getName();
+						if ("*".equals(branchfilter) || branchName.matches(branchfilter)) {
+							branchSet.add(branchName);
+						}
 					}
 
 					List<String> orderedBranchNames;
