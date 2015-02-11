@@ -45,6 +45,7 @@ import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
 import org.jenkinsci.plugins.gitclient.GitClient;
+import org.jfree.util.Log;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -90,11 +91,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			this.tagFilter = tagFilter;
 		}
 		
-		if (isNullOrWhitespace(branchfilter)) {
-			this.branchfilter = "*";
-		} else {
-			this.branchfilter = branchfilter;
-		}
+		setBranchfilter(branchfilter);
 	}
 
 	@Override
@@ -193,26 +190,20 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setBranchfilter(String branchfilter) {
+		if (isNullOrWhitespace(branchfilter)) {
+			branchfilter = "*";			
+		}
 		// Accept "*" as a wilcard
 		if (!"*".equals(branchfilter)) {
 			try {
 				Pattern.compile(branchfilter);
 			} catch (PatternSyntaxException e) {
-				throw new RuntimeException("Not valid branch filter input. It must be a valid regular expression.", e);
+				LOGGER.log(Level.FINE, "Specified branchfilter is not a valid regex. Setting to '*'", e);
 			}
 		}
 		this.branchfilter = branchfilter;
 	}
 	
-	public FormValidation doCheckBranchfilter(@QueryParameter String value) {
-		try {
-			Pattern.compile(value); // Validate we've got a valid regex.
-		} catch (PatternSyntaxException e) {
-			return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
-		}
-		return FormValidation.ok();
-	}
-
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
 		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
@@ -332,9 +323,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					return Collections.singletonMap(errMsg, errMsg);
 				}
 
+				long time = -System.currentTimeMillis();
 				FetchCommand fetch = newgit.fetch_().from(remoteURL,
 						repository.getFetchRefSpecs());
 				fetch.execute();
+				LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					List<ObjectId> oid;
 
@@ -370,17 +363,20 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
 						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-
+					time = -System.currentTimeMillis();
 					Set<String> branchSet = new HashSet<String>();
+					final boolean wildcard = "*".equals(branchfilter);
 					for (Branch branch : newgit.getRemoteBranches()) {
 						// It'd be nice if we could filter on remote branches via the GitClient,
 						// but that's not an option.
 						final String branchName = branch.getName();
-						if ("*".equals(branchfilter) || branchName.matches(branchfilter)) {
+						if (wildcard || branchName.matches(branchfilter)) {
 							branchSet.add(branchName);
 						}
 					}
-
+					LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch branches");
+					
+					time = -System.currentTimeMillis();
 					List<String> orderedBranchNames;
 					if (this.getSortMode().getIsSorting()) {
 						orderedBranchNames = sortByName(branchSet);
@@ -393,6 +389,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					for (String branchName : orderedBranchNames) {
 						paramList.put(branchName, branchName);
 					}
+					LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to sort and add to param list.");
 				}
 			}
 			break;
@@ -582,6 +579,16 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return null;
 		}
-	}
-
+		
+		public FormValidation doCheckBranchfilter(@QueryParameter String value) {
+			if (!"*".equals(value)) {
+				try {
+					Pattern.compile(value); // Validate we've got a valid regex.
+				} catch (PatternSyntaxException e) {
+					return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
+				}
+			}
+			return FormValidation.ok();
+		}
+	}	
 }
