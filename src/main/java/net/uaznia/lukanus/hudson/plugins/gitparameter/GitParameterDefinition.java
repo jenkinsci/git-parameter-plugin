@@ -3,12 +3,18 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.*;
-import hudson.plugins.git.Branch;
+import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.model.AbstractProject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Run;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
@@ -17,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +30,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import jenkins.model.Jenkins;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -49,6 +57,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
 	public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
 	public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
+	public static final String REMOTE_ORIGIN = "origin";
 
 	private final UUID uuid;
 	private static final Logger LOGGER = Logger
@@ -56,7 +65,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	private String type;
 	private String branch;
-	private String tagFilter;
+	private String filter;
+	
 	private SortMode sortMode;
 
 	private String errorMessage;
@@ -65,19 +75,15 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
 			String defaultValue, String description, String branch,
-			String tagFilter, SortMode sortMode) {
+			String filter, SortMode sortMode) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.branch = branch;
 		this.uuid = UUID.randomUUID();
 		this.sortMode = sortMode;
-
-		if (isNullOrWhitespace(tagFilter)) {
-			this.tagFilter = "*";
-		} else {
-			this.tagFilter = tagFilter;
-		}
+		
+		setFilter(filter);
 	}
 
 	@Override
@@ -155,12 +161,16 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		this.sortMode = sortMode;
 	}
 
-	public String getTagFilter() {
-		return this.tagFilter;
+	public String getFilter() {
+		return this.filter;
 	}
 
-	public void setTagFilter(String tagFilter) {
-		this.tagFilter = tagFilter;
+	public void setFilter(String filter) {
+		filter = validateFilter(filter);
+		if (isNullOrWhitespace(filter)) {
+			filter = "*";			
+		}
+		this.filter = filter;
 	}
 
 	public String getDefaultValue() {
@@ -170,7 +180,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 	}
-
+	
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
 		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
@@ -278,7 +288,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 							return Collections.singletonMap(errMsg, errMsg);
 						}
 						newgit.init();
-						newgit.clone(remoteURL.toASCIIString(), "origin",
+						newgit.clone(remoteURL.toASCIIString(), REMOTE_ORIGIN,
 								false, null);
 						LOGGER.log(Level.INFO, "generateContents clone done");
 					}
@@ -290,10 +300,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					return Collections.singletonMap(errMsg, errMsg);
 				}
 
-				FetchCommand fetch = newgit.fetch_().from(remoteURL,
-						repository.getFetchRefSpecs());
-				fetch.execute();
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
+					// If we use the GitClient#getRemoteReferences function, we don't
+					// need to do a fetch to get tags or branches.
+					FetchCommand fetch = newgit.fetch_().from(remoteURL,
+							repository.getFetchRefSpecs());
+					fetch.execute();
 					List<ObjectId> oid;
 
 					if (this.branch != null && !this.branch.isEmpty()) {
@@ -309,42 +321,35 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					}
 				}
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)
+						|| type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
 						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-
-					Set<String> tagSet = newgit.getTagNames(tagFilter);
-					ArrayList<String> orderedTagNames;
-
+					// We can't rely on the filter paramter, so it's null. 
+					// Different implementations support different filters. At least one only glob, at least one both.
+					// We'll filter things out ourselves below.
+					final Set<String> refSet = 
+							newgit.getRemoteReferences(
+									newgit.getRemoteUrl(REMOTE_ORIGIN), 
+									null, 
+									type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH), 
+									type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)).keySet();
+					
+					final ArrayList<String> orderedRefNames;
 					if (this.getSortMode().getIsSorting()) {
-						orderedTagNames = sortByName(tagSet);
+						orderedRefNames = sortByName(refSet);
 						if (this.getSortMode().getIsDescending())
-							Collections.reverse(orderedTagNames);
+							Collections.reverse(orderedRefNames);
 					} else {
-						orderedTagNames = new ArrayList<String>(tagSet);
+						orderedRefNames = new ArrayList<String>(refSet);
 					}
 
-					for (String tagName : orderedTagNames) {
-						paramList.put(tagName, tagName);
-					}
-				}
-				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
-						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-
-					Set<String> branchSet = new HashSet<String>();
-					for (Branch branch : newgit.getRemoteBranches()) {
-						paramList.put(branch.getName(), branch.getName());
-					}
-
-					List<String> orderedBranchNames;
-					if (this.getSortMode().getIsSorting()) {
-						orderedBranchNames = sortByName(branchSet);
-						if (this.getSortMode().getIsDescending())
-							Collections.reverse(orderedBranchNames);
-					} else {
-						orderedBranchNames = new ArrayList<String>(branchSet);
-					}
-
-					for (String branchName : orderedBranchNames) {
-						paramList.put(branchName, branchName);
+					boolean isWildcard = filter == null || "*".equals(filter);
+					for (String refName : orderedRefNames) {
+						if (isWildcard || refName.matches(filter)) {
+							if (refName.startsWith("refs/heads/")) {
+								refName = refName.substring("refs/heads/".length());
+							}
+							paramList.put(refName, refName);
+						}
 					}
 				}
 			}
@@ -535,6 +540,66 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return null;
 		}
+		
+		public FormValidation doCheckFilter(@QueryParameter String value) {
+			return validateFilter(value) != null ? FormValidation.ok() : FormValidation.error("The pattern '" + value + "' is not valid.");
+		}
+	}	
+	
+	/**
+	 * Take a glob or regex filter string and return a regex, if valid.
+	 * @param value the filter to test
+	 * @return A valid regex, or null if invalid.
+	 */
+	private static String validateFilter(String value) {
+		if (isNullOrWhitespace(value)) {
+			return null;
+		}
+		try {
+			Pattern.compile(value); // Validate we've got a valid regex.
+		} catch (PatternSyntaxException e) {
+			try {
+				value = createRefRegexFromGlob(value);
+				Pattern.compile(value);
+			} catch (PatternSyntaxException e2) {
+				return null;
+			}
+		}
+		return value;
 	}
+	
+	/* Taken wholesale from org.jenkinsci.plugins.gitclient.JGitAPIImpl. Might make sense to have this in some common component? */
+	/* Adapted from http://stackoverflow.com/questions/1247772/is-there-an-equivalent-of-java-util-regex-for-glob-type-patterns */
+    private static String createRefRegexFromGlob(String glob)
+    {
+        StringBuilder out = new StringBuilder();
+        if(glob.startsWith("refs/")) {
+            out.append("^");
+        } else {
+            out.append("^.*/");
+        }
 
+        for (int i = 0; i < glob.length(); ++i) {
+            final char c = glob.charAt(i);
+            switch(c) {
+            case '*':
+                out.append(".*");
+                break;
+            case '?':
+                out.append('.');
+                break;
+            case '.':
+                out.append("\\.");
+                break;
+            case '\\':
+                out.append("\\\\");
+                break;
+            default:
+                out.append(c);
+                break;
+            }
+        }
+        out.append('$');
+        return out.toString();
+    }
 }

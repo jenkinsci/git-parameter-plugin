@@ -6,9 +6,6 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import static org.mockito.Mockito.mock;
 
-import hudson.model.FreeStyleProject;
-import hudson.model.ParameterValue;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,12 +16,18 @@ import java.util.Map;
 import java.util.Set;
 
 import hudson.model.FreeStyleBuild;
+import hudson.model.ParameterValue;
+import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.tasks.Shell;
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
+
 import net.sf.json.JSONObject;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.SortMode;
 
 import org.junit.After;
@@ -72,7 +75,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     public void testCreateValue_StaplerRequest() {
         System.out.println("createValue");
               
-        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch", "*",GitParameterDefinition.SortMode.NONE);
+        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","*",GitParameterDefinition.SortMode.NONE);
         
         StaplerRequest request = mock(StaplerRequest.class);
         ParameterValue result = instance.createValue(request);
@@ -83,25 +86,25 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,GitParameterDefinition.SortMode.NONE);
-    	assertEquals("*", instance.getTagFilter());
+    	assertEquals("*", instance.getFilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","  ",GitParameterDefinition.SortMode.NONE);
-    	assertEquals("*", instance.getTagFilter());
+    	assertEquals("*", instance.getFilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","",GitParameterDefinition.SortMode.NONE);
-    	assertEquals("*", instance.getTagFilter());
+    	assertEquals("*", instance.getFilter());
     }
     
     @Test
     public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","foobar",GitParameterDefinition.SortMode.NONE);
-    	assertEquals("foobar", instance.getTagFilter());
+    	assertEquals("foobar", instance.getFilter());
     }
    
     
@@ -375,6 +378,57 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
         super.tearDown();
     }
+    
+    // Test Descriptor.doFillValueItmes() with listing branches
+    @Test
+    public void testDoFillValueItems_listBranches() throws Exception {
+        super.setUp();
+        project = jenkins.createProject(FreeStyleProject.class, "testListTags");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                "PT_BRANCH",
+                "testDefaultValue",
+                "testDescription",
+                "testBranch",
+                "*",
+                SortMode.NONE);
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        // Run the build once to get the workspace
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "master"));
+
+        super.tearDown();
+    }
+    
+    // Test Descriptor.doFillValueItmes() with listing tags and branches
+    @Test
+    public void testDoFillValueItems_listTagsAndBranches() throws Exception {
+        super.setUp();
+        project = jenkins.createProject(FreeStyleProject.class, "testListTags");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                "PT_BRANCH_TAG",
+                "testDefaultValue",
+                "testDescription",
+                "testBranch",
+                "*",
+                SortMode.NONE);
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        // Run the build once to get the workspace
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "master"));
+        assertTrue(isListBoxItem(items, "git-parameter-0.2"));
+
+        super.tearDown();
+    }
 
     // Test Descriptor.doFillValueItems() with listing revisions
     @Test
@@ -418,6 +472,18 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
         assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
         super.tearDown();
+    }
+    
+    @Test
+    public void testBranchFilterValidation() {
+    	final DescriptorImpl descriptor = new DescriptorImpl();
+    	final FormValidation okPsuedoWildcard = descriptor.doCheckFilter("*");
+    	final FormValidation okWildcard = descriptor.doCheckFilter(".*");
+    	final FormValidation badWildcard = descriptor.doCheckFilter("(.*");
+    	
+    	assertTrue(okPsuedoWildcard.kind == Kind.OK);
+    	assertTrue(okWildcard.kind == Kind.OK);
+    	assertTrue(badWildcard.kind == Kind.ERROR);
     }
     
 
