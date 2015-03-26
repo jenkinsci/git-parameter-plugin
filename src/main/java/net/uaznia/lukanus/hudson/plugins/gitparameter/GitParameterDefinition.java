@@ -2,34 +2,20 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.AbstractProject;
-import hudson.model.ParameterDefinition;
+import hudson.FilePath;
 import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
+import hudson.model.AbstractProject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Run;
 import hudson.plugins.git.GitException;
-import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
+import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import jenkins.model.Jenkins;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
-import org.jenkinsci.plugins.gitclient.FetchCommand;
-import org.jenkinsci.plugins.gitclient.GitClient;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -46,6 +32,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import jenkins.model.Jenkins;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.plugins.gitclient.FetchCommand;
+import org.jenkinsci.plugins.gitclient.GitClient;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 public class GitParameterDefinition extends ParameterDefinition implements
 		Comparable<GitParameterDefinition> {
@@ -64,7 +66,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	private String type;
 	private String branch;
 	private String filter;
-
+	
 	private SortMode sortMode;
 
 	private String errorMessage;
@@ -80,7 +82,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		this.branch = branch;
 		this.uuid = UUID.randomUUID();
 		this.sortMode = sortMode;
-
+		
 		setFilter(filter);
 	}
 
@@ -178,14 +180,14 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 	}
-
+	
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
 		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
 
 		for (AbstractProject<?, ?> project : jobs) {
 			if (!(project instanceof TopLevelItem)) continue;
-
+			
 			ParametersDefinitionProperty property = project
 					.getProperty(ParametersDefinitionProperty.class);
 
@@ -252,8 +254,13 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			GitSCM git) throws IOException, InterruptedException {
 
 		Map<String, String> paramList = new LinkedHashMap<String, String>();
+		// for (AbstractProject<?,?> project :
+		// Hudson.getInstance().getItems(AbstractProject.class)) {
+		if (project.getSomeWorkspace() == null) {
+			this.errorMessage = "noWorkspace";
+		}
 
-		EnvVars environment = project.getEnvironment(null, TaskListener.NULL);
+		EnvVars environment = null;
 
 		try {
 			environment = project.getSomeBuildWithWorkspace().getEnvironment(
@@ -265,7 +272,33 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			LOGGER.log(Level.INFO, "generateContents contenttype " + type
 					+ " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
-				GitClient newgit = git.createClient(TaskListener.NULL, environment, new Run(project) {}, null);
+				GitClient newgit = git.createClient(TaskListener.NULL, environment, new Run(project) {}, project.getSomeWorkspace());
+				FilePath wsDir = null;
+				if (project.getSomeBuildWithWorkspace() != null) {
+					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
+					if (wsDir == null || !wsDir.exists()) {
+						LOGGER.log(Level.WARNING,
+								"generateContents create wsDir " + wsDir
+										+ " for " + remoteURL);
+						wsDir.mkdirs();
+						if (!wsDir.exists()) {
+							LOGGER.log(Level.SEVERE,
+									"generateContents wsDir.mkdirs() failed.");
+							String errMsg = "!Failed To Create Workspace";
+							return Collections.singletonMap(errMsg, errMsg);
+						}
+						newgit.init();
+						newgit.clone(remoteURL.toASCIIString(), REMOTE_ORIGIN,
+								false, null);
+						LOGGER.log(Level.INFO, "generateContents clone done");
+					}
+				} else {
+					// probably our first build. We cannot yet fill in any
+					// values.
+					LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
+					String errMsg = "!No workspace. Please build the project at least once";
+					return Collections.singletonMap(errMsg, errMsg);
+				}
 
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					// If we use the GitClient#getRemoteReferences function, we don't
@@ -295,11 +328,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					// We'll filter things out ourselves below.
 					final Set<String> refSet =
 							newgit.getRemoteReferences(
-									remoteURL.toString(),
+									newgit.getRemoteUrl(REMOTE_ORIGIN),
 									null,
 									type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH),
 									type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)).keySet();
-
+					
 					final ArrayList<String> orderedRefNames;
 					if (this.getSortMode().getIsSorting()) {
 						orderedRefNames = sortByName(refSet);
@@ -314,8 +347,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						if (isWildcard || refName.matches(filter)) {
 							if (refName.startsWith("refs/heads/")) {
 								refName = refName.substring("refs/heads/".length());
-							} else if (refName.startsWith("refs/tags/")) {
-								refName = refName.substring("refs/tags/".length());
 							}
 							paramList.put(refName, refName);
 						}
@@ -386,7 +417,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		 * Gets the token starting at the given index. It will return the first
 		 * char if it is not a digit, otherwise it will return all consecutive
 		 * digits starting at index.
-		 *
+		 * 
 		 * @param str
 		 *            The string to extract token from
 		 * @param index
@@ -509,11 +540,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return null;
 		}
-
+		
 		public FormValidation doCheckFilter(@QueryParameter String value) {
 			return validateFilter(value) != null ? FormValidation.ok() : FormValidation.error("The pattern '" + value + "' is not valid.");
 		}
-	}
+	}	
 
 	/**
 	 * Take a glob or regex filter string and return a regex, if valid.
@@ -522,7 +553,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	 */
 	private static String validateFilter(String value) {
 		if (isNullOrWhitespace(value)) {
-			return createRefRegexFromGlob("*");
+			return null;
 		}
 		try {
 			Pattern.compile(value); // Validate we've got a valid regex.
