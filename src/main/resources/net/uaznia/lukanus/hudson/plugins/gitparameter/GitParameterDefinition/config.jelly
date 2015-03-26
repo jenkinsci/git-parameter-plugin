@@ -46,7 +46,11 @@
     <f:textbox />
   </f:entry>
   
-  <f:entry title="Filter" field="filter">
+  <f:entry title="Branch filter" field="branchfilter">
+    <f:textbox />
+  </f:entry>
+  
+  <f:entry title="Tag filter" field="tagFilter">
     <f:textbox />
   </f:entry>
   
