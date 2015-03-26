@@ -5,7 +5,7 @@
 		<artifactId>plugin</artifactId>
 		<!-- Baseline Jenkins version you use to build and test the plugin. Users 
 			must have this version or newer to run. -->
-		<version>1.554.1</version>
+		<version>1.580.2</version>
 	</parent>
 
 	<groupId>org.jenkins-ci.tools</groupId>
