@@ -3,12 +3,19 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.*;
+import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.model.AbstractProject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Run;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
@@ -25,6 +32,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -57,6 +66,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	private String type;
 	private String branch;
 	private String tagFilter;
+	private String branchfilter;
+	
 	private SortMode sortMode;
 
 	private String errorMessage;
@@ -65,19 +76,21 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
 			String defaultValue, String description, String branch,
-			String tagFilter, SortMode sortMode) {
+			String branchfilter, String tagFilter, SortMode sortMode) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.branch = branch;
 		this.uuid = UUID.randomUUID();
 		this.sortMode = sortMode;
-
+		
 		if (isNullOrWhitespace(tagFilter)) {
 			this.tagFilter = "*";
 		} else {
 			this.tagFilter = tagFilter;
 		}
+		
+		setBranchfilter(branchfilter);
 	}
 
 	@Override
@@ -170,7 +183,26 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 	}
+	
+	public String getBranchfilter() {
+		return branchfilter;
+	}
 
+	public void setBranchfilter(String branchfilter) {
+		if (isNullOrWhitespace(branchfilter)) {
+			branchfilter = "*";			
+		}
+		// Accept "*" as a wilcard
+		if (!"*".equals(branchfilter)) {
+			try {
+				Pattern.compile(branchfilter);
+			} catch (PatternSyntaxException e) {
+				LOGGER.log(Level.FINE, "Specified branchfilter is not a valid regex. Setting to '*'", e);
+			}
+		}
+		this.branchfilter = branchfilter;
+	}
+	
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
 		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
@@ -290,9 +322,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					return Collections.singletonMap(errMsg, errMsg);
 				}
 
+				long time = -System.currentTimeMillis();
 				FetchCommand fetch = newgit.fetch_().from(remoteURL,
 						repository.getFetchRefSpecs());
 				fetch.execute();
+				LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					List<ObjectId> oid;
 
@@ -328,12 +362,20 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
 						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-
+					time = -System.currentTimeMillis();
 					Set<String> branchSet = new HashSet<String>();
+					final boolean wildcard = "*".equals(branchfilter);
 					for (Branch branch : newgit.getRemoteBranches()) {
-						paramList.put(branch.getName(), branch.getName());
+						// It'd be nice if we could filter on remote branches via the GitClient,
+						// but that's not an option.
+						final String branchName = branch.getName();
+						if (wildcard || branchName.matches(branchfilter)) {
+							branchSet.add(branchName);
+						}
 					}
-
+					LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch branches");
+					
+					time = -System.currentTimeMillis();
 					List<String> orderedBranchNames;
 					if (this.getSortMode().getIsSorting()) {
 						orderedBranchNames = sortByName(branchSet);
@@ -346,6 +388,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 					for (String branchName : orderedBranchNames) {
 						paramList.put(branchName, branchName);
 					}
+					LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to sort and add to param list.");
 				}
 			}
 			break;
@@ -535,6 +578,16 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return null;
 		}
-	}
-
+		
+		public FormValidation doCheckBranchfilter(@QueryParameter String value) {
+			if (!"*".equals(value)) {
+				try {
+					Pattern.compile(value); // Validate we've got a valid regex.
+				} catch (PatternSyntaxException e) {
+					return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
+				}
+			}
+			return FormValidation.ok();
+		}
+	}	
 }
