@@ -190,7 +190,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public void setBranchfilter(String branchfilter) {
 		if (isNullOrWhitespace(branchfilter)) {
-			branchfilter = "*";			
+			branchfilter = "*";
 		}
 		// Accept "*" as a wilcard
 		if (!"*".equals(branchfilter)) {
