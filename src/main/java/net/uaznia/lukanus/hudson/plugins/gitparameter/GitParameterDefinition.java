@@ -323,7 +323,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 
 				long time = -System.currentTimeMillis();
-				FetchCommand fetch = newgit.fetch_().from(remoteURL,
+				FetchCommand fetch = newgit.fetch_().prune().from(remoteURL,
 						repository.getFetchRefSpecs());
 				fetch.execute();
 				LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
