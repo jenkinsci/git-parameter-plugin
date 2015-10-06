@@ -190,7 +190,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public void setBranchfilter(String branchfilter) {
 		if (isNullOrWhitespace(branchfilter)) {
-			branchfilter = "*";			
+			branchfilter = "*";
 		}
 		// Accept "*" as a wilcard
 		if (!"*".equals(branchfilter)) {
@@ -323,7 +323,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 
 				long time = -System.currentTimeMillis();
-				FetchCommand fetch = newgit.fetch_().from(remoteURL,
+				FetchCommand fetch = newgit.fetch_().prune().from(remoteURL,
 						repository.getFetchRefSpecs());
 				fetch.execute();
 				LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
@@ -364,6 +364,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 					time = -System.currentTimeMillis();
 					Set<String> branchSet = new HashSet<String>();
+					String branchfilter = this.branchfilter;
+					if (branchfilter == null) {
+						branchfilter = "*";
+					}
 					final boolean wildcard = "*".equals(branchfilter);
 					for (Branch branch : newgit.getRemoteBranches()) {
 						// It'd be nice if we could filter on remote branches via the GitClient,
@@ -502,19 +506,24 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			while (aIndex < a.length() && bIndex < b.length()) {
 				String aToken = getToken(a, aIndex);
 				String bToken = getToken(b, bIndex);
-				int difference;
+				long difference;
 
 				if (stringContainsInteger(aToken)
 						&& stringContainsInteger(bToken)) {
-					int aInt = Integer.parseInt(aToken);
-					int bInt = Integer.parseInt(bToken);
-					difference = aInt - bInt;
+					long aLong = Long.parseLong(aToken);
+					long bLong = Long.parseLong(bToken);
+					difference = aLong - bLong;
 				} else {
 					difference = aToken.compareTo(bToken);
 				}
 
-				if (difference != 0)
-					return difference;
+				if (difference != 0) {
+				    if (difference > 0) {
+					return 1;
+				    } else {
+					return -1;
+				    }
+				}
 
 				aIndex += aToken.length();
 				bIndex += bToken.length();
