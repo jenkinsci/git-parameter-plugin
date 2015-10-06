@@ -190,7 +190,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	public void setBranchfilter(String branchfilter) {
 		if (isNullOrWhitespace(branchfilter)) {
-			branchfilter = "*";			
+			branchfilter = "*";
 		}
 		// Accept "*" as a wilcard
 		if (!"*".equals(branchfilter)) {
@@ -364,6 +364,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 					time = -System.currentTimeMillis();
 					Set<String> branchSet = new HashSet<String>();
+					String branchfilter = this.branchfilter;
+					if (branchfilter == null) {
+						branchfilter = "*";
+					}
 					final boolean wildcard = "*".equals(branchfilter);
 					for (Branch branch : newgit.getRemoteBranches()) {
 						// It'd be nice if we could filter on remote branches via the GitClient,
