@@ -60,12 +60,13 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     }
     
     @Before
-    public void setUp() {
-        
+    public void setUp() throws Exception {
+       super.setUp();
     }
     
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+       super.tearDown();
     }
 
     /**
@@ -320,7 +321,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     // Test Descriptor.getProjectSCM()
     @Test
     public void testGetProjectSCM() throws Exception {
-        super.setUp();
         FreeStyleProject testJob = jenkins.createProject(FreeStyleProject.class, "testGetProjectSCM");
         GitSCM git = new GitSCM(repositoryUrl);
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -336,13 +336,11 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
         testJob.setScm(git);
         assertTrue(git.equals(def.getDescriptor().getProjectSCM(testJob)));
-        super.tearDown();
     }
 
     // Test Descriptor.doFillValueItems() with no SCM configured
     @Test
     public void testDoFillValueItems_withoutSCM() throws Exception {
-        super.setUp();
         FreeStyleProject project = jenkins.createProject(FreeStyleProject.class, "testListTags");
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 "PT_TAG",
@@ -357,13 +355,11 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "No Git repository configured in SCM configuration"));
 
-        super.tearDown();
     }
 
     // Test Descriptor.doFillValueItems() with listing tags
     @Test
     public void testDoFillValueItems_listTags() throws Exception {
-        super.setUp();
         project = jenkins.createProject(FreeStyleProject.class, "testListTags");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
@@ -383,13 +379,11 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
 
-        super.tearDown();
     }
     
     // Test Descriptor.doFillValueItmes() with listing branches
     @Test
     public void testDoFillValueItems_listBranches() throws Exception {
-        super.setUp();
         project = jenkins.createProject(FreeStyleProject.class, "testListTags");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
@@ -409,13 +403,12 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
 
-        super.tearDown();
+
     }
     
     // Test Descriptor.doFillValueItmes() with listing tags and branches
     @Test
     public void testDoFillValueItems_listTagsAndBranches() throws Exception {
-        super.setUp();
         project = jenkins.createProject(FreeStyleProject.class, "testListTags");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
@@ -436,13 +429,11 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         assertTrue(isListBoxItem(items, "master"));
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
 
-        super.tearDown();
     }
 
     // Test Descriptor.doFillValueItems() with listing revisions
     @Test
     public void testDoFillValueItems_listRevisions() throws Exception {
-        super.setUp();
         project = jenkins.createProject(FreeStyleProject.class, "testListRevisions");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
@@ -463,12 +454,10 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385c"));
 
-        super.tearDown();
     }
 
     @Test
     public void testSearchInFolders() throws Exception {
-        super.setUp();
         MockFolder folder = jenkins.createProject(MockFolder.class, "folder");
         FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
 
@@ -482,7 +471,6 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
                 SortMode.NONE);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
         assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
-        super.tearDown();
     }
     
     @Test
