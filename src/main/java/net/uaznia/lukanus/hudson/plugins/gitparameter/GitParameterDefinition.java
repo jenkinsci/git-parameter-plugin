@@ -298,7 +298,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				FilePath wsDir = null;
 				if (project.getSomeBuildWithWorkspace() != null) {
 					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
-					if (wsDir == null || !wsDir.exists()) {
+					if (wsDir == null || !wsDir.exists() || wsDir.list().isEmpty()) {
 						LOGGER.log(Level.WARNING,
 								"generateContents create wsDir " + wsDir
 										+ " for " + remoteURL);
