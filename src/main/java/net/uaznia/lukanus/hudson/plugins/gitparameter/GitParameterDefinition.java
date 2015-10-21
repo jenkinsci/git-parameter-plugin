@@ -370,7 +370,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						// but that's not an option.
 						final String branchName = branch.getName();
 						if (wildcard || branchName.matches(branchfilter)) {
-							branchSet.add(branchName);
+                     		branchSet.add(branchName.replace("origin/", ""));
 						}
 					}
 					LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch branches");
