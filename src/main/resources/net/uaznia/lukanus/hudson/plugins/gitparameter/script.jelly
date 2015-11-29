@@ -1,0 +1,3 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <script src="${it.packageUrl}/javascript/git-parameter.js" type="text/javascript" />
+</j:jelly>
