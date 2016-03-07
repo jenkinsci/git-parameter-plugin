@@ -19,6 +19,7 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -506,9 +507,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 				if (stringContainsInteger(aToken)
 						&& stringContainsInteger(bToken)) {
-					int aInt = Integer.parseInt(aToken);
-					int bInt = Integer.parseInt(bToken);
-					difference = aInt - bInt;
+					BigInteger aInt = new BigInteger(aToken);
+					BigInteger bInt = new BigInteger(bToken);
+					difference = aInt.compareTo(bInt);
 				} else {
 					difference = aToken.compareTo(bToken);
 				}
@@ -520,7 +521,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				bIndex += bToken.length();
 			}
 
-			return new Integer(a.length()).compareTo(new Integer(b.length()));
+			return Integer.valueOf(a.length()).compareTo(Integer.valueOf(b.length()));
 		}
 
 	}
