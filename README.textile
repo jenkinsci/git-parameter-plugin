@@ -70,3 +70,5 @@ h2. Development history:
 This plugin was offered to the community by lukanus (Łukasz Miłkowski <lukanus@uaznia.net>) end of 2011. He was active till February 2012.
 
 In May 2014 ngiger (Niklaus Giger niklaus.giger) decided to maintain this plugin and bring in the various improvements made by others.
+
+March 2016 klimas7 (Boguslaw Klimas) he began to the care and maintenance of the plugin.. We will see ... :)

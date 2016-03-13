@@ -32,6 +32,11 @@
 
 	<developers>
 		<developer>
+			<id>klimas7</id>
+			<name>Boguslaw Klimas</name>
+			<email>klimas7@gmail.com</email>
+		</developer>
+		<developer>
 			<id>ngiger</id>
 			<name>Niklaus Giger</name>
 			<email>niklaus.giger@member.fsf.org</email>

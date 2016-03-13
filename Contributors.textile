@@ -8,3 +8,4 @@ The following people have contributed to this Jenkins-CI plugin
 * Yestin Sun<sunyi0804@gmail.com>
 * Alban Dericbourg <alban@dericbourg.net>
 * Nicolas De Loof <nicolas.deloof@gmail.com>
+* Bogusław Klimas <klimas7@gmail.com>
