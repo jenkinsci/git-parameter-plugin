@@ -50,6 +50,14 @@ var GitParameter = GitParameter || (function($) {
         return this.originalOptions;
     }
 
+    QuickFilter.prototype.setSelectedFirst = function() {
+        var _self = this;
+        var filteredElement = _self.getSelectElement();
+        if (jQuery(filteredElement).get(0).length > 0) {
+            jQuery(filteredElement).get(0).options[0].selected = true;
+        }
+    }
+
     QuickFilter.prototype.initEventHandler = function() {
         var _self = this;
 
@@ -59,6 +67,9 @@ var GitParameter = GitParameter || (function($) {
             for (var i = 0; i < options.length; ++i) {
                 _self.getOriginalOptions().push(options[i]);
             }
+
+            _self.setSelectedFirst();
+
             jQuery(_self.getFilterElement()).prop("disabled",false);
             console.log("Quick Filter handler filled event." );
         });
@@ -87,9 +98,7 @@ var GitParameter = GitParameter || (function($) {
                 jQuery(filteredElement).append(opt);
             }
 
-            if (jQuery(filteredElement).get(0).length > 0) {
-                jQuery(filteredElement).get(0).options[0].selected = true;
-            }
+            _self.setSelectedFirst();
 
             // Propagate the changes made by the filter
             console.log('Propagating change event after filtering');

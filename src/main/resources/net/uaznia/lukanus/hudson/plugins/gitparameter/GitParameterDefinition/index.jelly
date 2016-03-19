@@ -11,19 +11,18 @@
             </j:if>
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
-            <select name="value" class="select" size="5" width="200px" id="select"
+            <select name="value" class="select" size="5" style="min-width: 200px" id="select"
                     fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}">
                 <option value="">${%Retrieving Git references…}</option>
             </select>
             <j:if test="${it.quickFilterEnabled}">
                 <input class='git_parameter_quick_filter' type='text' value='' name='quickFilter' placeholder='Filter'
                        style="vertical-align: top" id="filter"/>
-
-                <script type="text/javascript">
-                        var parentDiv = jQuery('#${divId}');
-                        new GitParameter.QuickFilter(parentDiv.find('.select').get(0),parentDiv.find('.git_parameter_quick_filter').get(0));
-                </script>
             </j:if>
+            <script type="text/javascript">
+                var parentDiv = jQuery('#${divId}');
+                new GitParameter.QuickFilter(parentDiv.find('.select').get(0),parentDiv.find('.git_parameter_quick_filter').get(0));
+            </script>
         </div>
         <div>You must have built the project at least once, to get entries in the list above.</div>
         <div>If you wipe out your workspace, the plugin needs to clone the repository before it can list the
