@@ -73,18 +73,20 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 	private String errorMessage;
 	private String defaultValue;
+	private Boolean quickFilterEnabled;
 
 	@DataBoundConstructor
 	public GitParameterDefinition(String name, String type,
 			String defaultValue, String description, String branch,
-			String branchfilter, String tagFilter, SortMode sortMode) {
+			String branchfilter, String tagFilter, SortMode sortMode, Boolean quickFilterEnabled) {
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.branch = branch;
 		this.uuid = UUID.randomUUID();
 		this.sortMode = sortMode;
-		
+		this.quickFilterEnabled = quickFilterEnabled;
+
 		if (isNullOrWhitespace(tagFilter)) {
 			this.tagFilter = "*";
 		} else {
@@ -203,7 +205,11 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		}
 		this.branchfilter = branchfilter;
 	}
-	
+
+	public Boolean getQuickFilterEnabled() {
+		return quickFilterEnabled;
+	}
+
 	public AbstractProject<?, ?> getParentProject() {
 		AbstractProject<?, ?> context = null;
 		List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
@@ -427,6 +433,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 		}
 		return true;
+	}
+
+	public String getDivUUID() {
+		StringBuilder randomSelectName = new StringBuilder();
+		randomSelectName.append(getName()).append("-").append(uuid);
+		return  randomSelectName.toString();
 	}
 
 	enum SortMode {
