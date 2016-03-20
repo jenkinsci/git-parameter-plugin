@@ -333,7 +333,12 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 				}
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 
-					Set<String> tagSet = newgit.getTagNames(tagFilter);
+					Set<String> tagSet;
+					if (tagFilter == null || "*".equals(tagFilter)) {
+						tagSet = newgit.getTagNames(null);
+					} else {
+						tagSet = newgit.getTagNames(tagFilter);
+					}
 					ArrayList<String> orderedTagNames;
 
 					if (this.getSortMode().getIsSorting()) {
