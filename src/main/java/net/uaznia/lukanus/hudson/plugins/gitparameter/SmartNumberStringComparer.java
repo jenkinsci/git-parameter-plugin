@@ -13,10 +13,8 @@ class SmartNumberStringComparer implements Comparator<String> {
      * char if it is not a digit, otherwise it will return all consecutive
      * digits starting at index.
      *
-     * @param str
-     *            The string to extract token from
-     * @param index
-     *            The start location
+     * @param str   The string to extract token from
+     * @param index The start location
      */
     private String getToken(String str, int index) {
         char nextChar = str.charAt(index++);
