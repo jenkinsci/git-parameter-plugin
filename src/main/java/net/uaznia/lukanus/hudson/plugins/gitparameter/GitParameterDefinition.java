@@ -19,11 +19,9 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -51,8 +49,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class GitParameterDefinition extends ParameterDefinition implements
-		Comparable<GitParameterDefinition> {
+public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
 	private static final long serialVersionUID = 9157832967140868122L;
 
 	public static final String PARAMETER_TYPE_TAG = "PT_TAG";
@@ -61,8 +58,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
 
 	private final UUID uuid;
-	private static final Logger LOGGER = Logger
-			.getLogger(GitParameterDefinition.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
 	private String type;
 	private String branch;
@@ -76,9 +72,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	private Boolean quickFilterEnabled;
 
 	@DataBoundConstructor
-	public GitParameterDefinition(String name, String type,
-			String defaultValue, String description, String branch,
-			String branchfilter, String tagFilter, SortMode sortMode, Boolean quickFilterEnabled) {
+	public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
+			String branchFilter, String tagFilter, SortMode sortMode, Boolean quickFilterEnabled) {
+
 		super(name, description);
 		this.type = type;
 		this.defaultValue = defaultValue;
@@ -87,13 +83,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		this.sortMode = sortMode;
 		this.quickFilterEnabled = quickFilterEnabled;
 
-		if (isNullOrWhitespace(tagFilter)) {
-			this.tagFilter = "*";
-		} else {
-			this.tagFilter = tagFilter;
-		}
-		
-		setBranchfilter(branchfilter);
+		setTagFilter(tagFilter);
+		setBranchfilter(branchFilter);
 	}
 
 	@Override
@@ -125,8 +116,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			strValue = defaultValue;
 		}
 
-		GitParameterValue gitParameterValue = new GitParameterValue(
-				jO.getString("name"), strValue);
+		GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue);
 		return gitParameterValue;
 	}
 
@@ -145,14 +135,16 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setType(String type) {
-		if (type.equals(PARAMETER_TYPE_TAG)
-				|| type.equals(PARAMETER_TYPE_REVISION)
-				|| type.equals(PARAMETER_TYPE_BRANCH)
-				|| type.equals(PARAMETER_TYPE_TAG_BRANCH)) {
+		if (isParameterTypeCorrect(type)) {
 			this.type = type;
 		} else {
 			this.errorMessage = "wrongType";
 		}
+	}
+
+	private boolean isParameterTypeCorrect(String type) {
+		return type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION)
+				|| type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH);
 	}
 
 	public String getBranch() {
@@ -176,6 +168,9 @@ public class GitParameterDefinition extends ParameterDefinition implements
 	}
 
 	public void setTagFilter(String tagFilter) {
+		if (isNullOrWhitespace(tagFilter)) {
+			tagFilter = "*";
+		}
 		this.tagFilter = tagFilter;
 	}
 
@@ -191,19 +186,19 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		return branchfilter;
 	}
 
-	public void setBranchfilter(String branchfilter) {
-		if (isNullOrWhitespace(branchfilter)) {
-			branchfilter = "*";			
+	public void setBranchfilter(String branchFilter) {
+		if (isNullOrWhitespace(branchFilter)) {
+			branchFilter = "*";
 		}
 		// Accept "*" as a wilcard
-		if (!"*".equals(branchfilter)) {
+		if (!"*".equals(branchFilter)) {
 			try {
-				Pattern.compile(branchfilter);
+				Pattern.compile(branchFilter);
 			} catch (PatternSyntaxException e) {
-				LOGGER.log(Level.FINE, "Specified branchfilter is not a valid regex. Setting to '*'", e);
+				LOGGER.log(Level.FINE, "Specified branchFilter is not a valid regex. Setting to '*'", e);
 			}
 		}
-		this.branchfilter = branchfilter;
+		this.branchfilter = branchFilter;
 	}
 
 	public Boolean getQuickFilterEnabled() {
@@ -217,20 +212,14 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		for (AbstractProject<?, ?> project : jobs) {
 			if (!(project instanceof TopLevelItem)) continue;
 			
-			ParametersDefinitionProperty property = project
-					.getProperty(ParametersDefinitionProperty.class);
+			ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
 
 			if (property != null) {
-				List<ParameterDefinition> parameterDefinitions = property
-						.getParameterDefinitions();
+				List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
 
 				if (parameterDefinitions != null) {
 					for (ParameterDefinition pd : parameterDefinitions) {
-
-						if (pd instanceof GitParameterDefinition
-								&& ((GitParameterDefinition) pd)
-										.compareTo(this) == 0) {
-
+						if (pd instanceof GitParameterDefinition && ((GitParameterDefinition) pd).compareTo(this) == 0) {
 							context = project;
 							break;
 						}
@@ -255,14 +244,14 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		try {
 			test3 = newgit.showRevision(r.getSha1());
 		} catch (GitException e1) {
+			LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
 			return "";
 		} catch (InterruptedException e1) {
+			LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
 			return "";
 		}
 		String[] authorDate = test3.get(3).split(">");
-		String author = authorDate[0].replaceFirst("author ", "").replaceFirst(
-				"committer ", "")
-				+ ">";
+		String author = authorDate[0].replaceFirst("author ", "").replaceFirst("committer ", "") + ">";
 		String goodDate = null;
 		try {
 			String totmp = authorDate[1].trim().split("\\+")[0].trim();
@@ -273,14 +262,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			goodDate = new SimpleDateFormat("yyyy:MM:dd HH:mm").format(date);
 
 		} catch (Exception e) {
-			e.toString();
+			LOGGER.log(Level.SEVERE, "Unexpected error ", e);
 		}
-		return r.getSha1String().substring(0, 8) + " " + goodDate + " "
-				+ author;
+		return r.getSha1String().substring(0, 8) + " " + goodDate + " " + author;
 	}
 
-	public Map<String, String> generateContents(AbstractProject<?, ?> project,
-			GitSCM git) throws IOException, InterruptedException {
+	public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) throws IOException, InterruptedException {
 
 		Map<String, String> paramList = new LinkedHashMap<String, String>();
 		// for (AbstractProject<?,?> project :
@@ -292,33 +279,28 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		EnvVars environment = null;
 
 		try {
-			environment = project.getSomeBuildWithWorkspace().getEnvironment(
-					TaskListener.NULL);
+			environment = project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
 		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, "Unexpected error ", e);
 		}
 
 		for (RemoteConfig repository : git.getRepositories()) {
-			LOGGER.log(Level.INFO, "generateContents contenttype " + type
-					+ " RemoteConfig " + repository.getURIs());
+			LOGGER.log(Level.INFO, "generateContents contenttype " + type + " RemoteConfig " + repository.getURIs());
 			for (URIish remoteURL : repository.getURIs()) {
 				GitClient newgit = git.createClient(TaskListener.NULL, environment, new Run(project) {}, project.getSomeWorkspace());
 				FilePath wsDir = null;
 				if (project.getSomeBuildWithWorkspace() != null) {
 					wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
 					if (wsDir == null || !wsDir.exists()) {
-						LOGGER.log(Level.WARNING,
-								"generateContents create wsDir " + wsDir
-										+ " for " + remoteURL);
+						LOGGER.log(Level.WARNING, "generateContents create wsDir " + wsDir + " for " + remoteURL);
 						wsDir.mkdirs();
 						if (!wsDir.exists()) {
-							LOGGER.log(Level.SEVERE,
-									"generateContents wsDir.mkdirs() failed.");
+							LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
 							String errMsg = "!Failed To Create Workspace";
 							return Collections.singletonMap(errMsg, errMsg);
 						}
 						newgit.init();
-						newgit.clone(remoteURL.toASCIIString(), "origin",
-								false, null);
+						newgit.clone(remoteURL.toASCIIString(), "origin", false, null);
 						LOGGER.log(Level.INFO, "generateContents clone done");
 					}
 				} else {
@@ -330,9 +312,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				}
 
 				long time = -System.currentTimeMillis();
-				FetchCommand fetch = newgit.fetch_().from(remoteURL,
-						repository.getFetchRefSpecs());
+
+				FetchCommand fetch = newgit.fetch_().from(remoteURL,repository.getFetchRefSpecs());
 				fetch.execute();
+
 				LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
 				if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
 					List<ObjectId> oid;
@@ -345,12 +328,10 @@ public class GitParameterDefinition extends ParameterDefinition implements
 
 					for (ObjectId noid : oid) {
 						Revision r = new Revision(noid);
-						paramList.put(r.getSha1String(),
-								prettyRevisionInfo(newgit, r));
+						paramList.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
 					}
 				}
-				if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG)
-						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+				if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 
 					Set<String> tagSet = newgit.getTagNames(tagFilter);
 					ArrayList<String> orderedTagNames;
@@ -367,8 +348,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 						paramList.put(tagName, tagName);
 					}
 				}
-				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH)
-						|| type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+				if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 					time = -System.currentTimeMillis();
 					Set<String> branchSet = new HashSet<String>();
 					final boolean wildcard = "*".equals(branchfilter);
@@ -441,103 +421,6 @@ public class GitParameterDefinition extends ParameterDefinition implements
 		return  randomSelectName.toString();
 	}
 
-	enum SortMode {
-		NONE, ASCENDING_SMART, DESCENDING_SMART, ASCENDING, DESCENDING;
-
-		public boolean getIsUsingSmartSort() {
-			return this == SortMode.ASCENDING_SMART
-					|| this == SortMode.DESCENDING_SMART;
-		}
-
-		public boolean getIsDescending() {
-			return this == SortMode.DESCENDING
-					|| this == SortMode.DESCENDING_SMART;
-		}
-
-		public boolean getIsSorting() {
-			return this != SortMode.NONE;
-		}
-	}
-
-	/**
-	 * Compares strings but treats a sequence of digits as a single character.
-	 */
-	static class SmartNumberStringComparer implements Comparator<String> {
-
-		/**
-		 * Gets the token starting at the given index. It will return the first
-		 * char if it is not a digit, otherwise it will return all consecutive
-		 * digits starting at index.
-		 * 
-		 * @param str
-		 *            The string to extract token from
-		 * @param index
-		 *            The start location
-		 */
-		private String getToken(String str, int index) {
-			char nextChar = str.charAt(index++);
-			String token = String.valueOf(nextChar);
-
-			// if the first char wasn't a digit then we're already done
-			if (!Character.isDigit(nextChar))
-				return token;
-
-			// the first char was a digit so continue until end of string or non
-			// digit
-			while (index < str.length()) {
-				nextChar = str.charAt(index++);
-
-				if (!Character.isDigit(nextChar))
-					break;
-
-				token += nextChar;
-			}
-
-			return token;
-		}
-
-		/**
-		 * True if the string only contains digits
-		 */
-		private boolean stringContainsInteger(String str) {
-			for (int charIndex = 0; charIndex < str.length(); charIndex++) {
-				if (!Character.isDigit(str.charAt(charIndex)))
-					return false;
-			}
-			return true;
-		}
-
-		public int compare(String a, String b) {
-
-			int aIndex = 0;
-			int bIndex = 0;
-
-			while (aIndex < a.length() && bIndex < b.length()) {
-				String aToken = getToken(a, aIndex);
-				String bToken = getToken(b, bIndex);
-				int difference;
-
-				if (stringContainsInteger(aToken)
-						&& stringContainsInteger(bToken)) {
-					BigInteger aInt = new BigInteger(aToken);
-					BigInteger bInt = new BigInteger(bToken);
-					difference = aInt.compareTo(bInt);
-				} else {
-					difference = aToken.compareTo(bToken);
-				}
-
-				if (difference != 0)
-					return difference;
-
-				aIndex += aToken.length();
-				bIndex += bToken.length();
-			}
-
-			return Integer.valueOf(a.length()).compareTo(Integer.valueOf(b.length()));
-		}
-
-	}
-
 	@Override
 	public DescriptorImpl getDescriptor() {
 		return (DescriptorImpl) super.getDescriptor();
@@ -552,10 +435,8 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			return "Git Parameter";
 		}
 
-		public ListBoxModel doFillValueItems(
-				@AncestorInPath AbstractProject<?, ?> project,
-				@QueryParameter String param) throws IOException,
-				InterruptedException {
+		public ListBoxModel doFillValueItems(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String param)
+				throws IOException, InterruptedException {
 			ListBoxModel items = new ListBoxModel();
 
 			scm = getProjectSCM(project);
@@ -563,14 +444,12 @@ public class GitParameterDefinition extends ParameterDefinition implements
 				items.add("!No Git repository configured in SCM configuration");
 				return items;
 			}
-			ParametersDefinitionProperty prop = project
-					.getProperty(ParametersDefinitionProperty.class);
+			ParametersDefinitionProperty prop = project.getProperty(ParametersDefinitionProperty.class);
 			if (prop != null) {
 				ParameterDefinition def = prop.getParameterDefinition(param);
 				if (def instanceof GitParameterDefinition) {
 					GitParameterDefinition paramDef = (GitParameterDefinition) def;
-					Map<String, String> paramList = paramDef.generateContents(
-							project, scm);
+					Map<String, String> paramList = paramDef.generateContents(project, scm);
 
 					for (Map.Entry<String, String> entry : paramList.entrySet()) {
 						items.add(entry.getValue(), entry.getKey());
@@ -591,7 +470,7 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return null;
 		}
-		
+
 		public FormValidation doCheckBranchfilter(@QueryParameter String value) {
 			if (!"*".equals(value)) {
 				try {
@@ -602,5 +481,5 @@ public class GitParameterDefinition extends ParameterDefinition implements
 			}
 			return FormValidation.ok();
 		}
-	}	
+	}
 }

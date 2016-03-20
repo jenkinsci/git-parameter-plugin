@@ -28,7 +28,6 @@ import hudson.util.ListBoxModel;
 
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
-import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.SortMode;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -75,7 +74,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     public void testCreateValue_StaplerRequest() {
         System.out.println("createValue");
               
-        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","*","*", SortMode.NONE,false);
         
         StaplerRequest request = mock(StaplerRequest.class);
         ParameterValue result = instance.createValue(request);
@@ -85,28 +84,28 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null,GitParameterDefinition.SortMode.NONE,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null, SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
     	assertEquals("*", instance.getBranchfilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","  ","  ",GitParameterDefinition.SortMode.NONE,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","  ","  ", SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
     	assertEquals("*", instance.getBranchfilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","","",GitParameterDefinition.SortMode.NONE,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","","", SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
     	assertEquals("*", instance.getBranchfilter());
     }
     
     @Test
     public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","foobar","foobar",GitParameterDefinition.SortMode.NONE,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","foobar","foobar", SortMode.NONE,false);
     	assertEquals("foobar", instance.getTagFilter());
     	assertEquals("foobar", instance.getBranchfilter());
     }
@@ -114,7 +113,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     
     @Test
     public void testSmartNumberStringComparerWorksWithSameNumberComponents() {
-    	Comparator<String> comparer = new GitParameterDefinition.SmartNumberStringComparer();
+    	Comparator<String> comparer = new SmartNumberStringComparer();
     	assertTrue(comparer.compare("v_1.1.0.2", "v_1.1.1.1") < 0);
     	assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.1.1") == 0);
     	assertTrue(comparer.compare("v_1.1.1.1", "v_2.0.0.0") < 0);
@@ -123,7 +122,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
 
     @Test
     public void testSmartNumberStringComparerVeryLongReleaseNumber() {
-        Comparator<String> comparer = new GitParameterDefinition.SmartNumberStringComparer();
+        Comparator<String> comparer = new SmartNumberStringComparer();
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449123456788.1") > 0);
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449123456789.1") == 0);
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449223456789.1") < 0);
@@ -131,7 +130,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     
     @Test
     public void testSmartNumberStringComparerWorksWithDifferentNumberComponents() {
-    	Comparator<String> comparer = new GitParameterDefinition.SmartNumberStringComparer();
+    	Comparator<String> comparer = new SmartNumberStringComparer();
     	assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.0") > 0);
     	assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.2") < 0);
     	assertTrue(comparer.compare("v_1", "v_2.0.0.0") < 0);
@@ -139,7 +138,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null,GitParameterDefinition.SortMode.ASCENDING_SMART,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null, SortMode.ASCENDING_SMART,false);
     	Set<String> tags = new HashSet<String>();
     	tags.add("v_1.0.0.2");
     	tags.add("v_1.0.0.5");
@@ -158,7 +157,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
-    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null,GitParameterDefinition.SortMode.ASCENDING,false);
+    	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null, SortMode.ASCENDING,false);
     	Set<String> tags = new HashSet<String>();
     	tags.add("v_1.0.0.2");
     	tags.add("v_1.0.0.5");
@@ -217,7 +216,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         JSONObject jO = JSONObject.fromObject(jsonR);
         
         
-        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","*","*", SortMode.NONE,false);
        
         ParameterValue result = instance.createValue(request,jO);
         
@@ -243,7 +242,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     public void testGetType() {
         System.out.println("Test of getType method.");
         String expResult = "PT_REVISION";        
-        GitParameterDefinition instance = new GitParameterDefinition("name",expResult,"defaultValue","description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name",expResult,"defaultValue","description","branch","*","*", SortMode.NONE,false);
         String result = instance.getType();
         assertEquals(expResult, result);
         
@@ -261,7 +260,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
     public void testSetType() {
         System.out.println("Test of setType method.");
         String expResult = "PT_REVISION";        
-        GitParameterDefinition instance = new GitParameterDefinition("name","asdf","defaultValue","description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name","asdf","defaultValue","description","branch","*","*", SortMode.NONE,false);
         
         instance.setType(expResult);        
         String result = instance.getType();        
@@ -276,7 +275,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
         
-        GitParameterDefinition instance = new GitParameterDefinition("name","asdf", expResult,"description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name","asdf", expResult,"description","branch","*","*", SortMode.NONE,false);
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
     }
@@ -289,7 +288,7 @@ public class GitParameterDefinitionTest extends HudsonTestCase  {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
         
-        GitParameterDefinition instance = new GitParameterDefinition("name","asdf", "other" ,"description","branch","*","*",GitParameterDefinition.SortMode.NONE,false);
+        GitParameterDefinition instance = new GitParameterDefinition("name","asdf", "other" ,"description","branch","*","*", SortMode.NONE,false);
         instance.setDefaultValue(expResult);
         
         String result = instance.getDefaultValue();
