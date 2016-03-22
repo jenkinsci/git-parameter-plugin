@@ -314,7 +314,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
                 long time = -System.currentTimeMillis();
 
-                FetchCommand fetch = newgit.fetch_().from(remoteURL, repository.getFetchRefSpecs());
+                FetchCommand fetch = newgit.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
                 fetch.execute();
 
                 LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
