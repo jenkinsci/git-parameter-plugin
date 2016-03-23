@@ -54,7 +54,7 @@
     <f:textbox />
   </f:entry>
   
-  <f:entry name="sortMode" title="Tag sort mode" field="sortMode">
+  <f:entry name="sortMode" title="Sort mode" field="sortMode">
   	<f:enum>${it}</f:enum>
   </f:entry>
 
