@@ -13,6 +13,4 @@ public class GitParameterValue extends StringParameterValue {
     public GitParameterValue(String name, String value) {
         super(name, value);
     }
-
-
 }

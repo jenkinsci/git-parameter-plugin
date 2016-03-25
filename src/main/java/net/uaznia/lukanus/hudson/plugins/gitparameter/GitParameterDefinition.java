@@ -56,17 +56,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
-
-    private final UUID uuid;
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
+    private final UUID uuid;
     private String type;
     private String branch;
     private String tagFilter;
     private String branchfilter;
-
     private SortMode sortMode;
-
     private String errorMessage;
     private String defaultValue;
     private Boolean quickFilterEnabled;
@@ -168,7 +165,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public void setTagFilter(String tagFilter) {
-        if (isNullOrWhitespace(tagFilter)) {
+        if (StringUtils.isEmpty(StringUtils.trim(tagFilter))) {
             tagFilter = "*";
         }
         this.tagFilter = tagFilter;
@@ -187,10 +184,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public void setBranchfilter(String branchFilter) {
-        if (isNullOrWhitespace(branchFilter)) {
+        if (StringUtils.isEmpty(StringUtils.trim(branchFilter))) {
             branchFilter = "*";
         }
-        // Accept "*" as a wilcard
+
         if (!"*".equals(branchFilter)) {
             try {
                 Pattern.compile(branchFilter);
@@ -237,34 +234,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         return -1;
-    }
-
-    public String prettyRevisionInfo(GitClient newgit, Revision r) {
-        List<String> test3 = null;
-        try {
-            test3 = newgit.showRevision(r.getSha1());
-        } catch (GitException e1) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
-            return "";
-        } catch (InterruptedException e1) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
-            return "";
-        }
-        String[] authorDate = test3.get(3).split(">");
-        String author = authorDate[0].replaceFirst("author ", "").replaceFirst("committer ", "") + ">";
-        String goodDate = null;
-        try {
-            String totmp = authorDate[1].trim().split("\\+")[0].trim();
-            long timestamp = Long.parseLong(totmp, 10) * 1000;
-            Date date = new Date();
-            date.setTime(timestamp);
-
-            goodDate = new SimpleDateFormat("yyyy:MM:dd HH:mm").format(date);
-
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e);
-        }
-        return r.getSha1String().substring(0, 8) + " " + goodDate + " " + author;
     }
 
     public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) throws IOException, InterruptedException {
@@ -319,17 +288,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
                 LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                    List<ObjectId> oid;
+                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(newgit,branch);
+                    List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
-                    if (this.branch != null && !this.branch.isEmpty()) {
-                        oid = newgit.revList(this.branch);
-                    } else {
-                        oid = newgit.revListAll();
-                    }
-
-                    for (ObjectId noid : oid) {
-                        Revision r = new Revision(noid);
-                        paramList.put(r.getSha1String(), prettyRevisionInfo(newgit, r));
+                    for (RevisionInfo revision : revisions) {
+                        paramList.put(revision.getSha1(), revision.getRevisionInfo());
                     }
                 }
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
@@ -388,10 +351,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         ArrayList<String> tags = new ArrayList<String>(set);
 
-        if (!this.getSortMode().getIsUsingSmartSort()) {
-            Collections.sort(tags);
-        } else {
+        if (sortMode.getIsUsingSmartSort()) {
             Collections.sort(tags, new SmartNumberStringComparer());
+        } else {
+            Collections.sort(tags);
         }
 
         return tags;
@@ -399,21 +362,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public String getErrorMessage() {
         return errorMessage;
-    }
-
-    private static boolean isNullOrWhitespace(String s) {
-        return s == null || isWhitespace(s);
-
-    }
-
-    private static boolean isWhitespace(String s) {
-        int length = s.length();
-        for (int i = 0; i < length; i++) {
-            if (!Character.isWhitespace(s.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public String getDivUUID() {
