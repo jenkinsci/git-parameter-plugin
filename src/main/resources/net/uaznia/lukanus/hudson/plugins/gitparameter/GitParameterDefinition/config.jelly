@@ -46,7 +46,7 @@
     <f:textbox />
   </f:entry>
   
-  <f:entry title="Branch filter" field="branchfilter">
+  <f:entry title="Branch filter" field="branchFilter">
     <f:textbox />
   </f:entry>
   

@@ -26,8 +26,6 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -65,28 +63,28 @@ public class GitParameterDefinitionTest {
     public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch",null,null, SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
-    	assertEquals("*", instance.getBranchfilter());
+    	assertEquals(".*", instance.getBranchFilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","  ","  ", SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
-    	assertEquals("*", instance.getBranchfilter());
+    	assertEquals(".*", instance.getBranchFilter());
     }
     
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","","", SortMode.NONE,false);
     	assertEquals("*", instance.getTagFilter());
-    	assertEquals("*", instance.getBranchfilter());
+    	assertEquals(".*", instance.getBranchFilter());
     }
     
     @Test
     public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
     	GitParameterDefinition instance = new GitParameterDefinition("name","PT_REVISION","defaultValue","description","branch","foobar","foobar", SortMode.NONE,false);
     	assertEquals("foobar", instance.getTagFilter());
-    	assertEquals("foobar", instance.getBranchfilter());
+    	assertEquals("foobar", instance.getBranchFilter());
     }
    
     
@@ -466,11 +464,9 @@ public class GitParameterDefinitionTest {
     @Test
     public void testBranchFilterValidation() {
     	final DescriptorImpl descriptor = new DescriptorImpl();
-    	final FormValidation okPsuedoWildcard = descriptor.doCheckBranchfilter("*");
-    	final FormValidation okWildcard = descriptor.doCheckBranchfilter("*");
-    	final FormValidation badWildcard = descriptor.doCheckBranchfilter(".**");
+    	final FormValidation okWildcard = descriptor.doCheckBranchFilter(".*");
+    	final FormValidation badWildcard = descriptor.doCheckBranchFilter(".**");
     	
-    	assertTrue(okPsuedoWildcard.kind == Kind.OK);
     	assertTrue(okWildcard.kind == Kind.OK);
     	assertTrue(badWildcard.kind == Kind.ERROR);
     }
