@@ -1,28 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import hudson.EnvVars;
-import hudson.Extension;
-import hudson.FilePath;
-import hudson.model.ParameterValue;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
-import hudson.model.AbstractProject;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Run;
-import hudson.plugins.git.Branch;
-import hudson.plugins.git.GitException;
-import hudson.plugins.git.Revision;
-import hudson.plugins.git.GitSCM;
-import hudson.scm.SCM;
-import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
-
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,12 +14,25 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import hudson.EnvVars;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.model.AbstractProject;
+import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.plugins.git.Branch;
+import hudson.plugins.git.GitSCM;
+import hudson.scm.SCM;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
@@ -62,7 +55,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String type;
     private String branch;
     private String tagFilter;
-    private String branchfilter;
+    private String branchFilter;
     private SortMode sortMode;
     private String errorMessage;
     private String defaultValue;
@@ -81,7 +74,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.quickFilterEnabled = quickFilterEnabled;
 
         setTagFilter(tagFilter);
-        setBranchfilter(branchFilter);
+        setBranchFilter(branchFilter);
     }
 
     @Override
@@ -179,23 +172,22 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.defaultValue = defaultValue;
     }
 
-    public String getBranchfilter() {
-        return branchfilter;
+    public String getBranchFilter() {
+        return branchFilter;
     }
 
-    public void setBranchfilter(String branchFilter) {
+    public void setBranchFilter(String branchFilter) {
         if (StringUtils.isEmpty(StringUtils.trim(branchFilter))) {
-            branchFilter = "*";
+            branchFilter = ".*";
         }
 
-        if (!"*".equals(branchFilter)) {
-            try {
-                Pattern.compile(branchFilter);
-            } catch (PatternSyntaxException e) {
-                LOGGER.log(Level.FINE, "Specified branchFilter is not a valid regex. Setting to '*'", e);
-            }
+        try {
+            Pattern.compile(branchFilter);
+        } catch (PatternSyntaxException e) {
+            LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
         }
-        this.branchfilter = branchFilter;
+
+        this.branchFilter = branchFilter;
     }
 
     public Boolean getQuickFilterEnabled() {
@@ -288,7 +280,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
                 LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(newgit,branch);
+                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(newgit, branch);
                     List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
                     for (RevisionInfo revision : revisions) {
@@ -302,8 +294,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
                     if (this.getSortMode().getIsSorting()) {
                         orderedTagNames = sortByName(tagSet);
-                        if (this.getSortMode().getIsDescending())
+                        if (this.getSortMode().getIsDescending()) {
                             Collections.reverse(orderedTagNames);
+                        }
                     } else {
                         orderedTagNames = new ArrayList<String>(tagSet);
                     }
@@ -315,12 +308,17 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
                     time = -System.currentTimeMillis();
                     Set<String> branchSet = new HashSet<String>();
-                    final boolean wildcard = "*".equals(branchfilter);
+                    Pattern branchFilterPattern;
+                    try {
+                        branchFilterPattern = Pattern.compile(branchFilter);
+                    } catch (PatternSyntaxException e) {
+                        LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
+                        errorMessage = "Specified branchFilter is not a valid regex. Setting to '.*'";
+                        branchFilterPattern = Pattern.compile(".*");
+                    }
                     for (Branch branch : newgit.getRemoteBranches()) {
-                        // It'd be nice if we could filter on remote branches via the GitClient,
-                        // but that's not an option.
-                        final String branchName = branch.getName();
-                        if (wildcard || branchName.matches(branchfilter)) {
+                        String branchName = branch.getName();
+                        if (branchFilterPattern.matcher(branchName).matches()) {
                             branchSet.add(branchName);
                         }
                     }
@@ -420,13 +418,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return null;
         }
 
-        public FormValidation doCheckBranchfilter(@QueryParameter String value) {
-            if (!"*".equals(value)) {
-                try {
-                    Pattern.compile(value); // Validate we've got a valid regex.
-                } catch (PatternSyntaxException e) {
-                    return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
-                }
+        public FormValidation doCheckBranchFilter(@QueryParameter String value) {
+            try {
+                Pattern.compile(value); // Validate we've got a valid regex.
+            } catch (PatternSyntaxException e) {
+                return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
             }
             return FormValidation.ok();
         }
