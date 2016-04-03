@@ -10,7 +10,7 @@
 
 	<groupId>org.jenkins-ci.tools</groupId>
 	<artifactId>git-parameter</artifactId>
-	<version>0.4.1-SNAPSHOT</version>
+	<version>0.5.0</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
