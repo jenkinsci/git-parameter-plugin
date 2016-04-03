@@ -15,6 +15,21 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+04/03/2016 Version 0.5.0
+
+1. User interface
+
+* JENKINS-27435: Quick branch filter (Thank Bruno P. Kinoshita for inspiration)
+* JENKINS-33963: Branch filter does not save the value (part of the work Joe Hansche)
+
+2. Refactor/fix/feature
+
+* JENKINS-33361: Long release number in branch, tag or revision name
+* JENKINS-33084: Git Parameter plugin should prune stale remote branches (@darashenka)
+* JENKINS-31939: The top value is better to be chosed by default of to have such option
+* JENKINS-33831: Revision Parameter Type: ArrayIndexOutOfBoundsException
+* JENKINS-33912: Refactoring Test Case
+
 01/16/2015 Version 0.4.0
 
 * Possibility to select branch, tag or branch (Alban Dericbourg)
