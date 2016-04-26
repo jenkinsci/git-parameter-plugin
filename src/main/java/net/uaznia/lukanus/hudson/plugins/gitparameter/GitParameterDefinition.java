@@ -247,9 +247,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         for (RemoteConfig repository : git.getRepositories()) {
             LOGGER.log(Level.INFO, "generateContents contenttype " + type + " RemoteConfig " + repository.getURIs());
+            GitClient newgit = getGitClient(project, git, environment);
             for (URIish remoteURL : repository.getURIs()) {
-                GitClient newgit = git.createClient(TaskListener.NULL, environment, new Run(project) {
-                }, project.getSomeWorkspace());
                 FilePath wsDir = null;
                 if (project.getSomeBuildWithWorkspace() != null) {
                     wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
@@ -343,6 +342,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             break;
         }
         return paramList;
+    }
+
+    private GitClient getGitClient(final AbstractProject<?, ?> project, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
+        int nextBuildNumber = project.getNextBuildNumber();
+
+        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(project) {
+        }, project.getSomeWorkspace());
+
+        project.updateNextBuildNumber(nextBuildNumber);
+        return gitClient;
     }
 
     public ArrayList<String> sortByName(Set<String> set) {
