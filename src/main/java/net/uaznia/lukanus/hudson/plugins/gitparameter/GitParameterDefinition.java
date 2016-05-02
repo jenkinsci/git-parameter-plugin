@@ -310,7 +310,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     Pattern branchFilterPattern;
                     try {
                         branchFilterPattern = Pattern.compile(branchFilter);
-                    } catch (PatternSyntaxException e) {
+                    } catch (Exception e) {
                         LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
                         errorMessage = "Specified branchFilter is not a valid regex. Setting to '.*'";
                         branchFilterPattern = Pattern.compile(".*");
