@@ -5,7 +5,7 @@
   <f:entry title="Description" field="description">
     <f:textbox />
   </f:entry>
-  <f:entry name="type" title="Parameter Type" field="type">
+  <f:entry title="Parameter Type" field="type">
     <select name="type">
         <j:choose>
             <j:when test="${instance.type eq 'PT_TAG'}">
@@ -54,7 +54,7 @@
     <f:textbox />
   </f:entry>
   
-  <f:entry name="sortMode" title="Sort mode" field="sortMode">
+  <f:entry title="Sort mode" field="sortMode">
   	<f:enum>${it}</f:enum>
   </f:entry>
 
