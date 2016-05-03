@@ -247,39 +247,20 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         for (RemoteConfig repository : git.getRepositories()) {
             LOGGER.log(Level.INFO, "generateContents contenttype " + type + " RemoteConfig " + repository.getURIs());
-            GitClient newgit = getGitClient(project, git, environment);
+            GitClient gitClient = getGitClient(project, git, environment);
             for (URIish remoteURL : repository.getURIs()) {
-                FilePath wsDir = null;
-                if (project.getSomeBuildWithWorkspace() != null) {
-                    wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
-                    if (wsDir == null || !wsDir.exists()) {
-                        LOGGER.log(Level.WARNING, "generateContents create wsDir " + wsDir + " for " + remoteURL);
-                        wsDir.mkdirs();
-                        if (!wsDir.exists()) {
-                            LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
-                            String errMsg = "!Failed To Create Workspace";
-                            return Collections.singletonMap(errMsg, errMsg);
-                        }
-                        newgit.init();
-                        newgit.clone(remoteURL.toASCIIString(), "origin", false, null);
-                        LOGGER.log(Level.INFO, "generateContents clone done");
-                    }
-                } else {
-                    // probably our first build. We cannot yet fill in any
-                    // values.
-                    LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
-                    String errMsg = "!No workspace. Please build the project at least once";
-                    return Collections.singletonMap(errMsg, errMsg);
-                }
+
+                Map<String, String> errMsg = initWorkspace(project, gitClient, remoteURL);
+                if (errMsg != null) return errMsg;
 
                 long time = -System.currentTimeMillis();
 
-                FetchCommand fetch = newgit.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+                FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
                 fetch.execute();
 
                 LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(newgit, branch);
+                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, branch);
                     List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
                     for (RevisionInfo revision : revisions) {
@@ -288,7 +269,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 }
                 if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
 
-                    Set<String> tagSet = newgit.getTagNames(tagFilter);
+                    Set<String> tagSet = gitClient.getTagNames(tagFilter);
                     ArrayList<String> orderedTagNames;
 
                     if (this.getSortMode().getIsSorting()) {
@@ -315,7 +296,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         errorMessage = "Specified branchFilter is not a valid regex. Setting to '.*'";
                         branchFilterPattern = Pattern.compile(".*");
                     }
-                    for (Branch branch : newgit.getRemoteBranches()) {
+                    for (Branch branch : gitClient.getRemoteBranches()) {
                         String branchName = branch.getName();
                         if (branchFilterPattern.matcher(branchName).matches()) {
                             branchSet.add(branchName);
@@ -342,6 +323,35 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             break;
         }
         return paramList;
+    }
+
+    private Map<String, String> initWorkspace(AbstractProject<?, ?> project, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
+        if (project.getSomeBuildWithWorkspace() != null) {
+            FilePath wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
+            if (isEmptyWorkspace(wsDir)) {
+                LOGGER.log(Level.WARNING, "generateContents create wsDir " + wsDir + " for " + remoteURL);
+                wsDir.mkdirs();
+                if (!wsDir.exists()) {
+                    LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
+                    String errMsg = "!Failed To Create Workspace";
+                    return Collections.singletonMap(errMsg, errMsg);
+                }
+                gitClient.init();
+                gitClient.clone(remoteURL.toASCIIString(), "origin", false, null);
+                LOGGER.log(Level.INFO, "generateContents clone done");
+            }
+        } else {
+            // probably our first build. We cannot yet fill in any
+            // values.
+            LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
+            String errMsg = "!No workspace. Please build the project at least once";
+            return Collections.singletonMap(errMsg, errMsg);
+        }
+        return null;
+    }
+
+    private boolean isEmptyWorkspace(FilePath workspaceDir) throws IOException, InterruptedException {
+        return workspaceDir == null || !workspaceDir.exists() || workspaceDir.list().size() == 0;
     }
 
     private GitClient getGitClient(final AbstractProject<?, ?> project, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
