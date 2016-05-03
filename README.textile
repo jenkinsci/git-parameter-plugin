@@ -15,6 +15,12 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+05/03/2016 Version 0.5.1
+
+* JENKINS-34425: Git parameter plugin skips one build number while populating tags
+* JENKINS-34544: NPE After update to 0.5.0
+* JENKINS-34574: After cleaned workspace doesn't show branches
+
 04/03/2016 Version 0.5.0
 
 1. User interface
