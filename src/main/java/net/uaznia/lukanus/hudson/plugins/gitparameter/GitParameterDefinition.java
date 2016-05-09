@@ -1,6 +1,9 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,6 +21,7 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
+import hudson.model.Computer;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
@@ -32,6 +36,7 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -50,6 +55,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
+    public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
 
     private final UUID uuid;
     private String type;
@@ -57,22 +63,20 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String tagFilter;
     private String branchFilter;
     private SortMode sortMode;
-    private String errorMessage;
     private String defaultValue;
     private Boolean quickFilterEnabled;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
                                   String branchFilter, String tagFilter, SortMode sortMode, Boolean quickFilterEnabled) {
-
         super(name, description);
-        this.type = type;
         this.defaultValue = defaultValue;
         this.branch = branch;
         this.uuid = UUID.randomUUID();
         this.sortMode = sortMode;
         this.quickFilterEnabled = quickFilterEnabled;
 
+        setType(type);
         setTagFilter(tagFilter);
         setBranchFilter(branchFilter);
     }
@@ -128,7 +132,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isParameterTypeCorrect(type)) {
             this.type = type;
         } else {
-            this.errorMessage = "wrongType";
+            this.type = PARAMETER_TYPE_BRANCH;
         }
     }
 
@@ -181,12 +185,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             branchFilter = ".*";
         }
 
-        try {
-            Pattern.compile(branchFilter);
-        } catch (PatternSyntaxException e) {
-            LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
-        }
-
         this.branchFilter = branchFilter;
     }
 
@@ -221,144 +219,140 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public int compareTo(GitParameterDefinition pd) {
-        if (pd.uuid.equals(uuid)) {
-            return 0;
-        }
-
-        return -1;
+        return pd.uuid.equals(uuid) ? 0 : -1;
     }
 
-    public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) throws IOException, InterruptedException {
+    public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) {
 
         Map<String, String> paramList = new LinkedHashMap<String, String>();
-        // for (AbstractProject<?,?> project :
-        // Hudson.getInstance().getItems(AbstractProject.class)) {
-        if (project.getSomeWorkspace() == null) {
-            this.errorMessage = "noWorkspace";
-        }
-
-        EnvVars environment = null;
-
         try {
-            environment = project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e);
-        }
+            EnvVars environment = getEnvironment(project);
+            for (RemoteConfig repository : git.getRepositories()) {
+                FilePathWrapper workspace = getWorkspace(project);
+                GitClient gitClient = getGitClient(project, workspace, git, environment);
+                for (URIish remoteURL : repository.getURIs()) {
+                    initWorkspace(workspace, gitClient, remoteURL);
 
-        for (RemoteConfig repository : git.getRepositories()) {
-            LOGGER.log(Level.INFO, "generateContents contenttype " + type + " RemoteConfig " + repository.getURIs());
-            GitClient gitClient = getGitClient(project, git, environment);
-            for (URIish remoteURL : repository.getURIs()) {
+                    FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+                    fetch.execute();
 
-                Map<String, String> errMsg = initWorkspace(project, gitClient, remoteURL);
-                if (errMsg != null) return errMsg;
-
-                long time = -System.currentTimeMillis();
-
-                FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
-                fetch.execute();
-
-                LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch");
-                if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                    RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, branch);
-                    List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
-
-                    for (RevisionInfo revision : revisions) {
-                        paramList.put(revision.getSha1(), revision.getRevisionInfo());
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
+                        getRevision(paramList, gitClient);
+                    }
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        Set<String> tagSet = gitClient.getTagNames(tagFilter);
+                        sortAndPutToParam(tagSet, paramList);
+                    }
+                    if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                        Set<String> branchSet = getBranch(gitClient);
+                        sortAndPutToParam(branchSet, paramList);
                     }
                 }
-                if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-
-                    Set<String> tagSet = gitClient.getTagNames(tagFilter);
-                    ArrayList<String> orderedTagNames;
-
-                    if (this.getSortMode().getIsSorting()) {
-                        orderedTagNames = sortByName(tagSet);
-                        if (this.getSortMode().getIsDescending()) {
-                            Collections.reverse(orderedTagNames);
-                        }
-                    } else {
-                        orderedTagNames = new ArrayList<String>(tagSet);
-                    }
-
-                    for (String tagName : orderedTagNames) {
-                        paramList.put(tagName, tagName);
-                    }
-                }
-                if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                    time = -System.currentTimeMillis();
-                    Set<String> branchSet = new HashSet<String>();
-                    Pattern branchFilterPattern;
-                    try {
-                        branchFilterPattern = Pattern.compile(branchFilter);
-                    } catch (Exception e) {
-                        LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
-                        errorMessage = "Specified branchFilter is not a valid regex. Setting to '.*'";
-                        branchFilterPattern = Pattern.compile(".*");
-                    }
-                    for (Branch branch : gitClient.getRemoteBranches()) {
-                        String branchName = branch.getName();
-                        if (branchFilterPattern.matcher(branchName).matches()) {
-                            branchSet.add(branchName);
-                        }
-                    }
-                    LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to fetch branches");
-
-                    time = -System.currentTimeMillis();
-                    List<String> orderedBranchNames;
-                    if (this.getSortMode().getIsSorting()) {
-                        orderedBranchNames = sortByName(branchSet);
-                        if (this.getSortMode().getIsDescending())
-                            Collections.reverse(orderedBranchNames);
-                    } else {
-                        orderedBranchNames = new ArrayList<String>(branchSet);
-                    }
-
-                    for (String branchName : orderedBranchNames) {
-                        paramList.put(branchName, branchName);
-                    }
-                    LOGGER.finest("Took " + (time + System.currentTimeMillis()) + "ms to sort and add to param list.");
-                }
+                workspace.delete();
+                break;
             }
-            break;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error!", e);
+            String message = e.getMessage() + " Pleas look to log!";
+            paramList.clear();
+            paramList.put(message, message);
         }
         return paramList;
     }
 
-    private Map<String, String> initWorkspace(AbstractProject<?, ?> project, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
-        if (project.getSomeBuildWithWorkspace() != null) {
-            FilePath wsDir = project.getSomeBuildWithWorkspace().getWorkspace();
-            if (isEmptyWorkspace(wsDir)) {
-                LOGGER.log(Level.WARNING, "generateContents create wsDir " + wsDir + " for " + remoteURL);
-                wsDir.mkdirs();
-                if (!wsDir.exists()) {
-                    LOGGER.log(Level.SEVERE, "generateContents wsDir.mkdirs() failed.");
-                    String errMsg = "!Failed To Create Workspace";
-                    return Collections.singletonMap(errMsg, errMsg);
-                }
-                gitClient.init();
-                gitClient.clone(remoteURL.toASCIIString(), "origin", false, null);
-                LOGGER.log(Level.INFO, "generateContents clone done");
+    private Set<String> getBranch(GitClient gitClient) throws InterruptedException {
+        Set<String> branchSet = new HashSet<String>();
+        Pattern branchFilterPattern;
+        try {
+            branchFilterPattern = Pattern.compile(branchFilter);
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
+            branchFilterPattern = Pattern.compile(".*");
+        }
+        for (Branch branch : gitClient.getRemoteBranches()) {
+            String branchName = branch.getName();
+            if (branchFilterPattern.matcher(branchName).matches()) {
+                branchSet.add(branchName);
+            }
+        }
+        return branchSet;
+    }
+
+    private void getRevision(Map<String, String> paramList, GitClient gitClient) throws InterruptedException {
+        RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, branch);
+        List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
+
+        for (RevisionInfo revision : revisions) {
+            paramList.put(revision.getSha1(), revision.getRevisionInfo());
+        }
+    }
+
+    private void sortAndPutToParam(Set<String> setElement, Map<String, String> paramList) {
+        List<String> sorted = sort(setElement);
+
+        for (String element : sorted) {
+            paramList.put(element, element);
+        }
+    }
+
+    private ArrayList<String> sort(Set<String> toSort) {
+        ArrayList<String> sorted;
+
+        if (this.getSortMode().getIsSorting()) {
+            sorted = sortByName(toSort);
+            if (this.getSortMode().getIsDescending()) {
+                Collections.reverse(sorted);
             }
         } else {
-            // probably our first build. We cannot yet fill in any
-            // values.
-            LOGGER.log(Level.INFO, "getSomeBuildWithWorkspace is null");
-            String errMsg = "!No workspace. Please build the project at least once";
-            return Collections.singletonMap(errMsg, errMsg);
+            sorted = new ArrayList<String>(toSort);
         }
-        return null;
+        return sorted;
+    }
+
+    private FilePathWrapper getWorkspace(AbstractProject<?, ?> project) throws IOException, InterruptedException {
+        FilePathWrapper someWorkspace = new FilePathWrapper(project.getSomeWorkspace());
+        if (someWorkspace.getFilePath() == null) {
+            someWorkspace = getTemporaryWorkspace();
+        }
+        someWorkspace.getFilePath().mkdirs();
+        //Must by not null and exist
+        return someWorkspace;
+    }
+
+    private FilePathWrapper getTemporaryWorkspace() throws IOException {
+        Path temporaryWorkspacePath = Files.createTempDirectory(TEMPORARY_DIRECTORY_PREFIX);
+        FilePath filePath = new FilePath(temporaryWorkspacePath.toFile());
+        FilePathWrapper filePathWrapper = new FilePathWrapper(filePath);
+        filePathWrapper.setThatTemporary();
+        return filePathWrapper;
+    }
+
+    private EnvVars getEnvironment(AbstractProject<?, ?> project) throws IOException, InterruptedException {
+        if (project.getSomeBuildWithWorkspace() != null) {
+            return project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
+        } else {
+            return project.getEnvironment(null, TaskListener.NULL);
+        }
+
+    }
+
+    private void initWorkspace(FilePathWrapper workspace, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
+        if (isEmptyWorkspace(workspace.getFilePath())) {
+            gitClient.init();
+            gitClient.clone(remoteURL.toASCIIString(), "origin", false, null);
+            LOGGER.log(Level.INFO, "generateContents clone done");
+        }
     }
 
     private boolean isEmptyWorkspace(FilePath workspaceDir) throws IOException, InterruptedException {
-        return workspaceDir == null || !workspaceDir.exists() || workspaceDir.list().size() == 0;
+        return workspaceDir.list().size() == 0;
     }
 
-    private GitClient getGitClient(final AbstractProject<?, ?> project, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
+    private GitClient getGitClient(final AbstractProject<?, ?> project, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
         int nextBuildNumber = project.getNextBuildNumber();
 
         GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(project) {
-        }, project.getSomeWorkspace());
+        }, workspace.getFilePath());
 
         project.updateNextBuildNumber(nextBuildNumber);
         return gitClient;
@@ -375,10 +369,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         return tags;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
     }
 
     public String getDivUUID() {

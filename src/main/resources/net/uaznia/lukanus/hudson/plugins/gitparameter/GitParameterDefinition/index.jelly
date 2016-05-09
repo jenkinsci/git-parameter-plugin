@@ -6,9 +6,6 @@
     <j:set var="divId" value="${it.divUUID}" scope="parent"/>
     <f:entry title="${it.name}" description="${it.description}">
         <div name="parameter" description="${it.description}" id="${divId}">
-            <j:if test="${it.errorMessage eq 'noWorkspace'}">
-                <p style="color: red;">${%noWorkspaceError}</p>
-            </j:if>
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
             <select name="value" class="select" size="5" style="min-width: 200px" id="select"
@@ -24,7 +21,6 @@
                 new GitParameter.QuickFilter(parentDiv.find('.select').get(0),parentDiv.find('.git_parameter_quick_filter').get(0));
             </script>
         </div>
-        <div>You must have built the project at least once, to get entries in the list above.</div>
         <div>If you wipe out your workspace, the plugin needs to clone the repository before it can list the
             tags/revisions. This may take some time if you have a slow connection or the repository is big.
         </div>
