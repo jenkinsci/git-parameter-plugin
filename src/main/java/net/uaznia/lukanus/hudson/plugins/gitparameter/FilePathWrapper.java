@@ -26,7 +26,6 @@ public class FilePathWrapper {
     public void delete() throws IOException, InterruptedException {
         if (isTemporary) {
             filePath.deleteRecursive();
-
         }
     }
 }
