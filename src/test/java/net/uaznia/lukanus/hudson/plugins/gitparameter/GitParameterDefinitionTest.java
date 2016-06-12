@@ -430,6 +430,29 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testDoFillValueItems_listBranches_withRegexGroup() throws Exception {
+        project = jenkins.createFreeStyleProject("testListTags");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                "PT_BRANCH",
+                "testDefaultValue",
+                "testDescription",
+                "testBranch",
+                "origin/(.*)",
+                "*",
+                SortMode.NONE, false);
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        // Run the build once to get the workspace
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "master"));
+        assertFalse(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test
     public void testSortAscendingTag() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(new Shell("echo test"));
