@@ -1,7 +1,7 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -21,7 +22,6 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
-import hudson.model.Computer;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
@@ -30,13 +30,13 @@ import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.SCM;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -56,6 +56,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
     public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
+
+    private static final String REPO_SCM_CLASS_NAME = "hudson.plugins.repo.RepoScm";
+    private static final String REPO_SCM_NAME = "repo";
+    private static final String REPO_MANIFESTS_DIR = ".repo/manifests";
 
     private final UUID uuid;
     private String type;
@@ -228,7 +232,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             EnvVars environment = getEnvironment(project);
             for (RemoteConfig repository : git.getRepositories()) {
-                FilePathWrapper workspace = getWorkspace(project);
+                boolean isRepoScm = REPO_SCM_NAME.equals(repository.getName());
+                FilePathWrapper workspace = getWorkspace(project, isRepoScm);
                 GitClient gitClient = getGitClient(project, workspace, git, environment);
                 for (URIish remoteURL : repository.getURIs()) {
                     initWorkspace(workspace, gitClient, remoteURL);
@@ -271,8 +276,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
         for (Branch branch : gitClient.getRemoteBranches()) {
             String branchName = branch.getName();
-            if (branchFilterPattern.matcher(branchName).matches()) {
-                branchSet.add(branchName);
+            Matcher matcher = branchFilterPattern.matcher(branchName);
+            if (matcher.matches()) {
+                if (matcher.groupCount() == 1) {
+                    branchSet.add(matcher.group(1));
+                } else {
+                    branchSet.add(branchName);
+                }
             }
         }
         return branchSet;
@@ -309,9 +319,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return sorted;
     }
 
-    private FilePathWrapper getWorkspace(AbstractProject<?, ?> project) throws IOException, InterruptedException {
+    private FilePathWrapper getWorkspace(AbstractProject<?, ?> project, boolean isRepoScm) throws IOException, InterruptedException {
         FilePathWrapper someWorkspace = new FilePathWrapper(project.getSomeWorkspace());
-        if (someWorkspace.getFilePath() == null) {
+        if (isRepoScm){
+            FilePath repoDir = new FilePath(someWorkspace.getFilePath(), REPO_MANIFESTS_DIR);
+            if (repoDir.exists()) {
+                someWorkspace = new FilePathWrapper(repoDir);
+            } else {
+                someWorkspace = getTemporaryWorkspace();
+            }
+        } else if (someWorkspace.getFilePath() == null) {
             someWorkspace = getTemporaryWorkspace();
         }
         someWorkspace.getFilePath().mkdirs();
@@ -423,6 +440,30 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
             if (projectScm instanceof GitSCM) {
                 return (GitSCM) projectScm;
+            }
+
+            if (isRepoScm(projectScm)) {
+                return getGitSCMFromRepoScm(projectScm);
+            }
+
+            return null;
+        }
+
+        private static boolean isRepoScm(SCM projectScm) {
+            return projectScm != null && REPO_SCM_CLASS_NAME.equals(projectScm.getClass().getName());
+        }
+
+        private static GitSCM getGitSCMFromRepoScm(SCM projectScm) {
+            try {
+                Class<?> clazz = projectScm.getClass();
+                Method method = clazz.getDeclaredMethod("getManifestRepositoryUrl");
+                String repositoryUrl = (String) method.invoke(projectScm);
+                UserRemoteConfig config = new UserRemoteConfig(repositoryUrl, REPO_SCM_NAME, null, null);
+                List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
+                configs.add(config);
+                return new GitSCM(configs, null, false, null, null, null, null);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "get repo scm failed", e);
             }
             return null;
         }
