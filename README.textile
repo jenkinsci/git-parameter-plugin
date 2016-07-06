@@ -15,6 +15,12 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+07/06/2016 Version 0.6.0
+
+* JENKINS-36104: Add Repo SCM support (Derron Hu)
+* JENKINS-16290: git parameter plugin doesn't support Jenkins slave setup with git repos checked out only on slaves
+* JENKINS-35363: Git parameter filter doesn't work
+
 05/03/2016 Version 0.5.1
 
 * JENKINS-34425: Git parameter plugin skips one build number while populating tags

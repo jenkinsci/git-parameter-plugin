@@ -7,5 +7,5 @@ The following people have contributed to this Jenkins-CI plugin
 * Niklaus Giger<niklaus.giger@member.fsf.org>
 * Yestin Sun<sunyi0804@gmail.com>
 * Alban Dericbourg <alban@dericbourg.net>
-* Nicolas De Loof <nicolas.deloof@gmail.com>
 * Bogusław Klimas <klimas7@gmail.com>
+* Derron Hu <hustdihu@gmail.com>
