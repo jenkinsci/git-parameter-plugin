@@ -28,9 +28,11 @@ jQuery.noConflict();
 var GitParameter = GitParameter || (function($) {
     var instance = {};
 
-    function QuickFilter(selectElement, filterElement) {
+    function QuickFilter(selectElement, filterElement, selectedValue, defaultValue) {
         this.selectElement = selectElement;
         this.filterElement = filterElement;
+        this.selectedValue = selectedValue;
+        this.defaultValue = defaultValue;
         this.originalOptions = new Array();
 
         jQuery(this.filterElement).prop("disabled",true);
@@ -46,16 +48,43 @@ var GitParameter = GitParameter || (function($) {
         return this.filterElement;
     }
 
+    QuickFilter.prototype.getSelectedValue = function() {
+        return this.selectedValue;
+    }
+
+    QuickFilter.prototype.getDefaultValue = function() {
+            return this.defaultValue;
+    }
+
     QuickFilter.prototype.getOriginalOptions = function() {
         return this.originalOptions;
     }
 
-    QuickFilter.prototype.setSelectedFirst = function() {
+    QuickFilter.prototype.setSelected = function() {
         var _self = this;
-        var filteredElement = _self.getSelectElement();
-        if (jQuery(filteredElement).get(0).length > 0) {
-            jQuery(filteredElement).get(0).options[0].selected = true;
+        var filteredElement = jQuery(_self.getSelectElement()).get(0);
+        var selectedValue = _self.getSelectedValue();
+        var optionsLength = filteredElement.length;
+
+        if (optionsLength > 0 && selectedValue != 'NONE') {
+            if (selectedValue == 'TOP') {
+                filteredElement.options[0].selected = true;
+            }
+            else if (selectedValue == 'DEFAULT' && !isEmpty(_self.getDefaultValue())) {
+                var defaultValue = _self.getDefaultValue();
+                console.log("Search default value : " + defaultValue);
+                for (var i = 0; i < optionsLength; i++ ) {
+                    if (filteredElement.options[i].value.indexOf(defaultValue) > -1) {
+                        filteredElement.options[i].selected = true;
+                        break;
+                    }
+                }
+            }
         }
+    }
+
+    function isEmpty(str) {
+        return (typeof str == 'string' && str.trim().length == 0) || typeof str == 'undefined' || str === null;
     }
 
     QuickFilter.prototype.initEventHandler = function() {
@@ -68,7 +97,7 @@ var GitParameter = GitParameter || (function($) {
                 _self.getOriginalOptions().push(options[i]);
             }
 
-            _self.setSelectedFirst();
+            _self.setSelected();
 
             jQuery(_self.getFilterElement()).prop("disabled",false);
             console.log("Quick Filter handler filled event." );
@@ -98,7 +127,7 @@ var GitParameter = GitParameter || (function($) {
                 jQuery(filteredElement).append(opt);
             }
 
-            _self.setSelectedFirst();
+            _self.setSelected();
 
             // Propagate the changes made by the filter
             console.log('Propagating change event after filtering');

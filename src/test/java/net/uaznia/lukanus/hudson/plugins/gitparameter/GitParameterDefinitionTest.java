@@ -50,7 +50,7 @@ public class GitParameterDefinitionTest {
     public void testCreateValue_StaplerRequest() {
         System.out.println("createValue");
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
 
         StaplerRequest request = mock(StaplerRequest.class);
         ParameterValue result = instance.createValue(request);
@@ -60,28 +60,28 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.NONE, SelectedValue.NONE, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "  ", "  ", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "  ", "  ", SortMode.NONE, SelectedValue.NONE, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "", "", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "", "", SortMode.NONE, SelectedValue.NONE, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "foobar", "foobar", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "foobar", "foobar", SortMode.NONE, SelectedValue.NONE, false);
         assertEquals("foobar", instance.getTagFilter());
         assertEquals("foobar", instance.getBranchFilter());
     }
@@ -114,7 +114,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING_SMART, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING_SMART, SelectedValue.NONE, false);
         Set<String> tags = new HashSet<String>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
@@ -133,7 +133,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING, SelectedValue.NONE, false);
         Set<String> tags = new HashSet<String>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
@@ -192,7 +192,7 @@ public class GitParameterDefinitionTest {
         JSONObject jO = JSONObject.fromObject(jsonR);
 
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
 
         ParameterValue result = instance.createValue(request, jO);
 
@@ -218,7 +218,7 @@ public class GitParameterDefinitionTest {
     public void testGetType() {
         System.out.println("Test of getType method.");
         String expResult = "PT_REVISION";
-        GitParameterDefinition instance = new GitParameterDefinition("name", expResult, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", expResult, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
         String result = instance.getType();
         assertEquals(expResult, result);
 
@@ -236,7 +236,7 @@ public class GitParameterDefinitionTest {
     public void testSetType() {
         System.out.println("Test of setType method.");
         String expResult = "PT_REVISION";
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
 
         instance.setType(expResult);
         String result = instance.getType();
@@ -245,7 +245,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testWrongType() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
 
         String result = instance.getType();
         assertEquals("PT_BRANCH", result);
@@ -258,7 +258,7 @@ public class GitParameterDefinitionTest {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", expResult, "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", expResult, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
     }
@@ -271,7 +271,7 @@ public class GitParameterDefinitionTest {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "other", "description", "branch", ".*", "*", SortMode.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "other", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
         instance.setDefaultValue(expResult);
 
         String result = instance.getDefaultValue();
@@ -298,7 +298,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         testJob.addProperty(new ParametersDefinitionProperty(def));
         assertTrue(def.getDescriptor().getProjectSCM(testJob) == null);
 
@@ -316,7 +316,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -336,7 +336,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -358,7 +358,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -378,7 +378,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
        // build.run();
@@ -400,7 +400,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -422,7 +422,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 "[*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -442,7 +442,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 "origin/(.*)",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -465,7 +465,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, false);
+                SortMode.ASCENDING, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -485,7 +485,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.DESCENDING, false);
+                SortMode.DESCENDING, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -505,7 +505,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -528,7 +528,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -550,7 +550,7 @@ public class GitParameterDefinitionTest {
                 "origin/preview_0_3",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -571,7 +571,7 @@ public class GitParameterDefinitionTest {
                 "branch",
                 ".*",
                 "*",
-                SortMode.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, false);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
         assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
     }

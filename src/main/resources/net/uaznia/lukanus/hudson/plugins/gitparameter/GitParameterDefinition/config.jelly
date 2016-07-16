@@ -64,6 +64,10 @@
             <f:textbox/>
         </f:entry>
 
+        <f:entry title="Selected value" field="selectedValue">
+            <f:enum>${it}</f:enum>
+        </f:entry>
+
         <f:entry title="Quick filter" field="quickFilterEnabled">
             <f:checkbox/>
         </f:entry>
