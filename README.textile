@@ -15,6 +15,10 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+07/19/2016 Version 0.6.1
+
+* JENKINS-31939: The top value is better to be chosen by default of to have such option (part 2)
+
 07/06/2016 Version 0.6.0
 
 * JENKINS-36104: Add Repo SCM support (Derron Hu)
