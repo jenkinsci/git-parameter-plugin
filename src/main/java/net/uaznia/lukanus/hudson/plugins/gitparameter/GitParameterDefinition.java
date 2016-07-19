@@ -68,16 +68,19 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String branchFilter;
     private SortMode sortMode;
     private String defaultValue;
+    private SelectedValue selectedValue;
     private Boolean quickFilterEnabled;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
-                                  String branchFilter, String tagFilter, SortMode sortMode, Boolean quickFilterEnabled) {
+                                  String branchFilter, String tagFilter, SortMode sortMode, SelectedValue selectedValue,
+                                  Boolean quickFilterEnabled) {
         super(name, description);
         this.defaultValue = defaultValue;
         this.branch = branch;
         this.uuid = UUID.randomUUID();
         this.sortMode = sortMode;
+        this.selectedValue = selectedValue;
         this.quickFilterEnabled = quickFilterEnabled;
 
         setType(type);
@@ -190,6 +193,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         this.branchFilter = branchFilter;
+    }
+
+    public SelectedValue getSelectedValue() {
+        return selectedValue == null ? SelectedValue.TOP : selectedValue;
     }
 
     public Boolean getQuickFilterEnabled() {

@@ -18,7 +18,9 @@
             </j:if>
             <script type="text/javascript">
                 var parentDiv = jQuery('#${divId}');
-                new GitParameter.QuickFilter(parentDiv.find('.select').get(0),parentDiv.find('.git_parameter_quick_filter').get(0));
+                new GitParameter.QuickFilter(parentDiv.find('.select').get(0),
+                                             parentDiv.find('.git_parameter_quick_filter').get(0),
+                                             "${it.selectedValue}", "${it.defaultValue}");
             </script>
         </div>
         <div>If you wipe out your workspace, the plugin needs to clone the repository before it can list the
