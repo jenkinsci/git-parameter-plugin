@@ -240,28 +240,30 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             EnvVars environment = getEnvironment(project);
             for (RemoteConfig repository : git.getRepositories()) {
                 boolean isRepoScm = REPO_SCM_NAME.equals(repository.getName());
-                FilePathWrapper workspace = getWorkspace(project, isRepoScm);
-                GitClient gitClient = getGitClient(project, workspace, git, environment);
-                for (URIish remoteURL : repository.getURIs()) {
-                    initWorkspace(workspace, gitClient, remoteURL);
+                synchronized (GitParameterDefinition.class) {
+                    FilePathWrapper workspace = getWorkspace(project, isRepoScm);
+                    GitClient gitClient = getGitClient(project, workspace, git, environment);
+                    for (URIish remoteURL : repository.getURIs()) {
+                        initWorkspace(workspace, gitClient, remoteURL);
 
-                    FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
-                    fetch.execute();
+                        FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+                        fetch.execute();
 
-                    if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                        getRevision(paramList, gitClient);
+                        if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
+                            getRevision(paramList, gitClient);
+                        }
+                        if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                            Set<String> tagSet = gitClient.getTagNames(tagFilter);
+                            sortAndPutToParam(tagSet, paramList);
+                        }
+                        if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
+                            Set<String> branchSet = getBranch(gitClient);
+                            sortAndPutToParam(branchSet, paramList);
+                        }
                     }
-                    if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                        Set<String> tagSet = gitClient.getTagNames(tagFilter);
-                        sortAndPutToParam(tagSet, paramList);
-                    }
-                    if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                        Set<String> branchSet = getBranch(gitClient);
-                        sortAndPutToParam(branchSet, paramList);
-                    }
+                    workspace.delete();
+                    break;
                 }
-                workspace.delete();
-                break;
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Unexpected error!", e);
@@ -328,7 +330,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     private FilePathWrapper getWorkspace(AbstractProject<?, ?> project, boolean isRepoScm) throws IOException, InterruptedException {
         FilePathWrapper someWorkspace = new FilePathWrapper(project.getSomeWorkspace());
-        if (isRepoScm){
+        if (isRepoScm) {
             FilePath repoDir = new FilePath(someWorkspace.getFilePath(), REPO_MANIFESTS_DIR);
             if (repoDir.exists()) {
                 someWorkspace = new FilePathWrapper(repoDir);
