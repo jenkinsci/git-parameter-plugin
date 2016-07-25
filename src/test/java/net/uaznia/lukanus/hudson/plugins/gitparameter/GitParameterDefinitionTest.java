@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,14 +49,23 @@ public class GitParameterDefinitionTest {
      */
     @Test
     public void testCreateValue_StaplerRequest() {
-        System.out.println("createValue");
-
         GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
 
         StaplerRequest request = mock(StaplerRequest.class);
         ParameterValue result = instance.createValue(request);
 
         assertEquals(result, new GitParameterValue("name", "defaultValue"));
+    }
+
+    @Test
+    public void testCreateValue_StaplerRequest_ValueInRequest() {
+        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+
+        StaplerRequest request = mock(StaplerRequest.class);
+        when(request.getParameterValues(instance.getName())).thenReturn(new String[]{"master"});
+        ParameterValue result = instance.createValue(request);
+
+        assertEquals(result, new GitParameterValue("name", "master"));
     }
 
     @Test

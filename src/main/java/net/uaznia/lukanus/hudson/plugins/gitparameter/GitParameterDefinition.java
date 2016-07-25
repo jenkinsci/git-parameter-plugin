@@ -91,10 +91,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Override
     public ParameterValue createValue(StaplerRequest request) {
         String value[] = request.getParameterValues(getName());
-        if (value == null) {
+        if (value == null || value.length == 0 || StringUtils.isBlank(value[0])) {
             return getDefaultParameterValue();
         }
-        return null;
+        return new GitParameterValue(getName(), value[0]);
     }
 
     @Override
