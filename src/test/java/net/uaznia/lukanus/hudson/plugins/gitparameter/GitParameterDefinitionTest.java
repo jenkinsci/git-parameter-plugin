@@ -621,7 +621,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.TOP, false);
+                SortMode.ASCENDING, SelectedValue.TOP, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
         assertEquals("git-parameter-0.2", def.getDefaultParameterValue().getValue());
