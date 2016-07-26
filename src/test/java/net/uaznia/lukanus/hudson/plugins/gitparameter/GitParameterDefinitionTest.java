@@ -624,7 +624,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        assertEquals("git-parameter-0.2", def.getDefaultParameterValue().getValue());
+        assertEquals("0.1", def.getDefaultParameterValue().getValue());
     }
 
     private boolean isListBoxItem(ListBoxModel items, String item) {
