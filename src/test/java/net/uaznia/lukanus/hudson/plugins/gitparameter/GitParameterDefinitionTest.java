@@ -1,5 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -26,6 +28,7 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
+import org.apache.maven.plugin.lifecycle.Execution;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -250,6 +253,7 @@ public class GitParameterDefinitionTest {
         String result = instance.getType();
         assertEquals("PT_BRANCH", result);
     }
+
     /**
      * Test of getDefaultValue method, of class GitParameterDefinition.
      */
@@ -276,7 +280,6 @@ public class GitParameterDefinitionTest {
 
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
-
     }
 
     /**
@@ -381,7 +384,7 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, false);
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-       // build.run();
+        // build.run();
         project.doDoWipeOutWorkspace();
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
@@ -586,6 +589,43 @@ public class GitParameterDefinitionTest {
         assertTrue(badWildcard.kind == Kind.ERROR);
     }
 
+    @Test
+    public void testGetDefaultValueWhenDefaultValueIsSet() throws Exception {
+        project = jenkins.createFreeStyleProject("testDefaultValue");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+        String testDefaultValue = "testDefaultValue";
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                testDefaultValue,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        assertTrue(testDefaultValue.equals(def.getDefaultParameterValue().getValue()));
+    }
+
+    @Test
+    public void testGetDefaultValueAsTop() throws Exception {
+        project = jenkins.createFreeStyleProject("testDefaultValueAsTOP");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.NONE, SelectedValue.TOP, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        assertEquals("git-parameter-0.2", def.getDefaultParameterValue().getValue());
+    }
 
     private boolean isListBoxItem(ListBoxModel items, String item) {
         boolean itemExists = false;
