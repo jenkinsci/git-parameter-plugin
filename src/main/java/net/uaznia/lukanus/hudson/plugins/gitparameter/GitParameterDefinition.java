@@ -123,9 +123,22 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     @Override
     public ParameterValue getDefaultParameterValue() {
+        //If 'Default Value' is set has high priority!
         String defValue = getDefaultValue();
         if (!StringUtils.isBlank(defValue)) {
             return new GitParameterValue(getName(), defValue);
+        }
+
+        switch (getSelectedValue()) {
+            case TOP:
+                try {
+                    ListBoxModel valueItems = getDescriptor().doFillValueItems(getParentProject(), getName());
+                    if (valueItems.size() > 0) {
+                        return new GitParameterValue(getName(), valueItems.get(0).value);
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Unexpected error!", e);
+                }
         }
         return super.getDefaultParameterValue();
     }
