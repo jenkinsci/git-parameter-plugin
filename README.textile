@@ -15,6 +15,11 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+08/06/2016 Version 0.6.2
+* JENKINS-36833: Race Condition Populating Multiple Tag Parameters
+* JENKINS-36934: No return value passed to the url
+* JENKINS-31939: The top value is better to be chosen by default of to have such option (part 3)
+
 07/19/2016 Version 0.6.1
 
 * JENKINS-31939: The top value is better to be chosen by default of to have such option (part 2)
