@@ -367,12 +367,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private EnvVars getEnvironment(AbstractProject<?, ?> project) throws IOException, InterruptedException {
+        EnvVars environment = project.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
         if (project.getSomeBuildWithWorkspace() != null) {
-            return project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
-        } else {
-            return project.getEnvironment(null, TaskListener.NULL);
+            EnvVars buildEnvVars = project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
+            environment.putAll(buildEnvVars);
         }
-
+        EnvVars.resolve(environment);
+        return environment;
     }
 
     private void initWorkspace(FilePathWrapper workspace, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
