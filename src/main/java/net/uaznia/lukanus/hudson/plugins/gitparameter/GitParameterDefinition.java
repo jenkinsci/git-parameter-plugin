@@ -70,11 +70,12 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String defaultValue;
     private SelectedValue selectedValue;
     private Boolean quickFilterEnabled;
+    private Boolean manualRevisionEntry;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
                                   String branchFilter, String tagFilter, SortMode sortMode, SelectedValue selectedValue,
-                                  Boolean quickFilterEnabled) {
+                                  Boolean quickFilterEnabled, Boolean manualRevisionEntry) {
         super(name, description);
         this.defaultValue = defaultValue;
         this.branch = branch;
@@ -82,6 +83,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.sortMode = sortMode;
         this.selectedValue = selectedValue;
         this.quickFilterEnabled = quickFilterEnabled;
+        this.manualRevisionEntry = manualRevisionEntry;
 
         setType(type);
         setTagFilter(tagFilter);
@@ -216,6 +218,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return quickFilterEnabled;
     }
 
+    public Boolean getManualRevisionEntry() {
+        return manualRevisionEntry;
+    }
+
     public AbstractProject<?, ?> getParentProject() {
         AbstractProject<?, ?> context = null;
         List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
@@ -248,6 +254,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) {
 
+        final String TAG_PREFIX = "tags/";
+        final String BRANCH_PREFIX = "";
+
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
             EnvVars environment = getEnvironment(project);
@@ -267,11 +276,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         }
                         if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
                             Set<String> tagSet = gitClient.getTagNames(tagFilter);
-                            sortAndPutToParam(tagSet, paramList);
+                            sortAndPutToParam(tagSet, paramList, TAG_PREFIX);
                         }
                         if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
                             Set<String> branchSet = getBranch(gitClient);
-                            sortAndPutToParam(branchSet, paramList);
+                            sortAndPutToParam(branchSet, paramList, BRANCH_PREFIX);
                         }
                     }
                     workspace.delete();
@@ -319,11 +328,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
     }
 
-    private void sortAndPutToParam(Set<String> setElement, Map<String, String> paramList) {
+    private void sortAndPutToParam(Set<String> setElement, Map<String, String> paramList, String prefix) {
         List<String> sorted = sort(setElement);
 
         for (String element : sorted) {
-            paramList.put(element, element);
+            paramList.put(element, prefix + element);
         }
     }
 

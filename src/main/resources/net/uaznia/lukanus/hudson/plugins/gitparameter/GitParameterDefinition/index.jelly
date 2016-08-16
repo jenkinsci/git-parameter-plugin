@@ -1,31 +1,70 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
          xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <st:adjunct includes="org.kohsuke.stapler.jquery"/>
-    <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.script"/>
-    <j:set var="divId" value="${it.divUUID}" scope="parent"/>
-    <f:entry title="${it.name}" description="${it.description}">
-        <div name="parameter" description="${it.description}" id="${divId}">
-            <st:adjunct includes="lib.form.select.select"/>
-            <input type="hidden" name="name" value="${it.name}"/>
-            <select name="value" class="select" size="5" style="min-width: 200px" id="select"
-                    fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}">
-                <option value="">${%Retrieving Git references…}</option>
-            </select>
-            <j:if test="${it.quickFilterEnabled}">
-                <input class='git_parameter_quick_filter' type='text' value='' name='quickFilter' placeholder='Filter'
-                       style="vertical-align: top" id="filter"/>
-            </j:if>
-            <script type="text/javascript">
-                var parentDiv = jQuery('#${divId}');
-                new GitParameter.QuickFilter(parentDiv.find('.select').get(0),
-                                             parentDiv.find('.git_parameter_quick_filter').get(0),
-                                             "${it.selectedValue}", "${it.defaultValue}");
-            </script>
-        </div>
-        <div>If you wipe out your workspace, the plugin needs to clone the repository before it can list the
-            tags/revisions. This may take some time if you have a slow connection or the repository is big.
-        </div>
+  <st:adjunct includes="org.kohsuke.stapler.jquery"/>
+  <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.script"/>
+  <st:adjunct includes="lib.form.select.select"/>
+  <j:set var="divId" value="${it.divUUID}" scope="parent"/>
+  <f:section name="parameter" title="Git Parameters">
+    <input type="hidden" name="name" value="${it.name}"/>
+    <input type="hidden" name="value" value="${it.value}"/>
+    <f:entry>
+      <j:if test="${it.manualRevisionEntry}">
+        <f:optionalBlock name="revision" title="Manually enter revision:">
+          <f:entry title="Hash">
+            <f:textbox name="gitManualRevision" style="width: 200px" />
+          </f:entry>
+        </f:optionalBlock>
+      </j:if>
     </f:entry>
+    <f:entry title="Choose reference:" description="If you wipe out your workspace, the plugin needs to clone the repository before
+           it can list the tags/revisions. This may take some time if you have a slow connection or the repository is big.">
+      <f:entry>
+        <j:if test="${it.quickFilterEnabled}">
+          <f:textbox name="gitRefFilter" style="width: 200px" />
+        </j:if>
+      </f:entry>
+      <f:entry>
+        <select class="select" size="5" style="width: 200px" name="gitRefSelector"
+                fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}">
+          <option value="">${%Retrieving Git references…}</option>
+        </select>
+      </f:entry>
+    </f:entry>
+    <script type="text/javascript">
+      var form = jQuery('form[name=parameters]');
+      var selector = form.find('select[name=gitRefSelector]');
+      var filter = form.find('input[name=gitRefFilter]');
+      var manualRev = form.find('input[name=gitManualRevision]');
+      var name = form.find('input[name=name]');
+      var finalValue = form.find('input[name=value]');
 
+      new GitParameter.QuickFilter(selector.get(0), filter.get(0),
+          "${it.selectedValue}", "${it.defaultValue}");
+
+      if (manualRev.length) {
+        manualRev.on("change paste keyup",
+          function () {
+            if (jQuery(this).val() != "") {
+              selector.attr('disabled', true);
+              filter.attr('disabled', true);
+            }
+            else {
+              selector.attr('disabled', false);
+              filter.attr('disabled', false);
+            }
+          }
+        )
+      }
+
+      form.on("submit",
+        function () {
+          finalValue.val(selector.val());
+          if (manualRev.length &amp;&amp; manualRev.val() != "") {
+            finalValue.val(manualRev.val());
+          }
+        }
+      )
+    </script>
+  </f:section>
 </j:jelly>
