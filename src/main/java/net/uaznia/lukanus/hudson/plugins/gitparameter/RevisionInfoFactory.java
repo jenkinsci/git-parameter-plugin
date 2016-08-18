@@ -50,10 +50,10 @@ public class RevisionInfoFactory {
         try {
             raw = gitClient.showRevision(revision.getSha1());
         } catch (GitException e1) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
+            LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e1);
             return "";
         } catch (InterruptedException e1) {
-            LOGGER.log(Level.SEVERE, "Unexpected error ", e1);
+            LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e1);
             return "";
         }
 
@@ -65,7 +65,7 @@ public class RevisionInfoFactory {
             DateTime date = new DateTime(Long.parseLong(timestamp) * 1000); //Convert UNIX timestamp to date
             return revision.getSha1String().substring(0, 8) + " " + date.toString("yyyy:MM:dd HH:mm") + " " + author;
         } else {
-            LOGGER.log(Level.WARNING, "Not find author pattern " + authorLine);
+            LOGGER.log(Level.WARNING, Messages.GitParameterDefinition_notFindAuthorPattern(authorLine));
             return "";
         }
     }
