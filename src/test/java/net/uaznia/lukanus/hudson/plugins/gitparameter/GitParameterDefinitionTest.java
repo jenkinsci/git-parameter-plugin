@@ -17,10 +17,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.tasks.Shell;
@@ -637,6 +640,36 @@ public class GitParameterDefinitionTest {
         assertEquals("0.1", def.getDefaultParameterValue().getValue());
     }
 
+    @Test
+    public void testGlobalVariableRepositoryUrl() throws Exception {
+        EnvVars.masterEnvVars.put("GIT_REPO_URL",repositoryUrl);
+        project = jenkins.createFreeStyleProject("testGlobalValue");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit("$GIT_REPO_URL");
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertEquals(build.getResult(), Result.SUCCESS);
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    private void setupGit(String url) throws IOException {
+        UserRemoteConfig config = new UserRemoteConfig(url, null, null, null);
+        List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
+        configs.add(config);
+        GitSCM git = new GitSCM(configs, null, false, null, null, null, null);
+        project.setScm(git);
+    }
+
     private boolean isListBoxItem(ListBoxModel items, String item) {
         boolean itemExists = false;
         for (int i = 0; i < items.size(); i++) {
@@ -648,10 +681,6 @@ public class GitParameterDefinitionTest {
     }
 
     private void setupGit() throws IOException {
-        UserRemoteConfig config = new UserRemoteConfig(repositoryUrl, null, null, null);
-        List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
-        configs.add(config);
-        GitSCM git = new GitSCM(configs, null, false, null, null, null, null);
-        project.setScm(git);
+        setupGit(repositoryUrl);
     }
 }
