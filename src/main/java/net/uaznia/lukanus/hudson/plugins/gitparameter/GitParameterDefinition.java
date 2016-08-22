@@ -139,7 +139,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Unexpected error!", e);
+                    LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e);
                 }
         }
         return super.getDefaultParameterValue();
@@ -288,8 +288,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error!", e);
-            String message = e.getMessage() + " Pleas look to log!";
+            LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e);
+            String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
             paramList.clear();
             paramList.put(message, message);
         }
@@ -302,7 +302,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             branchFilterPattern = Pattern.compile(branchFilter);
         } catch (Exception e) {
-            LOGGER.log(Level.INFO, "Specified branchFilter is not a valid regex. Setting to '.*'", e.getMessage());
+            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
             branchFilterPattern = Pattern.compile(".*");
         }
         for (Branch branch : gitClient.getRemoteBranches()) {
@@ -388,7 +388,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isEmptyWorkspace(workspace.getFilePath())) {
             gitClient.init();
             gitClient.clone(remoteURL.toASCIIString(), "origin", false, null);
-            LOGGER.log(Level.INFO, "generateContents clone done");
+            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_genContentsCloneDone());
         }
     }
 
@@ -436,7 +436,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         @Override
         public String getDisplayName() {
-            return "Git Parameter";
+            return Messages.GitParameterDefinition_DisplayName();
         }
 
         public ListBoxModel doFillValueItems(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String param)
@@ -445,7 +445,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
             scm = getProjectSCM(project);
             if (scm == null) {
-                items.add("!No Git repository configured in SCM configuration");
+                items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
                 return items;
             }
             ParametersDefinitionProperty prop = project.getProperty(ParametersDefinitionProperty.class);
@@ -494,7 +494,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 configs.add(config);
                 return new GitSCM(configs, null, false, null, null, null, null);
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "get repo scm failed", e);
+                LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_getRepoScmFailed(), e);
             }
             return null;
         }
@@ -503,7 +503,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             try {
                 Pattern.compile(value); // Validate we've got a valid regex.
             } catch (PatternSyntaxException e) {
-                return FormValidation.error("The pattern '" + value + "' does not appear to be valid: " + e.getMessage());
+                String errorMessage = Messages.GitParameterDefinition_invalidBranchPattern(value);
+                LOGGER.log(Level.WARNING, errorMessage, e);
+                return FormValidation.error(errorMessage);
             }
             return FormValidation.ok();
         }

@@ -17,8 +17,7 @@
         </f:optionalBlock>
       </j:if>
     </f:entry>
-    <f:entry title="Choose reference:" description="If you wipe out your workspace, the plugin needs to clone the repository before
-           it can list the tags/revisions. This may take some time if you have a slow connection or the repository is big.">
+    <f:entry title="Choose reference:" description="${%needs.to.clone}">
       <f:entry>
         <j:if test="${it.quickFilterEnabled}">
           <f:textbox name="gitRefFilter" style="width: 200px" />

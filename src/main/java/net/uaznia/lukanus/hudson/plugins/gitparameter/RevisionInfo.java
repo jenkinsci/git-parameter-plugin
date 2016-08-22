@@ -4,7 +4,7 @@ public class RevisionInfo {
     private String sha1;
     private String revisionInfo;
 
-    public RevisionInfo(String sha1, String revisionInfo){
+    public RevisionInfo(String sha1, String revisionInfo) {
         this.sha1 = sha1;
         this.revisionInfo = revisionInfo;
     }

@@ -1,74 +1,74 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <f:entry title="Name" field="name">
+    <f:entry title="${%parameter.name}" field="name">
         <f:textbox/>
     </f:entry>
-    <f:entry title="Description" field="description">
+    <f:entry title="${%parameter.description}" field="description">
         <f:textbox/>
     </f:entry>
-    <f:entry title="Parameter Type" field="type">
+    <f:entry title="${%parameter.type}" field="type">
         <select name="type">
             <j:choose>
                 <j:when test="${instance.type eq 'PT_TAG'}">
-                    <option value="PT_TAG" selected="selected">Tag</option>
+                    <option value="PT_TAG" selected="selected">${%parameter.tag}</option>
                 </j:when>
                 <j:otherwise>
-                    <option value="PT_TAG">Tag</option>
+                    <option value="PT_TAG">${%parameter.tag}</option>
                 </j:otherwise>
             </j:choose>
             <j:choose>
                 <j:when test="${instance.type eq 'PT_BRANCH'}">
-                    <option value="PT_BRANCH" selected="selected">Branch</option>
+                    <option value="PT_BRANCH" selected="selected">${%parameter.branch}</option>
                 </j:when>
                 <j:otherwise>
-                    <option value="PT_BRANCH">Branch</option>
+                    <option value="PT_BRANCH">${%parameter.branch}</option>
                 </j:otherwise>
             </j:choose>
             <j:choose>
                 <j:when test="${instance.type eq 'PT_BRANCH_TAG'}">
-                    <option value="PT_BRANCH_TAG" selected="selected">Branch or tag</option>
+                    <option value="PT_BRANCH_TAG" selected="selected">${%parameter.branch.or.tag}</option>
                 </j:when>
                 <j:otherwise>
-                    <option value="PT_BRANCH_TAG">Branch or tag</option>
+                    <option value="PT_BRANCH_TAG">${%parameter.branch.or.tag}</option>
                 </j:otherwise>
             </j:choose>
             <j:choose>
                 <j:when test="${instance.type eq 'PT_REVISION'}">
-                    <option value="PT_REVISION" selected="selected">Revision</option>
+                    <option value="PT_REVISION" selected="selected">${%parameter.revision}</option>
                 </j:when>
                 <j:otherwise>
-                    <option value="PT_REVISION">Revision</option>
+                    <option value="PT_REVISION">${%parameter.revision}</option>
                 </j:otherwise>
             </j:choose>
         </select>
     </f:entry>
 
     <f:advanced >
-        <f:entry title="Branch" field="branch">
+        <f:entry title="${%parameter.branch}" field="branch">
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="Branch filter" field="branchFilter">
+        <f:entry title="${%parameter.branch.filter}" field="branchFilter">
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="Tag filter" field="tagFilter">
+        <f:entry title="${%parameter.tag.filter}" field="tagFilter">
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="Sort mode" field="sortMode">
+        <f:entry title="${%parameter.sort.mode}" field="sortMode">
             <f:enum>${it}</f:enum>
         </f:entry>
 
-        <f:entry title="Default Value" field="defaultValue">
+        <f:entry title="${%parameter.default.value}" field="defaultValue">
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="Selected value" field="selectedValue">
+        <f:entry title="${%parameter.selected.value}" field="selectedValue">
             <f:enum>${it}</f:enum>
         </f:entry>
 
-        <f:entry title="Quick filter" field="quickFilterEnabled">
+        <f:entry title="${%parameter.quick.filter}" field="quickFilterEnabled">
             <f:checkbox/>
         </f:entry>
 
