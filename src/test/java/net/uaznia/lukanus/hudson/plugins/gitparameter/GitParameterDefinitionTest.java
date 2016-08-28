@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
@@ -23,16 +22,19 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
-import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.scm.SCM;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
-import org.apache.maven.plugin.lifecycle.Execution;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
+import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -45,7 +47,6 @@ import org.kohsuke.stapler.StaplerRequest;
 public class GitParameterDefinitionTest {
     private final String repositoryUrl = "https://github.com/jenkinsci/git-parameter-plugin.git";
     private FreeStyleProject project;
-
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
@@ -316,10 +317,11 @@ public class GitParameterDefinitionTest {
                 "*",
                 SortMode.NONE, SelectedValue.NONE, false);
         testJob.addProperty(new ParametersDefinitionProperty(def));
-        assertTrue(def.getDescriptor().getProjectSCM(testJob) == null);
+        JobWrapper IJobWrapper = JobWrapperFactory.createJobWrapper(testJob);
+        assertTrue(def.getDescriptor().getProjectSCM(IJobWrapper) == null);
 
         testJob.setScm(git);
-        assertTrue(git.equals(def.getDescriptor().getProjectSCM(testJob)));
+        assertTrue(git.equals(def.getDescriptor().getProjectSCM(IJobWrapper)));
     }
 
     @Test
@@ -589,7 +591,7 @@ public class GitParameterDefinitionTest {
                 "*",
                 SortMode.NONE, SelectedValue.NONE, false);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
-        assertEquals("folder/job1", gitParameterDefinition.getParentProject().getFullName());
+        assertEquals("folder/job1", gitParameterDefinition.getParentJob().getFullName());
     }
 
     @Test
@@ -662,12 +664,44 @@ public class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
+    @Test
+    public void testWorkflowJob() throws IOException, InterruptedException {
+        WorkflowJob p =  jenkins.jenkins.createProject(WorkflowJob.class, "wfj");
+        p.setDefinition(new CpsScmFlowDefinition(getGitSCM(),"jenkinsfile"));
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, false);
+
+        p.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
+        assertTrue(isListBoxItem(items, "git-parameter-0.2"));
+    }
+
+    private void setupGit() throws IOException {
+        setupGit(repositoryUrl);
+    }
+
     private void setupGit(String url) throws IOException {
+        SCM git = getGitSCM(url);
+        project.setScm(git);
+    }
+
+    private SCM getGitSCM()
+    {
+        return getGitSCM(repositoryUrl);
+    }
+
+    private SCM getGitSCM(String url) {
         UserRemoteConfig config = new UserRemoteConfig(url, null, null, null);
         List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
         configs.add(config);
-        GitSCM git = new GitSCM(configs, null, false, null, null, null, null);
-        project.setScm(git);
+        return new GitSCM(configs, null, false, null, null, null, null);
     }
 
     private boolean isListBoxItem(ListBoxModel items, String item) {
@@ -678,9 +712,5 @@ public class GitParameterDefinitionTest {
             }
         }
         return itemExists;
-    }
-
-    private void setupGit() throws IOException {
-        setupGit(repositoryUrl);
     }
 }
