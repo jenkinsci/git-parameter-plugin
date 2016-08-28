@@ -100,24 +100,24 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Override
     public ParameterValue createValue(StaplerRequest request, JSONObject jO) {
         Object value = jO.get("value");
-        String strValue = "";
+        StringBuilder strValue = new StringBuilder();
         if (value instanceof String) {
-            strValue = (String) value;
+            strValue.append(value);
         } else if (value instanceof JSONArray) {
             JSONArray jsonValues = (JSONArray) value;
             for (int i = 0; i < jsonValues.size(); i++) {
-                strValue += jsonValues.getString(i);
+                strValue.append(jsonValues.getString(i));
                 if (i < jsonValues.size() - 1) {
-                    strValue += ",";
+                    strValue.append(",");
                 }
             }
         }
 
-        if ("".equals(strValue)) {
-            strValue = defaultValue;
+        if (strValue.length() == 0) {
+            strValue.append(defaultValue);
         }
 
-        GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue);
+        GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue.toString());
         return gitParameterValue;
     }
 
@@ -139,6 +139,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e);
                 }
+                break;
+            case DEFAULT:
+            case NONE:
+            default:
+                return super.getDefaultParameterValue();
         }
         return super.getDefaultParameterValue();
     }

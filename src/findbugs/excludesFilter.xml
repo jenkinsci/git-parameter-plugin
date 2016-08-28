@@ -1,0 +1,19 @@
+<FindBugsFilter>
+    <!-- Jenkins.getInstance() always returns a non-null. -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+        <Class name="net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition"/>
+        <Method name="getEnvironment"/>
+    </Match>
+    <!-- Jenkins.getInstance() always returns a non-null. -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+        <Class name="net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition"/>
+        <Method name="getParentProject"/>
+    </Match>
+
+    <Match>
+        <Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
+        <Class name="net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition"/>
+    </Match>
+</FindBugsFilter>
