@@ -1,12 +1,13 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Comparator;
 
 /**
  * Compares strings but treats a sequence of digits as a single character.
  */
-class SmartNumberStringComparer implements Comparator<String> {
+class SmartNumberStringComparer implements Comparator<String>, Serializable {
 
     /**
      * Gets the token starting at the given index. It will return the first
@@ -18,11 +19,11 @@ class SmartNumberStringComparer implements Comparator<String> {
      */
     private String getToken(String str, int index) {
         char nextChar = str.charAt(index++);
-        String token = String.valueOf(nextChar);
+        StringBuilder token =  new StringBuilder(String.valueOf(nextChar));
 
         // if the first char wasn't a digit then we're already done
         if (!Character.isDigit(nextChar))
-            return token;
+            return token.toString();
 
         // the first char was a digit so continue until end of string or non
         // digit
@@ -32,10 +33,10 @@ class SmartNumberStringComparer implements Comparator<String> {
             if (!Character.isDigit(nextChar))
                 break;
 
-            token += nextChar;
+            token.append(nextChar);
         }
 
-        return token;
+        return token.toString();
     }
 
     /**
@@ -75,7 +76,7 @@ class SmartNumberStringComparer implements Comparator<String> {
             bIndex += bToken.length();
         }
 
-        return Integer.valueOf(a.length()).compareTo(Integer.valueOf(b.length()));
+        return Integer.compare(a.length(), b.length());
     }
 
 }
