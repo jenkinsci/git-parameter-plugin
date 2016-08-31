@@ -375,9 +375,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     private EnvVars getEnvironment(JobWrapper jobImplementationWrapper) throws IOException, InterruptedException {
         EnvVars environment = jobImplementationWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
-        if (jobImplementationWrapper.getSomeBuildWithWorkspace() != null) {
-            EnvVars buildEnvVars = jobImplementationWrapper.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
-            environment.putAll(buildEnvVars);
+        EnvVars buildEnvironments = jobImplementationWrapper.getSomeBuildEnvironments();
+        if (buildEnvironments != null) {
+            environment.putAll(buildEnvironments);
         }
         EnvVars.resolve(environment);
         return environment;

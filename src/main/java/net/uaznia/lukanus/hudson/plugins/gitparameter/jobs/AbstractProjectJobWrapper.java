@@ -1,12 +1,19 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
+import hudson.model.TaskListener;
 import hudson.scm.SCM;
 
 public class AbstractProjectJobWrapper extends AbstractJobWrapper {
+    private static final Logger LOGGER = Logger.getLogger(AbstractProjectJobWrapper.class.getName());
+
     public AbstractProjectJobWrapper(Job job) {
         super(job);
     }
@@ -22,7 +29,15 @@ public class AbstractProjectJobWrapper extends AbstractJobWrapper {
     }
 
     @Override
-    public AbstractBuild getSomeBuildWithWorkspace() {
-        return ((AbstractProject) getJob()).getSomeBuildWithWorkspace();
+    public EnvVars getSomeBuildEnvironments() {
+        try {
+            AbstractBuild someBuildWithWorkspace = ((AbstractProject) getJob()).getSomeBuildWithWorkspace();
+            if (someBuildWithWorkspace != null) {
+                return someBuildWithWorkspace.getEnvironment(TaskListener.NULL);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, Messages.AbstractProjectJobWrapper_GetEnvironmentsFromAbstractProject(), e);
+        }
+        return null;
     }
 }

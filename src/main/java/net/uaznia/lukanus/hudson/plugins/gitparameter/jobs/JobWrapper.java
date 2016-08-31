@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
@@ -22,7 +21,7 @@ public interface JobWrapper {
 
     EnvVars getEnvironment(Node node, TaskListener taskListener) throws IOException, InterruptedException;
 
-    AbstractBuild getSomeBuildWithWorkspace();
+    EnvVars getSomeBuildEnvironments();
 
     int getNextBuildNumber();
 
