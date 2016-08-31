@@ -253,16 +253,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
 
-    public Map<String, String> generateContents(JobWrapper IJobWrapper, GitSCM git) {
+    public Map<String, String> generateContents(JobWrapper jobWrapper, GitSCM git) {
 
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
-            EnvVars environment = getEnvironment(IJobWrapper);
+            EnvVars environment = getEnvironment(jobWrapper);
             for (RemoteConfig repository : git.getRepositories()) {
                 boolean isRepoScm = REPO_SCM_NAME.equals(repository.getName());
                 synchronized (GitParameterDefinition.class) {
-                    FilePathWrapper workspace = getWorkspace(IJobWrapper, isRepoScm);
-                    GitClient gitClient = getGitClient(IJobWrapper, workspace, git, environment);
+                    FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
+                    GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
                     for (URIish remoteURL : repository.getURIs()) {
                         initWorkspace(workspace, gitClient, remoteURL);
 
@@ -348,8 +348,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return sorted;
     }
 
-    private FilePathWrapper getWorkspace(JobWrapper jobImplementationWrapper, boolean isRepoScm) throws IOException, InterruptedException {
-        FilePathWrapper someWorkspace = new FilePathWrapper(jobImplementationWrapper.getSomeWorkspace());
+    private FilePathWrapper getWorkspace(JobWrapper jobWrapper, boolean isRepoScm) throws IOException, InterruptedException {
+        FilePathWrapper someWorkspace = new FilePathWrapper(jobWrapper.getSomeWorkspace());
         if (isRepoScm) {
             FilePath repoDir = new FilePath(someWorkspace.getFilePath(), REPO_MANIFESTS_DIR);
             if (repoDir.exists()) {
@@ -373,9 +373,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return filePathWrapper;
     }
 
-    private EnvVars getEnvironment(JobWrapper jobImplementationWrapper) throws IOException, InterruptedException {
-        EnvVars environment = jobImplementationWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
-        EnvVars buildEnvironments = jobImplementationWrapper.getSomeBuildEnvironments();
+    private EnvVars getEnvironment(JobWrapper jobWrapper) throws IOException, InterruptedException {
+        EnvVars environment = jobWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
+        EnvVars buildEnvironments = jobWrapper.getSomeBuildEnvironments();
         if (buildEnvironments != null) {
             environment.putAll(buildEnvironments);
         }
@@ -395,13 +395,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return workspaceDir.list().size() == 0;
     }
 
-    private GitClient getGitClient(final JobWrapper jobImplementationWrapper, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
-        int nextBuildNumber = jobImplementationWrapper.getNextBuildNumber();
+    private GitClient getGitClient(final JobWrapper jobWrapper, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
+        int nextBuildNumber = jobWrapper.getNextBuildNumber();
 
-        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(jobImplementationWrapper.getJob()) {
+        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(jobWrapper.getJob()) {
         }, workspace.getFilePath());
 
-        jobImplementationWrapper.updateNextBuildNumber(nextBuildNumber);
+        jobWrapper.updateNextBuildNumber(nextBuildNumber);
         return gitClient;
     }
 
@@ -441,21 +441,21 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         public ListBoxModel doFillValueItems(@AncestorInPath Job job, @QueryParameter String param)
                 throws IOException, InterruptedException {
             ListBoxModel items = new ListBoxModel();
-            JobWrapper IJobWrapper = JobWrapperFactory.createJobWrapper(job);
+            JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
 
-            ParametersDefinitionProperty prop = IJobWrapper.getProperty(ParametersDefinitionProperty.class);
+            ParametersDefinitionProperty prop = jobWrapper.getProperty(ParametersDefinitionProperty.class);
             if (prop != null) {
                 ParameterDefinition def = prop.getParameterDefinition(param);
                 if (def instanceof GitParameterDefinition) {
                     GitParameterDefinition paramDef = (GitParameterDefinition) def;
 
-                    scm = getProjectSCM(IJobWrapper);
+                    scm = getProjectSCM(jobWrapper);
                     if (scm == null) {
                         items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
                         return items;
                     }
 
-                    Map<String, String> paramList = paramDef.generateContents(IJobWrapper, scm);
+                    Map<String, String> paramList = paramDef.generateContents(jobWrapper, scm);
 
                     for (Map.Entry<String, String> entry : paramList.entrySet()) {
                         items.add(entry.getValue(), entry.getKey());
@@ -465,10 +465,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return items;
         }
 
-        public GitSCM getProjectSCM(JobWrapper project) {
+        public GitSCM getProjectSCM(JobWrapper jobWrapper) {
             SCM projectScm = null;
-            if (project != null) {
-                projectScm = project.getScm();
+            if (jobWrapper != null) {
+                projectScm = jobWrapper.getScm();
             }
 
             if (projectScm instanceof GitSCM) {
