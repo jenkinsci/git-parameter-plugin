@@ -21,7 +21,7 @@ import java.util.regex.PatternSyntaxException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
@@ -37,6 +37,8 @@ import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -132,7 +134,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         switch (getSelectedValue()) {
             case TOP:
                 try {
-                    ListBoxModel valueItems = getDescriptor().doFillValueItems(getParentProject(), getName());
+                    ListBoxModel valueItems = getDescriptor().doFillValueItems(getParentJob(), getName());
                     if (valueItems.size() > 0) {
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
@@ -221,14 +223,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return quickFilterEnabled;
     }
 
-    public AbstractProject<?, ?> getParentProject() {
-        AbstractProject<?, ?> context = null;
-        List<AbstractProject> jobs = Jenkins.getInstance().getAllItems(AbstractProject.class);
+    public Job getParentJob() {
+        Job context = null;
+        List<Job> jobs = Jenkins.getInstance().getAllItems(Job.class);
 
-        for (AbstractProject<?, ?> project : jobs) {
-            if (!(project instanceof TopLevelItem)) continue;
+        for (Job job : jobs) {
+            if (!(job instanceof TopLevelItem)) continue;
 
-            ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
+            ParametersDefinitionProperty property = (ParametersDefinitionProperty) job.getProperty(ParametersDefinitionProperty.class);
 
             if (property != null) {
                 List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
@@ -236,7 +238,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 if (parameterDefinitions != null) {
                     for (ParameterDefinition pd : parameterDefinitions) {
                         if (pd instanceof GitParameterDefinition && ((GitParameterDefinition) pd).compareTo(this) == 0) {
-                            context = project;
+                            context = job;
                             break;
                         }
                     }
@@ -251,16 +253,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
 
-    public Map<String, String> generateContents(AbstractProject<?, ?> project, GitSCM git) {
+    public Map<String, String> generateContents(JobWrapper jobWrapper, GitSCM git) {
 
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
-            EnvVars environment = getEnvironment(project);
+            EnvVars environment = getEnvironment(jobWrapper);
             for (RemoteConfig repository : git.getRepositories()) {
                 boolean isRepoScm = REPO_SCM_NAME.equals(repository.getName());
                 synchronized (GitParameterDefinition.class) {
-                    FilePathWrapper workspace = getWorkspace(project, isRepoScm);
-                    GitClient gitClient = getGitClient(project, workspace, git, environment);
+                    FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
+                    GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
                     for (URIish remoteURL : repository.getURIs()) {
                         initWorkspace(workspace, gitClient, remoteURL);
 
@@ -346,8 +348,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return sorted;
     }
 
-    private FilePathWrapper getWorkspace(AbstractProject<?, ?> project, boolean isRepoScm) throws IOException, InterruptedException {
-        FilePathWrapper someWorkspace = new FilePathWrapper(project.getSomeWorkspace());
+    private FilePathWrapper getWorkspace(JobWrapper jobWrapper, boolean isRepoScm) throws IOException, InterruptedException {
+        FilePathWrapper someWorkspace = new FilePathWrapper(jobWrapper.getSomeWorkspace());
         if (isRepoScm) {
             FilePath repoDir = new FilePath(someWorkspace.getFilePath(), REPO_MANIFESTS_DIR);
             if (repoDir.exists()) {
@@ -371,11 +373,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return filePathWrapper;
     }
 
-    private EnvVars getEnvironment(AbstractProject<?, ?> project) throws IOException, InterruptedException {
-        EnvVars environment = project.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
-        if (project.getSomeBuildWithWorkspace() != null) {
-            EnvVars buildEnvVars = project.getSomeBuildWithWorkspace().getEnvironment(TaskListener.NULL);
-            environment.putAll(buildEnvVars);
+    private EnvVars getEnvironment(JobWrapper jobWrapper) throws IOException, InterruptedException {
+        EnvVars environment = jobWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
+        EnvVars buildEnvironments = jobWrapper.getSomeBuildEnvironments();
+        if (buildEnvironments != null) {
+            environment.putAll(buildEnvironments);
         }
         EnvVars.resolve(environment);
         return environment;
@@ -393,13 +395,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return workspaceDir.list().size() == 0;
     }
 
-    private GitClient getGitClient(final AbstractProject<?, ?> project, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
-        int nextBuildNumber = project.getNextBuildNumber();
+    private GitClient getGitClient(final JobWrapper jobWrapper, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
+        int nextBuildNumber = jobWrapper.getNextBuildNumber();
 
-        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(project) {
+        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(jobWrapper.getJob()) {
         }, workspace.getFilePath());
 
-        project.updateNextBuildNumber(nextBuildNumber);
+        jobWrapper.updateNextBuildNumber(nextBuildNumber);
         return gitClient;
     }
 
@@ -436,21 +438,24 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return Messages.GitParameterDefinition_DisplayName();
         }
 
-        public ListBoxModel doFillValueItems(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String param)
+        public ListBoxModel doFillValueItems(@AncestorInPath Job job, @QueryParameter String param)
                 throws IOException, InterruptedException {
             ListBoxModel items = new ListBoxModel();
+            JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
 
-            scm = getProjectSCM(project);
-            if (scm == null) {
-                items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
-                return items;
-            }
-            ParametersDefinitionProperty prop = project.getProperty(ParametersDefinitionProperty.class);
+            ParametersDefinitionProperty prop = jobWrapper.getProperty(ParametersDefinitionProperty.class);
             if (prop != null) {
                 ParameterDefinition def = prop.getParameterDefinition(param);
                 if (def instanceof GitParameterDefinition) {
                     GitParameterDefinition paramDef = (GitParameterDefinition) def;
-                    Map<String, String> paramList = paramDef.generateContents(project, scm);
+
+                    scm = getProjectSCM(jobWrapper);
+                    if (scm == null) {
+                        items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
+                        return items;
+                    }
+
+                    Map<String, String> paramList = paramDef.generateContents(jobWrapper, scm);
 
                     for (Map.Entry<String, String> entry : paramList.entrySet()) {
                         items.add(entry.getValue(), entry.getKey());
@@ -460,10 +465,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return items;
         }
 
-        public GitSCM getProjectSCM(AbstractProject<?, ?> project) {
+        public GitSCM getProjectSCM(JobWrapper jobWrapper) {
             SCM projectScm = null;
-            if (project != null) {
-                projectScm = project.getScm();
+            if (jobWrapper != null) {
+                projectScm = jobWrapper.getScm();
             }
 
             if (projectScm instanceof GitSCM) {

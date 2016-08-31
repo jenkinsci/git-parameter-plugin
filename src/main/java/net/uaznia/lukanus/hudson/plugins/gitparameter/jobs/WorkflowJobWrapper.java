@@ -1,0 +1,75 @@
+package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.model.Job;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.scm.SCM;
+import jenkins.model.Jenkins;
+
+public class WorkflowJobWrapper extends AbstractJobWrapper {
+    private static final Logger LOGGER = Logger.getLogger(WorkflowJobWrapper.class.getName());
+
+    public WorkflowJobWrapper(Job job) {
+        super(job);
+    }
+
+    @Override
+    public SCM getScm() {
+        try {
+            Object definition = invokeGetMethodFromJob("getDefinition");
+
+            Class<?> cpsScmFlowDefinitionClazz = definition.getClass();
+            Method getScmMethod = cpsScmFlowDefinitionClazz.getMethod("getScm");
+
+            Object scm = getScmMethod.invoke(definition);
+            if (scm instanceof SCM) {
+                return (SCM) scm;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
+        }
+        return null;
+    }
+
+    @Override
+    public FilePath getSomeWorkspace() throws IOException, InterruptedException {
+        FilePath workspaceForWorkflow = Jenkins.getInstance().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
+        if (workspaceForWorkflow.exists()) {
+            return workspaceForWorkflow;
+        }
+        return null;
+    }
+
+    @Override
+    public EnvVars getSomeBuildEnvironments() {
+        try {
+            Object lastBuild = invokeGetMethodFromJob("getLastBuild");
+            if (lastBuild != null) {
+                Class<?> workflowRunClazz = lastBuild.getClass();
+
+                Method getEnvironmentMethod = workflowRunClazz.getMethod("getEnvironment", TaskListener.class);
+                Object envVars = getEnvironmentMethod.invoke(lastBuild, TaskListener.NULL);
+                if (envVars instanceof EnvVars) {
+                    return (EnvVars) envVars;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
+        }
+        return null;
+    }
+
+    private Object invokeGetMethodFromJob(String methodInvoke) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Class<?> workflowJobClazz = getJob().getClass();
+        Method getDefinitionMethod = workflowJobClazz.getDeclaredMethod(methodInvoke);
+        return getDefinitionMethod.invoke(getJob());
+    }
+}
