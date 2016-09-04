@@ -1,7 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,8 +29,6 @@ import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.plugins.git.Branch;
 import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCM;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
@@ -39,6 +36,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -56,12 +55,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
-    private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
     public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
 
-    private static final String REPO_SCM_CLASS_NAME = "hudson.plugins.repo.RepoScm";
-    private static final String REPO_SCM_NAME = "repo";
-    private static final String REPO_MANIFESTS_DIR = ".repo/manifests";
+    private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
     private final UUID uuid;
     private String type;
@@ -259,7 +255,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             EnvVars environment = getEnvironment(jobWrapper);
             for (RemoteConfig repository : git.getRepositories()) {
-                boolean isRepoScm = REPO_SCM_NAME.equals(repository.getName());
+                boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
                 synchronized (GitParameterDefinition.class) {
                     FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
                     GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
@@ -351,7 +347,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private FilePathWrapper getWorkspace(JobWrapper jobWrapper, boolean isRepoScm) throws IOException, InterruptedException {
         FilePathWrapper someWorkspace = new FilePathWrapper(jobWrapper.getSomeWorkspace());
         if (isRepoScm) {
-            FilePath repoDir = new FilePath(someWorkspace.getFilePath(), REPO_MANIFESTS_DIR);
+            FilePath repoDir = new FilePath(someWorkspace.getFilePath(), RepoSCM.getRepoMainfestsDir());
             if (repoDir.exists()) {
                 someWorkspace = new FilePathWrapper(repoDir);
             } else {
@@ -466,39 +462,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         public GitSCM getProjectSCM(JobWrapper jobWrapper) {
-            SCM projectScm = null;
-            if (jobWrapper != null) {
-                projectScm = jobWrapper.getScm();
-            }
-
-            if (projectScm instanceof GitSCM) {
-                return (GitSCM) projectScm;
-            }
-
-            if (isRepoScm(projectScm)) {
-                return getGitSCMFromRepoScm(projectScm);
-            }
-
-            return null;
-        }
-
-        private static boolean isRepoScm(SCM projectScm) {
-            return projectScm != null && REPO_SCM_CLASS_NAME.equals(projectScm.getClass().getName());
-        }
-
-        private static GitSCM getGitSCMFromRepoScm(SCM projectScm) {
-            try {
-                Class<?> clazz = projectScm.getClass();
-                Method method = clazz.getDeclaredMethod("getManifestRepositoryUrl");
-                String repositoryUrl = (String) method.invoke(projectScm);
-                UserRemoteConfig config = new UserRemoteConfig(repositoryUrl, REPO_SCM_NAME, null, null);
-                List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
-                configs.add(config);
-                return new GitSCM(configs, null, false, null, null, null, null);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_getRepoScmFailed(), e);
-            }
-            return null;
+            return SCMFactory.getGitSCM(jobWrapper);
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
