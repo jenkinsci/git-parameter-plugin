@@ -24,6 +24,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.plugins.templateproject.ProxySCM;
 import hudson.scm.SCM;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
@@ -682,6 +683,30 @@ public class GitParameterDefinitionTest {
         ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
+
+    @Test
+    public void testProxySCM() throws IOException, InterruptedException {
+        FreeStyleProject anotherProject = jenkins.createFreeStyleProject("AnotherProject");
+        anotherProject.getBuildersList().add(new Shell("echo test"));
+        anotherProject.setScm(getGitSCM());
+
+        project = jenkins.createFreeStyleProject("projectHaveProxySCM");
+        project.setScm(new ProxySCM("AnotherProject"));
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "git-parameter-0.2"));
+    }
+
 
     private void setupGit() throws IOException {
         setupGit(repositoryUrl);
