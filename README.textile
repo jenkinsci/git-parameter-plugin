@@ -15,6 +15,14 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+09/10/2016 Version 0.7.0
+* JENKINS-37555: Better support for internationalization
+* JENKINS-37595: Add support for polish localization
+* JENKINS-37370: Retrieving Git references do not work with variable in "Repository URL"
+* JENKINS-37953: Add support to ProxySCM
+* JENKINS-37738: Update dependency in plugin and cleanup in pom
+* JENKINS-34876: Git Parameters not working for Pipeline projects and Jenkinsfile from SCM
+
 08/06/2016 Version 0.6.2
 * JENKINS-36833: Race Condition Populating Multiple Tag Parameters
 * JENKINS-36934: No return value passed to the url
