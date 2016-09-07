@@ -3,8 +3,8 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<!-- Baseline Jenkins version you use to build and test the plugin. Users 
-			must have this version or newer to run. -->
+		<!-- Baseline Jenkins version you use to build and test the plugin.
+			 Users must have this version or newer to run. -->
 		<version>1.580.2</version>
 	</parent>
 
@@ -12,6 +12,7 @@
 	<artifactId>git-parameter</artifactId>
 	<version>0.6.3-SNAPSHOT</version>
 	<packaging>hpi</packaging>
+
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin</url>
@@ -23,12 +24,26 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>repo.jenkins-ci.org</id>
 			<url>http://repo.jenkins-ci.org/public/</url>
 		</repository>
 	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<developers>
 		<developer>
@@ -47,62 +62,58 @@
 		</developer>
 	</developers>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
+	<properties>
+		<jenkinsCoreVersion>${project.parent.version}</jenkinsCoreVersion>
+		<credentialsPluginVersion>1.9.4</credentialsPluginVersion>
+		<gitPluginVersion>2.3.4</gitPluginVersion>
+		<jqueryPluginVersion>1.11.2-0</jqueryPluginVersion>
+		<httpclientVersion>4.3.3</httpclientVersion>
+		<commonsLangVersion>3.4</commonsLangVersion>
+		<jodaTimeVersion>2.9.2</jodaTimeVersion>
+		<mockitoVersion>1.8.5</mockitoVersion>
+	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.3.3</version>
+			<groupId>org.jenkins-ci.main</groupId>
+			<artifactId>jenkins-core</artifactId>
+			<version>${jenkinsCoreVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>credentials</artifactId>
-			<version>1.9.4</version>
+			<version>${credentialsPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>2.3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.main</groupId>
-			<artifactId>jenkins-core</artifactId>
-			<version>1.580.2</version>
+			<version>${gitPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>jquery</artifactId>
-			<version>1.11.2-0</version>
+			<version>${jqueryPluginVersion}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.8.5</version>
-			<scope>test</scope>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclientVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
+			<version>${commonsLangVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.9.2</version>
+			<version>${jodaTimeVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockitoVersion}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<scm>
-		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-	  <tag>HEAD</tag>
-  </scm>
-
 </project>
