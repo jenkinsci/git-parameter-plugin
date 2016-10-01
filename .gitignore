@@ -1,11 +1,94 @@
-target
-bin
-.classpath
-.settings
-.project
+### Linux
+*~
+.directory
+.Trash-*
+
+### Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+### MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### JetBrains
 *.iml
 *.ipr
 *.iws
-work
+.idea/
+/out/
+.idea_modules/
+atlassian-ide-plugin.xml
+
+### Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.project
+.externalToolBuilders/
+*.launch
+.classpath
+.buildpath
+.target
+.texlipse
+
+### NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
 nbactions.xml
-.idea
+.nb-gradle/
+
+### Java
+*.class
+.mtj.tmp/
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+### Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+### Project-specific
+work/
+*.hpi
+*.jpi
