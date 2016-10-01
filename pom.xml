@@ -3,8 +3,8 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<!-- Baseline Jenkins version you use to build and test the plugin. Users 
-			must have this version or newer to run. -->
+		<!-- Baseline Jenkins version you use to build and test the plugin.
+				Users must have this version or newer to run. -->
 		<version>2.10</version>
 	</parent>
 
@@ -12,6 +12,7 @@
 	<artifactId>git-parameter</artifactId>
 	<version>0.7.1-SNAPSHOT</version>
 	<packaging>hpi</packaging>
+
 	<name>Git Parameter Plug-In</name>
 	<description>Assign git tag or revision number as parameter in Parametrized builds</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin</url>
@@ -23,12 +24,26 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>repo.jenkins-ci.org</id>
 			<url>http://repo.jenkins-ci.org/public/</url>
 		</repository>
 	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<developers>
 		<developer>
@@ -47,89 +62,91 @@
 		</developer>
 	</developers>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>http://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
+	<properties>
+		<!-- Core dependencies -->
+		<jenkinsCoreVersion>1.651.1</jenkinsCoreVersion>
+		<gitPluginVersion>2.4.4</gitPluginVersion>
+		<jqueryPluginVersion>1.11.2-0</jqueryPluginVersion>
+		<commonsLangVersion>3.4</commonsLangVersion>
+		<jodaTimeVersion>2.9.2</jodaTimeVersion>
+		<!-- Test dependencies -->
+		<credentialsPluginVersion>1.20</credentialsPluginVersion>
+		<workflowJobPluginVersion>2.5</workflowJobPluginVersion>
+		<workflowCpsPluginVersion>1.15</workflowCpsPluginVersion>
+		<templatePluginVersion>1.5.2</templatePluginVersion>
+		<multiScmPluginVersion>0.6</multiScmPluginVersion>
+		<httpclientVersion>4.5.2</httpclientVersion>
+		<mockitoVersion>1.8.5</mockitoVersion>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>jenkins-core</artifactId>
-			<version>1.651.1</version>
+			<version>${jenkinsCoreVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>2.4.4</version>
+			<version>${gitPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>jquery</artifactId>
-			<version>1.11.2-0</version>
+			<version>${jqueryPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
+			<version>${commonsLangVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>2.9.2</version>
+			<version>${jodaTimeVersion}</version>
 		</dependency>
 		<!-- Test scope -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>credentials</artifactId>
-			<version>1.20</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>1.8.5</version>
+			<version>${credentialsPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-job</artifactId>
-			<version>2.5</version>
+			<version>${workflowJobPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-cps</artifactId>
-			<version>1.15</version>
+			<version>${workflowCpsPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>template-project</artifactId>
-			<version>1.5.2</version>
-            <scope>test</scope>
+			<version>${templatePluginVersion}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>multiple-scms</artifactId>
-			<version>0.6</version>
+			<version>${multiScmPluginVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclientVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockitoVersion}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<scm>
-		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-		<url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-	  <tag>HEAD</tag>
-  </scm>
-
 </project>
