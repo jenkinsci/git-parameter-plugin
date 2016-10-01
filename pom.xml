@@ -63,90 +63,424 @@
 	</developers>
 
 	<properties>
-		<!-- Core dependencies -->
+		<!-- Plugin dependencies -->
 		<jenkinsCoreVersion>1.651.1</jenkinsCoreVersion>
 		<gitPluginVersion>2.4.4</gitPluginVersion>
 		<jqueryPluginVersion>1.11.2-0</jqueryPluginVersion>
-		<commonsLangVersion>3.4</commonsLangVersion>
 		<jodaTimeVersion>2.9.2</jodaTimeVersion>
-		<!-- Test dependencies -->
-		<credentialsPluginVersion>1.20</credentialsPluginVersion>
-		<workflowJobPluginVersion>2.5</workflowJobPluginVersion>
-		<workflowCpsPluginVersion>1.15</workflowCpsPluginVersion>
+		<commonsLang3Version>3.4</commonsLang3Version>
+		<!-- Jenkins dependencies -->
+		<trileadSsh2Version>build217-jenkins-8</trileadSsh2Version>
+		<credentialsPluginVersion>1.25</credentialsPluginVersion>
+		<wflowJobPluginVersion>2.5</wflowJobPluginVersion>
+		<wflowCpsPluginVersion>1.15</wflowCpsPluginVersion>
+		<wflowApiPluginVersion>2.1</wflowApiPluginVersion>
+		<wflowStepApiPluginVersion>2.2</wflowStepApiPluginVersion>
+		<wflowSupportPluginVersion>2.2</wflowSupportPluginVersion>
+		<scmApiPluginVersion>1.1</scmApiPluginVersion>
+		<scriptSecurityPluginVersion>1.21</scriptSecurityPluginVersion>
 		<templatePluginVersion>1.5.2</templatePluginVersion>
 		<multiScmPluginVersion>0.6</multiScmPluginVersion>
-		<httpclientVersion>4.5.2</httpclientVersion>
+		<iconSetPlugin>2.0.2</iconSetPlugin>
+		<remotingVersion>2.53.3</remotingVersion>
+		<instanceIdentityVersion>1.4</instanceIdentityVersion>
+		<slaveInstallerVersion>1.5</slaveInstallerVersion>
+		<sshCliVersion>1.2</sshCliVersion>
+		<!-- Test dependencies -->
 		<mockitoVersion>1.8.5</mockitoVersion>
+		<jsr305Version>2.0.1</jsr305Version>
+		<!-- Upstream dependencies -->
+		<jettyVersion>9.2.15.v20160210</jettyVersion>
+		<springVersion>2.5.6.SEC03</springVersion>
+		<commonsBeanUtilsVersion>1.8.3</commonsBeanUtilsVersion>
+		<commonsCodecVersion>1.8</commonsCodecVersion>
+		<commonsCollectionVersion>3.2.1</commonsCollectionVersion>
+		<commonsFileUploadVersion>1.3.1-jenkins-1</commonsFileUploadVersion>
+		<commonsIOVersion>2.4</commonsIOVersion>
+		<commonsLangVersion>2.6</commonsLangVersion>
+		<annotIndexerVersion>1.7</annotIndexerVersion>
+		<plexusUtilsVersion>3.0.10</plexusUtilsVersion>
+		<plexusCipherVersion>1.7</plexusCipherVersion>
+		<plexusClassworldsVersion>2.4.2</plexusClassworldsVersion>
+		<sisuPlexusVersion>0.1.0</sisuPlexusVersion>
+		<antVersion>1.8.4</antVersion>
+		<wagonProviderApiVersion>2.4</wagonProviderApiVersion>
+		<httpclientVersion>4.5.2</httpclientVersion>
+		<guavaVersion>14.0</guavaVersion>
+		<jaxenVersion>1.1.1</jaxenVersion>
+		<jnaVersion>4.2.1</jnaVersion>
+		<groovyVersion>1.8.9</groovyVersion>
+		<hamcrestVoreVersion>1.3</hamcrestVoreVersion>
+		<localizerVersion>1.23</localizerVersion>
+		<staplerVersion>1.239</staplerVersion>
+		<slf4jVersion>1.7.7</slf4jVersion>
+		<xmlApisVersion>1.4.01</xmlApisVersion>
+		<jsonLibVersion>2.4-jenkins-2</jsonLibVersion>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>jenkins-core</artifactId>
-			<version>${jenkinsCoreVersion}</version>
+			<!--<scope>provided</scope>-->
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>${gitPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>jquery</artifactId>
-			<version>${jqueryPluginVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>${commonsLangVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-			<version>${jodaTimeVersion}</version>
 		</dependency>
 		<!-- Test scope -->
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>credentials</artifactId>
-			<version>${credentialsPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-job</artifactId>
-			<version>${workflowJobPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-cps</artifactId>
-			<version>${workflowCpsPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>template-project</artifactId>
-			<version>${templatePluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>multiple-scms</artifactId>
-			<version>${multiScmPluginVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>${httpclientVersion}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>${mockitoVersion}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<!--
+		Pin dependencies to avoid jar-hell, run mvn project-info-reports:dependency-convergence
+		for more details
+		-->
+	<dependencyManagement>
+		<dependencies>
+			<!-- Spring -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${springVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${springVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${springVersion}</version>
+			</dependency>
+			<!-- Commons -->
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>${commonsBeanUtilsVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>${commonsCodecVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-collections</groupId>
+				<artifactId>commons-collections</artifactId>
+				<version>${commonsCollectionVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>${commonsFileUploadVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commonsIOVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${commonsLangVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>${commonsLang3Version}</version>
+			</dependency>
+			<!-- Jetty -->
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-webapp</artifactId>
+				<version>${jettyVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-io</artifactId>
+				<version>${jettyVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-util</artifactId>
+				<version>${jettyVersion}</version>
+			</dependency>
+			<!-- Jenkins -->
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>jenkins-core</artifactId>
+				<version>${jenkinsCoreVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>jenkins-war</artifactId>
+				<version>${jenkinsCoreVersion}</version>
+				<type>war</type>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>jenkins-war</artifactId>
+				<version>${jenkinsCoreVersion}</version>
+				<classifier>war-for-test</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>remoting</artifactId>
+				<version>${remotingVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.modules</groupId>
+				<artifactId>instance-identity</artifactId>
+				<version>${instanceIdentityVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.modules</groupId>
+				<artifactId>slave-installer</artifactId>
+				<version>${slaveInstallerVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.modules</groupId>
+				<artifactId>ssh-cli-auth</artifactId>
+				<version>${sshCliVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci</groupId>
+				<artifactId>trilead-ssh2</artifactId>
+				<version>${trileadSsh2Version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci</groupId>
+				<artifactId>annotation-indexer</artifactId>
+				<version>${annotIndexerVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>credentials</artifactId>
+				<version>${credentialsPluginVersion}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.google.code.findbugs</groupId>
+						<artifactId>jsr305</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>git</artifactId>
+				<version>${gitPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>jquery</artifactId>
+				<version>${jqueryPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.workflow</groupId>
+				<artifactId>workflow-job</artifactId>
+				<version>${wflowJobPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.workflow</groupId>
+				<artifactId>workflow-cps</artifactId>
+				<version>${wflowCpsPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.workflow</groupId>
+				<artifactId>workflow-api</artifactId>
+				<version>${wflowApiPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.workflow</groupId>
+				<artifactId>workflow-step-api</artifactId>
+				<version>${wflowStepApiPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.workflow</groupId>
+				<artifactId>workflow-support</artifactId>
+				<version>${wflowSupportPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>scm-api</artifactId>
+				<version>${scmApiPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>script-security</artifactId>
+				<version>${scriptSecurityPluginVersion}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.kohsuke</groupId>
+						<artifactId>groovy-sandbox</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>template-project</artifactId>
+				<version>${templatePluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins</groupId>
+				<artifactId>multiple-scms</artifactId>
+				<version>${multiScmPluginVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jenkins-ci.plugins.icon-shim</groupId>
+				<artifactId>icon-set</artifactId>
+				<version>${iconSetPlugin}</version>
+			</dependency>
+			<!-- Plexus -->
+			<dependency>
+				<groupId>org.codehaus.plexus</groupId>
+				<artifactId>plexus-utils</artifactId>
+				<version>${plexusUtilsVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.sisu</groupId>
+				<artifactId>org.eclipse.sisu.plexus</artifactId>
+				<version>${sisuPlexusVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.sonatype.plexus</groupId>
+				<artifactId>plexus-cipher</artifactId>
+				<version>${plexusCipherVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.plexus</groupId>
+				<artifactId>plexus-classworlds</artifactId>
+				<version>${plexusClassworldsVersion}</version>
+			</dependency>
+			<!-- Apache-->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpclientVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.ant</groupId>
+				<artifactId>ant</artifactId>
+				<version>${antVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-provider-api</artifactId>
+				<version>${wagonProviderApiVersion}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guavaVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>jaxen</groupId>
+				<artifactId>jaxen</artifactId>
+				<version>${jaxenVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.java.dev.jna</groupId>
+				<artifactId>jna</artifactId>
+				<version>${jnaVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.groovy</groupId>
+				<artifactId>groovy-all</artifactId>
+				<version>${groovyVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-core</artifactId>
+				<version>${hamcrestVoreVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jvnet.localizer</groupId>
+				<artifactId>localizer</artifactId>
+				<version>${localizerVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kohsuke.stapler</groupId>
+				<artifactId>stapler</artifactId>
+				<version>${staplerVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4jVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>xml-apis</groupId>
+				<artifactId>xml-apis</artifactId>
+				<version>${xmlApisVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kohsuke.stapler</groupId>
+				<artifactId>json-lib</artifactId>
+				<version>${jsonLibVersion}</version>
+			</dependency>
+			<dependency>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+				<version>${jodaTimeVersion}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>${jsr305Version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>${mockitoVersion}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
