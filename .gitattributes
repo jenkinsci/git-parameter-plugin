@@ -1,0 +1,17 @@
+* text=auto
+
+# source code
+*.html          text
+*.xml           text
+*.jelly         text
+*.java          text
+*.js            text
+*.properties    text
+
+# git config
+.gitattributes  text
+.gitignore      text
+.gitconfig      text
+
+# Documentation
+*.textile       text
