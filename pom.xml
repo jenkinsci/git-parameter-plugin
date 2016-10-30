@@ -71,6 +71,12 @@
 			<version>1.11.2-0</version>
 		</dependency>
 		<dependency>
+			<groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
+			<artifactId>rebuild</artifactId>
+			<version>1.25</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
