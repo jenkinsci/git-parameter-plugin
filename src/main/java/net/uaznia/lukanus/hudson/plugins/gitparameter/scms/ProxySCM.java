@@ -1,6 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.scms;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,14 +18,14 @@ public class ProxySCM implements SCMWrapper {
     }
 
     @Override
-    public SCM getSCM() {
+    public List<SCM> getSCMs() {
         //((ProxySCM)projectScm).getProjectScm()
         try {
             Class<?> clazz = scm.getClass();
             Method getProjectScmMethod = clazz.getDeclaredMethod("getProjectScm");
 
             SCM projectSCM = (SCM) getProjectScmMethod.invoke(scm);
-            return projectSCM;
+            return Collections.singletonList(projectSCM);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, Messages.ProxySCM_getSCMFromProxySCM(), e);
         }

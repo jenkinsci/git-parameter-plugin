@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
+import org.jenkinsci.plugins.multiplescms.MultiSCM;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Rule;
@@ -46,7 +48,10 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author lukanus
  */
 public class GitParameterDefinitionTest {
-    private final String repositoryUrl = "https://github.com/jenkinsci/git-parameter-plugin.git";
+    private static final String GIT_PARAMETER_REPOSITORY_URL = "https://github.com/jenkinsci/git-parameter-plugin.git";
+    private static final String GIT_CLIENT_REPOSITORY_URL = "https://github.com/jenkinsci/git-client-plugin.git";
+    public static final String NAME = "name";
+    public static final String PT_REVISION = "PT_REVISION";
     private FreeStyleProject project;
 
     @Rule
@@ -57,49 +62,49 @@ public class GitParameterDefinitionTest {
      */
     @Test
     public void testCreateValue_StaplerRequest() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
         StaplerRequest request = mock(StaplerRequest.class);
         ParameterValue result = instance.createValue(request);
 
-        assertEquals(result, new GitParameterValue("name", "defaultValue"));
+        assertEquals(result, new GitParameterValue(NAME, "defaultValue"));
     }
 
     @Test
     public void testCreateValue_StaplerRequest_ValueInRequest() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
         StaplerRequest request = mock(StaplerRequest.class);
         when(request.getParameterValues(instance.getName())).thenReturn(new String[]{"master"});
         ParameterValue result = instance.createValue(request);
 
-        assertEquals(result, new GitParameterValue("name", "master"));
+        assertEquals(result, new GitParameterValue(NAME, "master"));
     }
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", null, null, SortMode.NONE, SelectedValue.NONE, null, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "  ", "  ", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", "  ", "  ", SortMode.NONE, SelectedValue.NONE, null, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "", "", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", "", "", SortMode.NONE, SelectedValue.NONE, null, false);
         assertEquals("*", instance.getTagFilter());
         assertEquals(".*", instance.getBranchFilter());
     }
 
     @Test
     public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", "foobar", "foobar", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", "foobar", "foobar", SortMode.NONE, SelectedValue.NONE, null, false);
         assertEquals("foobar", instance.getTagFilter());
         assertEquals("foobar", instance.getBranchFilter());
     }
@@ -132,7 +137,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING_SMART, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", null, null, SortMode.ASCENDING_SMART, SelectedValue.NONE, null, false);
         Set<String> tags = new HashSet<String>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
@@ -151,7 +156,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", null, null, SortMode.ASCENDING, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", null, null, SortMode.ASCENDING, SelectedValue.NONE, null, false);
         Set<String> tags = new HashSet<String>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
@@ -205,12 +210,12 @@ public class GitParameterDefinitionTest {
 
         Map<String, String> jsonR = new HashMap<String, String>();
         jsonR.put("value", "Git_param_value");
-        jsonR.put("name", "Git_param_name");
+        jsonR.put(NAME, "Git_param_name");
 
         JSONObject jO = JSONObject.fromObject(jsonR);
 
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "PT_REVISION", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
         ParameterValue result = instance.createValue(request, jO);
 
@@ -235,8 +240,8 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetType() {
         System.out.println("Test of getType method.");
-        String expResult = "PT_REVISION";
-        GitParameterDefinition instance = new GitParameterDefinition("name", expResult, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        String expResult = PT_REVISION;
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, expResult, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
         String result = instance.getType();
         assertEquals(expResult, result);
 
@@ -253,8 +258,8 @@ public class GitParameterDefinitionTest {
     @Test
     public void testSetType() {
         System.out.println("Test of setType method.");
-        String expResult = "PT_REVISION";
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        String expResult = PT_REVISION;
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
         instance.setType(expResult);
         String result = instance.getType();
@@ -263,7 +268,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testWrongType() {
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
         String result = instance.getType();
         assertEquals("PT_BRANCH", result);
@@ -277,7 +282,7 @@ public class GitParameterDefinitionTest {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", expResult, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", expResult, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
     }
@@ -290,7 +295,7 @@ public class GitParameterDefinitionTest {
         System.out.println("getDefaultValue");
         String expResult = "defaultValue";
 
-        GitParameterDefinition instance = new GitParameterDefinition("name", "asdf", "other", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", "other", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
         instance.setDefaultValue(expResult);
 
         String result = instance.getDefaultValue();
@@ -308,21 +313,21 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetProjectSCM() throws Exception {
         FreeStyleProject testJob = jenkins.createFreeStyleProject("testGetProjectSCM");
-        GitSCM git = new GitSCM(repositoryUrl);
+        GitSCM git = new GitSCM(GIT_PARAMETER_REPOSITORY_URL);
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                "PT_REVISION",
+                PT_REVISION,
                 "testDefaultValue",
                 "testDescription",
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         testJob.addProperty(new ParametersDefinitionProperty(def));
         JobWrapper IJobWrapper = JobWrapperFactory.createJobWrapper(testJob);
-        assertTrue(def.getDescriptor().getProjectSCM(IJobWrapper) == null);
+        assertTrue(def.getDescriptor().getProjectSCMs(IJobWrapper, null).isEmpty());
 
         testJob.setScm(git);
-        assertTrue(git.equals(def.getDescriptor().getProjectSCM(IJobWrapper)));
+        assertTrue(git.equals(def.getDescriptor().getProjectSCMs(IJobWrapper, null).get(0)));
     }
 
     @Test
@@ -335,7 +340,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -355,7 +360,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -377,7 +382,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -397,7 +402,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         // build.run();
@@ -419,7 +424,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -441,7 +446,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 "[*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -461,7 +466,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 "origin/(.*)",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -484,7 +489,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.NONE, false);
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -504,7 +509,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.DESCENDING, SelectedValue.NONE, false);
+                SortMode.DESCENDING, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -524,7 +529,7 @@ public class GitParameterDefinitionTest {
                 "testBranch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
         // Run the build once to get the workspace
@@ -541,13 +546,13 @@ public class GitParameterDefinitionTest {
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                "PT_REVISION",
+                PT_REVISION,
                 "testDefaultValue",
                 "testDescription",
                 null,
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -563,13 +568,13 @@ public class GitParameterDefinitionTest {
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                "PT_REVISION",
+                PT_REVISION,
                 "testDefaultValue",
                 "testDescription",
                 "origin/preview_0_3",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -583,14 +588,14 @@ public class GitParameterDefinitionTest {
         MockFolder folder = jenkins.createFolder("folder");
         FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
 
-        GitParameterDefinition gitParameterDefinition = new GitParameterDefinition("name",
+        GitParameterDefinition gitParameterDefinition = new GitParameterDefinition(NAME,
                 "asdf",
                 "other",
                 "description",
                 "branch",
                 ".*",
                 "*",
-                SortMode.NONE, SelectedValue.NONE, false);
+                SortMode.NONE, SelectedValue.NONE, null, false);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
         assertEquals("folder/job1", gitParameterDefinition.getParentJob().getFullName());
     }
@@ -600,6 +605,16 @@ public class GitParameterDefinitionTest {
         final DescriptorImpl descriptor = new DescriptorImpl();
         final FormValidation okWildcard = descriptor.doCheckBranchFilter(".*");
         final FormValidation badWildcard = descriptor.doCheckBranchFilter(".**");
+
+        assertTrue(okWildcard.kind == Kind.OK);
+        assertTrue(badWildcard.kind == Kind.ERROR);
+    }
+
+    @Test
+    public void testUseRepositoryValidation() {
+        final DescriptorImpl descriptor = new DescriptorImpl();
+        final FormValidation okWildcard = descriptor.doCheckUseRepository(".*");
+        final FormValidation badWildcard = descriptor.doCheckUseRepository(".**");
 
         assertTrue(okWildcard.kind == Kind.OK);
         assertTrue(badWildcard.kind == Kind.ERROR);
@@ -618,7 +633,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.TOP, false);
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -637,7 +652,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.TOP, false);
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
         assertEquals("0.1", def.getDefaultParameterValue().getValue());
@@ -645,7 +660,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testGlobalVariableRepositoryUrl() throws Exception {
-        EnvVars.masterEnvVars.put("GIT_REPO_URL",repositoryUrl);
+        EnvVars.masterEnvVars.put("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL);
         project = jenkins.createFreeStyleProject("testGlobalValue");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit("$GIT_REPO_URL");
@@ -656,7 +671,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*master.*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.NONE, false);
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -667,8 +682,8 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testWorkflowJob() throws IOException, InterruptedException {
-        WorkflowJob p =  jenkins.jenkins.createProject(WorkflowJob.class, "wfj");
-        p.setDefinition(new CpsScmFlowDefinition(getGitSCM(),"jenkinsfile"));
+        WorkflowJob p = jenkins.jenkins.createProject(WorkflowJob.class, "wfj");
+        p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 GitParameterDefinition.PARAMETER_TYPE_TAG,
@@ -677,7 +692,7 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.TOP, false);
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         p.addProperty(new ParametersDefinitionProperty(def));
         ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
@@ -700,16 +715,40 @@ public class GitParameterDefinitionTest {
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.TOP, false);
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
+    @Test
+    public void testMultiSCM() throws IOException, InterruptedException {
+        project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
+        project.getBuildersList().add(new Shell("echo test"));
+        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(), getGitSCM(GIT_CLIENT_REPOSITORY_URL)));
+        project.setScm(multiSCM);
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+
+        def.setUseRepository(".*git-client-plugin.git");
+        items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
 
     private void setupGit() throws IOException {
-        setupGit(repositoryUrl);
+        setupGit(GIT_PARAMETER_REPOSITORY_URL);
     }
 
     private void setupGit(String url) throws IOException {
@@ -717,9 +756,8 @@ public class GitParameterDefinitionTest {
         project.setScm(git);
     }
 
-    private SCM getGitSCM()
-    {
-        return getGitSCM(repositoryUrl);
+    private SCM getGitSCM() {
+        return getGitSCM(GIT_PARAMETER_REPOSITORY_URL);
     }
 
     private SCM getGitSCM(String url) {

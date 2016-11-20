@@ -5,9 +5,15 @@ import java.util.List;
 
 import hudson.scm.SCM;
 
-public class EmptySCM implements SCMWrapper {
+public class SingleSCM implements SCMWrapper {
+    private SCM scm;
+
+    public SingleSCM(SCM scm) {
+        this.scm = scm;
+    }
+
     @Override
     public List<SCM> getSCMs() {
-        return Collections.EMPTY_LIST;
+        return Collections.singletonList(scm);
     }
 }

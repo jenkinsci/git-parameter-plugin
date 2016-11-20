@@ -1,6 +1,7 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
 
 import java.io.IOException;
+import java.util.List;
 
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -15,7 +16,7 @@ public interface JobWrapper {
 
     ParametersDefinitionProperty getProperty(Class<ParametersDefinitionProperty> parametersDefinitionPropertyClass);
 
-    SCM getScm();
+    List<SCM> getScms();
 
     FilePath getSomeWorkspace() throws IOException, InterruptedException;
 
