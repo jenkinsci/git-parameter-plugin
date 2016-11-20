@@ -67,12 +67,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private SortMode sortMode;
     private String defaultValue;
     private SelectedValue selectedValue;
+    private String useRepository;
     private Boolean quickFilterEnabled;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
                                   String branchFilter, String tagFilter, SortMode sortMode, SelectedValue selectedValue,
-                                  Boolean quickFilterEnabled) {
+                                  String useRepository, Boolean quickFilterEnabled) {
         super(name, description);
         this.defaultValue = defaultValue;
         this.branch = branch;
@@ -81,6 +82,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.selectedValue = selectedValue;
         this.quickFilterEnabled = quickFilterEnabled;
 
+        setUseRepository(useRepository);
         setType(type);
         setTagFilter(tagFilter);
         setBranchFilter(branchFilter);
@@ -425,9 +427,17 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return (DescriptorImpl) super.getDescriptor();
     }
 
+    public String getUseRepository() {
+        return useRepository;
+    }
+
+    public void setUseRepository(String useRepository) {
+        this.useRepository = StringUtils.isEmpty(StringUtils.trim(useRepository)) ? null : useRepository;
+    }
+
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
-        private GitSCM scm;
+        private List<GitSCM> scms;
 
         @Override
         public String getDisplayName() {
@@ -445,31 +455,43 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 if (def instanceof GitParameterDefinition) {
                     GitParameterDefinition paramDef = (GitParameterDefinition) def;
 
-                    scm = getProjectSCM(jobWrapper);
-                    if (scm == null) {
+                    String repositoryName = paramDef.getUseRepository();
+                    scms = getProjectSCMs(jobWrapper, repositoryName);
+                    if (scms == null || scms.isEmpty()) {
                         items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
                         return items;
                     }
 
-                    Map<String, String> paramList = paramDef.generateContents(jobWrapper, scm);
+                    for (GitSCM scm : scms) {
+                        Map<String, String> paramList = paramDef.generateContents(jobWrapper, scm);
 
-                    for (Map.Entry<String, String> entry : paramList.entrySet()) {
-                        items.add(entry.getValue(), entry.getKey());
+                        for (Map.Entry<String, String> entry : paramList.entrySet()) {
+                            items.add(entry.getValue(), entry.getKey());
+                        }
                     }
                 }
             }
             return items;
         }
 
-        public GitSCM getProjectSCM(JobWrapper jobWrapper) {
-            return SCMFactory.getGitSCM(jobWrapper);
+        public List<GitSCM> getProjectSCMs(JobWrapper jobWrapper, String repositoryName) {
+            return SCMFactory.getGitSCMs(jobWrapper, repositoryName);
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
+            String errorMessage = Messages.GitParameterDefinition_invalidBranchPattern(value);
+            return validationRegularExpression(value, errorMessage);
+        }
+
+        public FormValidation doCheckUseRepository(@QueryParameter String value) {
+            String errorMessage = Messages.GitParameterDefinition_invalidUseRepositoryPattern(value);
+            return validationRegularExpression(value, errorMessage);
+        }
+
+        private FormValidation validationRegularExpression(String value, String errorMessage) {
             try {
                 Pattern.compile(value); // Validate we've got a valid regex.
             } catch (PatternSyntaxException e) {
-                String errorMessage = Messages.GitParameterDefinition_invalidBranchPattern(value);
                 LOGGER.log(Level.WARNING, errorMessage, e);
                 return FormValidation.error(errorMessage);
             }

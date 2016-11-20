@@ -2,6 +2,7 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter.scms;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ public class RepoSCM implements SCMWrapper {
     }
 
     @Override
-    public SCM getSCM() {
+    public List<SCM> getSCMs() {
         try {
             Class<?> clazz = scm.getClass();
             Method method = clazz.getDeclaredMethod("getManifestRepositoryUrl");
@@ -30,7 +31,8 @@ public class RepoSCM implements SCMWrapper {
             UserRemoteConfig config = new UserRemoteConfig(repositoryUrl, REPO_SCM_NAME, null, null);
             List<UserRemoteConfig> configs = new ArrayList<>();
             configs.add(config);
-            return new GitSCM(configs, null, false, null, null, null, null);
+            SCM gitSCM = new GitSCM(configs, null, false, null, null, null, null);
+            return Collections.singletonList(gitSCM);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, Messages.RepoSCM_getRepoScmFailed(), e);
         }

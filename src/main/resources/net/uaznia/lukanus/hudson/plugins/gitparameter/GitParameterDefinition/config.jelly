@@ -69,6 +69,10 @@
             <f:enum>${it}</f:enum>
         </f:entry>
 
+        <f:entry title="${%parameter.use.repository}" field="useRepository">
+            <f:textbox/>
+        </f:entry>
+
         <f:entry title="${%parameter.quick.filter}" field="quickFilterEnabled">
             <f:checkbox/>
         </f:entry>

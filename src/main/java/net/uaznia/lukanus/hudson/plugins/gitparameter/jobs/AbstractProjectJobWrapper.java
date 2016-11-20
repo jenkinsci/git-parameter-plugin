@@ -1,5 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,8 +22,8 @@ public class AbstractProjectJobWrapper extends AbstractJobWrapper {
     }
 
     @Override
-    public SCM getScm() {
-        return ((AbstractProject) getJob()).getScm();
+    public List<SCM> getScms() {
+        return Arrays.asList(((AbstractProject) getJob()).getScm());
     }
 
     @Override
