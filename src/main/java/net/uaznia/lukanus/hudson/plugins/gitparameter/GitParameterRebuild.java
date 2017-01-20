@@ -10,6 +10,9 @@ public class GitParameterRebuild extends RebuildParameterProvider {
 
     @Override
     public RebuildParameterPage getRebuildPage(ParameterValue parameterValue) {
-        return new RebuildParameterPage(GitParameterValue.class,"value.jelly");
+        if (parameterValue instanceof GitParameterValue) {
+            return new RebuildParameterPage(parameterValue.getClass(),"value.jelly");
+        }
+        return null;
     }
 }
