@@ -15,7 +15,11 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
-h3. 11/27/2016 Version 0.7.1
+01/23/2017 Version 0.7.2
+
+* JENKINS-41091: git-parameter:0.7.1 breaks the multi-line parameters in rebuild
+
+11/27/2016 Version 0.7.1
 
 * JENKINS-39366: Add support for a rebuild-plugin
 * JENKINS-26799: Multiple SCMs plugin support
