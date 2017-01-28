@@ -434,7 +434,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void tesListBranchesWrongBrancheFilter() throws Exception {
+    public void tesListBranchesWrongBranchFilter() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
@@ -494,6 +494,26 @@ public class GitParameterDefinitionTest {
 
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertEquals("0.1", items.get(0).value);
+    }
+
+    @Test
+    public void testWrongTagFilter() throws Exception {
+        project = jenkins.createFreeStyleProject("testListTags");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                "PT_TAG",
+                "testDefaultValue",
+                "testDescription",
+                null,
+                ".*",
+                "wrongTagFilter",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(items.isEmpty());
     }
 
     @Test

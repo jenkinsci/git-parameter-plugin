@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
-import hudson.plugins.git.Branch;
+import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -39,6 +40,7 @@ import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
@@ -51,12 +53,15 @@ import org.kohsuke.stapler.StaplerRequest;
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
 
+    private static final String DEFAULT_REMOTE = "origin";
+    private static final String REFS_TAGS_PATTERN = ".*refs/tags/";
+
     public static final String PARAMETER_TYPE_TAG = "PT_TAG";
     public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
-    public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
 
+    public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
     private final UUID uuid;
@@ -257,29 +262,25 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             EnvVars environment = getEnvironment(jobWrapper);
             for (RemoteConfig repository : git.getRepositories()) {
-                boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
                 synchronized (GitParameterDefinition.class) {
-                    FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
-                    GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
                     for (URIish remoteURL : repository.getURIs()) {
-                        initWorkspace(workspace, gitClient, remoteURL);
+                        GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
+                        String gitUrl = remoteURL.toPrivateASCIIString();
 
-                        FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
-                        fetch.execute();
-
-                        if (type.equalsIgnoreCase(PARAMETER_TYPE_REVISION)) {
-                            getRevision(paramList, gitClient);
-                        }
-                        if (type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                            Set<String> tagSet = gitClient.getTagNames(tagFilter);
+                        if (isTagType()) {
+                            Set<String> tagSet = getTag(gitClient, gitUrl);
                             sortAndPutToParam(tagSet, paramList);
                         }
-                        if (type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH)) {
-                            Set<String> branchSet = getBranch(gitClient);
+
+                        if (isBranchType()) {
+                            Set<String> branchSet = getBranch(gitClient, gitUrl);
                             sortAndPutToParam(branchSet, paramList);
                         }
+
+                        if (isRevisionType()) {
+                            getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
+                        }
                     }
-                    workspace.delete();
                     break;
                 }
             }
@@ -292,17 +293,40 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return paramList;
     }
 
-    private Set<String> getBranch(GitClient gitClient) throws InterruptedException {
-        Set<String> branchSet = new HashSet<String>();
-        Pattern branchFilterPattern;
+
+    private boolean isRevisionType() {
+        return type.equalsIgnoreCase(PARAMETER_TYPE_REVISION);
+    }
+
+    private boolean isBranchType() {
+        return type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH);
+    }
+
+    private boolean isTagType() {
+        return type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH);
+    }
+
+    private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
+        Set<String> tagSet = new HashSet<String>();
         try {
-            branchFilterPattern = Pattern.compile(branchFilter);
-        } catch (Exception e) {
-            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
-            branchFilterPattern = Pattern.compile(".*");
+            Map<String, ObjectId> tags = gitClient.getRemoteReferences(gitUrl, tagFilter, false, true);
+            for (String tagName : tags.keySet()) {
+                tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
+            }
+        } catch (GitException e) {
+            LOGGER.log(Level.WARNING,Messages.GitParameterDefinition_getTag(), e);
         }
-        for (Branch branch : gitClient.getRemoteBranches()) {
-            String branchName = branch.getName();
+        return tagSet;
+    }
+
+    private Set<String> getBranch(GitClient gitClient, String gitUrl) throws InterruptedException {
+        Set<String> branchSet = new HashSet<String>();
+        Pattern branchFilterPattern = compileBranchFilterPattern();
+
+        Map<String, ObjectId> branches = gitClient.getRemoteReferences(gitUrl, null, true, false);
+        Iterator<String> remoteBranchesName = branches.keySet().iterator();
+        while (remoteBranchesName.hasNext()) {
+            String branchName = strip(remoteBranchesName.next(), DEFAULT_REMOTE);
             Matcher matcher = branchFilterPattern.matcher(branchName);
             if (matcher.matches()) {
                 if (matcher.groupCount() == 1) {
@@ -315,14 +339,45 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return branchSet;
     }
 
-    private void getRevision(Map<String, String> paramList, GitClient gitClient) throws InterruptedException {
+    private Pattern compileBranchFilterPattern() {
+        Pattern branchFilterPattern;
+        try {
+            branchFilterPattern = Pattern.compile(branchFilter);
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
+            branchFilterPattern = Pattern.compile(".*");
+        }
+        return branchFilterPattern;
+    }
+
+    //hudson.plugins.git.Branch.strip
+    private String strip(String name, String remote) {
+        return remote + "/" + name.substring(name.indexOf('/', 5) + 1);
+    }
+
+    /**
+     *Unfortunately, to get the revisions should do fetch
+     */
+    private void getRevision(JobWrapper jobWrapper, GitSCM git, Map<String, String> paramList, EnvVars environment, RemoteConfig repository, URIish remoteURL) throws IOException, InterruptedException {
+        boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
+        FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
+
+        GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
+        initWorkspace(workspace, gitClient, remoteURL);
+        FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+        fetch.execute();
+
         RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, branch);
         List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
         for (RevisionInfo revision : revisions) {
             paramList.put(revision.getSha1(), revision.getRevisionInfo());
         }
+
+        workspace.delete();
     }
+
+
 
     private void sortAndPutToParam(Set<String> setElement, Map<String, String> paramList) {
         List<String> sorted = sort(setElement);
@@ -384,7 +439,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private void initWorkspace(FilePathWrapper workspace, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
         if (isEmptyWorkspace(workspace.getFilePath())) {
             gitClient.init();
-            gitClient.clone(remoteURL.toASCIIString(), "origin", false, null);
+            gitClient.clone(remoteURL.toASCIIString(), DEFAULT_REMOTE, false, null);
             LOGGER.log(Level.INFO, Messages.GitParameterDefinition_genContentsCloneDone());
         }
     }
@@ -397,7 +452,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         int nextBuildNumber = jobWrapper.getNextBuildNumber();
 
         GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(jobWrapper.getJob()) {
-        }, workspace.getFilePath());
+        }, workspace != null ? workspace.getFilePath() : null);
 
         jobWrapper.updateNextBuildNumber(nextBuildNumber);
         return gitClient;
