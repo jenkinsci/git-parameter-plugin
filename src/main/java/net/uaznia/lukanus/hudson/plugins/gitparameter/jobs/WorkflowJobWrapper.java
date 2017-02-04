@@ -48,7 +48,7 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
                 return (SCM) scm;
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
+            LOGGER.log(Level.SEVERE, getCustomJobName() + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
         }
         return null;
     }
@@ -76,7 +76,7 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
+            LOGGER.log(Level.SEVERE, getCustomJobName() + Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
         }
         return null;
     }

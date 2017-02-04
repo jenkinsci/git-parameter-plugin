@@ -27,4 +27,8 @@ public interface JobWrapper {
     int getNextBuildNumber();
 
     void updateNextBuildNumber(int nextBuildNumber) throws IOException;
+
+    String getJobName();
+
+    String getCustomJobName();
 }

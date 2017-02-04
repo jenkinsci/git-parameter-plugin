@@ -75,6 +75,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String useRepository;
     private Boolean quickFilterEnabled;
 
+    private String customJobName;
+
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
                                   String branchFilter, String tagFilter, SortMode sortMode, SelectedValue selectedValue,
@@ -142,7 +144,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e);
+                   LOGGER.log(Level.SEVERE, getCustomeJobName() + Messages.GitParameterDefinition_unexpectedError(), e);
                 }
                 break;
             case DEFAULT:
@@ -257,6 +259,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public Map<String, String> generateContents(JobWrapper jobWrapper, GitSCM git) {
+        customJobName = jobWrapper.getCustomJobName();
 
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
@@ -285,7 +288,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e);
+            LOGGER.log(Level.SEVERE, getCustomeJobName() + Messages.GitParameterDefinition_unexpectedError(), e);
             String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
             paramList.clear();
             paramList.put(message, message);
@@ -314,7 +317,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
             }
         } catch (GitException e) {
-            LOGGER.log(Level.WARNING,Messages.GitParameterDefinition_getTag(), e);
+            LOGGER.log(Level.WARNING, getCustomeJobName() + Messages.GitParameterDefinition_getTag(), e);
         }
         return tagSet;
     }
@@ -344,7 +347,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             branchFilterPattern = Pattern.compile(branchFilter);
         } catch (Exception e) {
-            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
+            LOGGER.log(Level.INFO, getCustomeJobName() + Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
             branchFilterPattern = Pattern.compile(".*");
         }
         return branchFilterPattern;
@@ -440,7 +443,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isEmptyWorkspace(workspace.getFilePath())) {
             gitClient.init();
             gitClient.clone(remoteURL.toASCIIString(), DEFAULT_REMOTE, false, null);
-            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_genContentsCloneDone());
+            LOGGER.log(Level.INFO, getCustomeJobName() + Messages.GitParameterDefinition_genContentsCloneDone());
         }
     }
 
@@ -488,6 +491,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public void setUseRepository(String useRepository) {
         this.useRepository = StringUtils.isEmpty(StringUtils.trim(useRepository)) ? null : useRepository;
+    }
+
+    public String getCustomeJobName() {
+        return customJobName;
     }
 
     @Extension
