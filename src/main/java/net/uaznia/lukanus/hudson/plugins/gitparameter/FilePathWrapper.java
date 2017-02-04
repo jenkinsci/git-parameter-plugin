@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import hudson.FilePath;
 
 public class FilePathWrapper {
-    private static final Logger LOGGER = Logger.getLogger(FilePathWrapper.class.getName());
     private final FilePath filePath;
     private Boolean isTemporary = false;
 
