@@ -15,6 +15,12 @@ Here you find information relevant for developer for this plugin.
 
 h2. ChangeLog
 
+06/02/2017 Version 0.8.0
+
+* JENKINS-26799: Multiple SCMs plugin support part 2
+* JENKINS-40523: Include Jenkins Project Name in Log message
+* JENKINS-40232: Git Parameter Plugin doesn't need to clone
+
 01/23/2017 Version 0.7.2
 
 * JENKINS-41091: git-parameter:0.7.1 breaks the multi-line parameters in rebuild
