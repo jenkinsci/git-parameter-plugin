@@ -25,6 +25,7 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
 import hudson.plugins.templateproject.ProxySCM;
 import hudson.scm.SCM;
 import hudson.tasks.Shell;
@@ -766,6 +767,34 @@ public class GitParameterDefinitionTest {
         items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
     }
+
+    @Test
+    public void testMultiSCM_forSubdirectoryForRepo() throws IOException, InterruptedException {
+        project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
+        project.getBuildersList().add(new Shell("echo test"));
+        GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
+        gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
+        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(), gitSCM));
+        project.setScm(multiSCM);
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+
+        def.setUseRepository(".*git-client-plugin.git");
+        items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
 
     private void setupGit() throws IOException {
         setupGit(GIT_PARAMETER_REPOSITORY_URL);
