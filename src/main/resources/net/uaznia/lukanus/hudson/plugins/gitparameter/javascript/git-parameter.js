@@ -99,7 +99,7 @@ var GitParameter = GitParameter || (function($) {
 
             _self.setSelected();
 
-            jQuery(_self.getFilterElement()).prop("disabled",false);
+            jQuery(_self.getFilterElement()).prop("disabled",false).focus();
             console.log("Quick Filter handler filled event." );
         });
 
