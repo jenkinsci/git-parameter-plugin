@@ -41,6 +41,14 @@
                     <option value="PT_REVISION">${%parameter.revision}</option>
                 </j:otherwise>
             </j:choose>
+            <j:choose>
+                <j:when test="${instance.type eq 'PT_PULL_REQUEST'}">
+                    <option value="PT_PULL_REQUEST" selected="selected">${%parameter.pull.request}</option>
+                </j:when>
+                <j:otherwise>
+                    <option value="PT_PULL_REQUEST">${%parameter.pull.request}</option>
+                </j:otherwise>
+            </j:choose>
         </select>
     </f:entry>
 

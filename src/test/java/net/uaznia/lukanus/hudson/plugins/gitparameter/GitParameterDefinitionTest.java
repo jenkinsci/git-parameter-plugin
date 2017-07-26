@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import hudson.EnvVars;
 import hudson.model.FreeStyleBuild;
@@ -69,6 +70,20 @@ public class GitParameterDefinitionTest {
         ParameterValue result = instance.createValue(request);
 
         assertEquals(result, new GitParameterValue(NAME, "defaultValue"));
+    }
+
+    @Test
+    public void matchesWithBitbucketPullRequestRefs(){
+        Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
+        matcher.find();
+        assertEquals(matcher.group(1),"186");
+    }
+
+    @Test
+    public void matchesWithGithubPullRequestRefs(){
+        Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
+        matcher.find();
+        assertEquals(matcher.group(1),"45");
     }
 
     @Test
@@ -602,6 +617,28 @@ public class GitParameterDefinitionTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385c"));
+    }
+
+    @Test
+    public void testDoFillValueItems_listPullRequests() throws Exception {
+        project = jenkins.createFreeStyleProject("testListPullRequests");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+            GitParameterDefinition.PARAMETER_TYPE_PULL_REQUEST,
+            "master",
+            "testDescription",
+            "",
+            ".*",
+            "*",
+            SortMode.NONE, SelectedValue.NONE, null, false);
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "41"));
+        assertTrue(isListBoxItem(items, "44"));
     }
 
     @Test
