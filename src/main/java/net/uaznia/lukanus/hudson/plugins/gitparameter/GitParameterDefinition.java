@@ -60,6 +60,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
     public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
+    public static final String PARAMETER_TYPE_PULL_REQUEST = "PT_PULL_REQUEST";
+
+    public static final Pattern PULL_REQUEST_REFS_PATTERN = Pattern.compile("refs/pull.*/(\\d+)/[from|head]");
 
     public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
@@ -170,7 +173,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     private boolean isParameterTypeCorrect(String type) {
         return type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION)
-                || type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH);
+                || type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)
+                || type.equals(PARAMETER_TYPE_PULL_REQUEST);
     }
 
     public String getBranch() {
@@ -283,6 +287,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         if (isRevisionType()) {
                             getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
                         }
+
+                        if(isPullRequestType()){
+                            Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
+                            sortAndPutToParam(pullRequestSet, paramList);
+                        }
                     }
                     break;
                 }
@@ -296,7 +305,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return paramList;
     }
 
-
     private boolean isRevisionType() {
         return type.equalsIgnoreCase(PARAMETER_TYPE_REVISION);
     }
@@ -307,6 +315,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     private boolean isTagType() {
         return type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH);
+    }
+
+    private boolean isPullRequestType() {
+        return type.equalsIgnoreCase(PARAMETER_TYPE_PULL_REQUEST);
     }
 
     private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
@@ -340,6 +352,18 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             }
         }
         return branchSet;
+    }
+
+    private Set<String> getPullRequest(GitClient gitClient, String gitUrl) throws InterruptedException {
+        Set<String> pullRequestSet = new HashSet<String>();
+        Map<String, ObjectId> remoteReferences = gitClient.getRemoteReferences(gitUrl, null, false, false);
+        for (String remoteReference : remoteReferences.keySet()) {
+            Matcher matcher = PULL_REQUEST_REFS_PATTERN.matcher(remoteReference);
+            if (matcher.find()) {
+                pullRequestSet.add(matcher.group(1));
+            }
+        }
+        return pullRequestSet;
     }
 
     private Pattern compileBranchFilterPattern() {
