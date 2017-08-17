@@ -74,6 +74,12 @@ var GitParameter = GitParameter || (function($) {
                 var defaultValue = _self.getDefaultValue();
                 console.log("Search default value : " + defaultValue);
                 for (var i = 0; i < optionsLength; i++ ) {
+                    if (filteredElement.options[i].value == defaultValue) {
+                        filteredElement.options[i].selected = true;
+                        break;
+                    }
+                }
+                for (var i = 0; i < optionsLength; i++ ) {
                     if (filteredElement.options[i].value.indexOf(defaultValue) > -1) {
                         filteredElement.options[i].selected = true;
                         break;
