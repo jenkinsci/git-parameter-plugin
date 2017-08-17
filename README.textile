@@ -11,7 +11,7 @@ Here you find information relevant for developer for this plugin.
 
 * You may checkout/clone this project and build it by simply calling @mvn clean install@ in the root of the checkout. Test your changes by going to your Jenkins-CI site and import the generated @target/git-parameter.hpi@ by going to your base URL + @jenkins/pluginManager/advanced@. There you find an option to upload a plugin.
 
-* The Jenkins-CI of this plugin can be seen at "DEV@cloud":https://jenkins.ci.cloudbees.com/job/plugins/job/git-parameter-plugin/. The status is <a href='https://jenkins.ci.cloudbees.com/job/plugins/job/git-parameter-plugin/'><img src='https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/git-parameter-plugin'></a>
+* The Jenkins-CI of this plugin can be seen at "DEV@cloud":https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/. The status is <a href='https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/'><img src='https://ci.jenkins.io/buildStatus/icon?job=Plugins/git-parameter-plugin/master'></a>
 
 h2. ChangeLog
 
