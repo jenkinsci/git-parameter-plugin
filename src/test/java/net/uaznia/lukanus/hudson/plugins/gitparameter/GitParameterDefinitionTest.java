@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 
 import hudson.EnvVars;
+import hudson.cli.CLICommand;
+import hudson.cli.ConsoleCommand;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
@@ -236,8 +238,26 @@ public class GitParameterDefinitionTest {
         ParameterValue result = instance.createValue(request, jO);
 
         assertEquals(result, new GitParameterValue("Git_param_name", "Git_param_value"));
+    }
 
+    @Test
+    public void testCreateValue_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "defaultValue", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
+        String value = "test";
+        ParameterValue result = instance.createValue(cliCommand, value);
+        assertEquals(result, new GitParameterValue(NAME, value));
+    }
+
+    @Test
+    public void testCreateValue_CLICommand_EmptyValue() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        String defaultValue = "defaultValue";
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, defaultValue, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+
+        ParameterValue result = instance.createValue(cliCommand, null);
+        assertEquals(result, new GitParameterValue(NAME, defaultValue));
     }
 
     /**
