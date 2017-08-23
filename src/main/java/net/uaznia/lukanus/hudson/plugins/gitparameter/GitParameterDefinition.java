@@ -21,6 +21,7 @@ import java.util.regex.PatternSyntaxException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.cli.CLICommand;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
@@ -129,6 +130,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue.toString());
         return gitParameterValue;
+    }
+
+    @Override
+    public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
+        if (StringUtils.isNotEmpty(value)) {
+            return new GitParameterValue(getName(), value);
+        }
+        return getDefaultParameterValue();
     }
 
     @Override
