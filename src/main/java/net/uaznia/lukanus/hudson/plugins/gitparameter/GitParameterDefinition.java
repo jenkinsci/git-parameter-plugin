@@ -289,7 +289,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         }
 
                         if (isBranchType()) {
-                            Set<String> branchSet = getBranch(gitClient, gitUrl);
+                            Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
                             sortAndPutToParam(branchSet, paramList);
                         }
 
@@ -302,7 +302,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                             sortAndPutToParam(pullRequestSet, paramList);
                         }
                     }
-                    break;
                 }
             }
         } catch (Exception e) {
@@ -343,14 +342,14 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return tagSet;
     }
 
-    private Set<String> getBranch(GitClient gitClient, String gitUrl) throws InterruptedException {
+    private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws InterruptedException {
         Set<String> branchSet = new HashSet<String>();
         Pattern branchFilterPattern = compileBranchFilterPattern();
 
         Map<String, ObjectId> branches = gitClient.getRemoteReferences(gitUrl, null, true, false);
         Iterator<String> remoteBranchesName = branches.keySet().iterator();
         while (remoteBranchesName.hasNext()) {
-            String branchName = strip(remoteBranchesName.next(), DEFAULT_REMOTE);
+            String branchName = strip(remoteBranchesName.next(), remoteName);
             Matcher matcher = branchFilterPattern.matcher(branchName);
             if (matcher.matches()) {
                 if (matcher.groupCount() == 1) {
