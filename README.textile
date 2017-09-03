@@ -13,7 +13,23 @@ Here you find information relevant for developer for this plugin.
 
 * The Jenkins-CI of this plugin can be seen at "DEV@cloud":https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/. The status is <a href='https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/'><img src='https://ci.jenkins.io/buildStatus/icon?job=Plugins/git-parameter-plugin/master'></a>
 
+h2. Pull Request Policy
+
+If you want add some change for this plugin, first add the issue in jenkins JIRA.
+Describe there why you need change the plugin.
+JIRA: https://issues.jenkins-ci.org
+Component: git-parameter-plugin
+
 h2. ChangeLog
+
+09/03/2017 Version 0.8.1
+
+* JENKINS-45577: [Git Parameter Plugin] Parameter does not support the definition from CLI
+* JENKINS-46624: fix remote name
+* JENKINS-46185: Set browser focus to filter after the QuickFilter has been filled
+* JENKINS-46038: Extend list of supported type with pull request
+* JENKINS-26799: Multiple SCMs plugin support part 3 (Work fine when selected revisions)
+* JENKINS-42313: Default Value not honoured
 
 06/02/2017 Version 0.8.0
 
