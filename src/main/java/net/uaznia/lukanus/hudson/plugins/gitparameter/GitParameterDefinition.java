@@ -66,6 +66,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public static final Pattern PULL_REQUEST_REFS_PATTERN = Pattern.compile("refs/pull.*/(\\d+)/[from|head]");
 
     public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
+    public static final String EMPTY_JOB_NAME = "EMPTY_JOB_NAME";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
     private final UUID uuid;
@@ -78,8 +79,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private SelectedValue selectedValue;
     private String useRepository;
     private Boolean quickFilterEnabled;
-
-    private String customJobName;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
@@ -156,7 +155,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
                 } catch (Exception e) {
-                   LOGGER.log(Level.SEVERE, getCustomeJobName() + Messages.GitParameterDefinition_unexpectedError(), e);
+                    LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
                 }
                 break;
             case DEFAULT:
@@ -272,7 +271,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public Map<String, String> generateContents(JobWrapper jobWrapper, GitSCM git) {
-        customJobName = jobWrapper.getCustomJobName();
 
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
@@ -297,7 +295,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                             getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
                         }
 
-                        if(isPullRequestType()){
+                        if (isPullRequestType()) {
                             Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
                             sortAndPutToParam(pullRequestSet, paramList);
                         }
@@ -305,7 +303,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, getCustomeJobName() + Messages.GitParameterDefinition_unexpectedError(), e);
+            LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
             String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
             paramList.clear();
             paramList.put(message, message);
@@ -337,7 +335,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
             }
         } catch (GitException e) {
-            LOGGER.log(Level.WARNING, getCustomeJobName() + Messages.GitParameterDefinition_getTag(), e);
+            LOGGER.log(Level.WARNING, getCustomeJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
         }
         return tagSet;
     }
@@ -379,7 +377,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             branchFilterPattern = Pattern.compile(branchFilter);
         } catch (Exception e) {
-            LOGGER.log(Level.INFO, getCustomeJobName() + Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
+            LOGGER.log(Level.INFO, getCustomeJobName() + " " + Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
             branchFilterPattern = Pattern.compile(".*");
         }
         return branchFilterPattern;
@@ -391,7 +389,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     /**
-     *Unfortunately, to get the revisions should do fetch
+     * Unfortunately, to get the revisions should do fetch
      */
     private void getRevision(JobWrapper jobWrapper, GitSCM git, Map<String, String> paramList, EnvVars environment, RemoteConfig repository, URIish remoteURL) throws IOException, InterruptedException {
         boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
@@ -411,7 +409,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         workspace.delete();
     }
-
 
 
     private void sortAndPutToParam(Set<String> setElement, Map<String, String> paramList) {
@@ -475,7 +472,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isEmptyWorkspace(workspace.getFilePath())) {
             gitClient.init();
             gitClient.clone(remoteURL.toASCIIString(), DEFAULT_REMOTE, false, null);
-            LOGGER.log(Level.INFO, getCustomeJobName() + Messages.GitParameterDefinition_genContentsCloneDone());
+            LOGGER.log(Level.INFO, getCustomeJobName() + " " + Messages.GitParameterDefinition_genContentsCloneDone());
         }
     }
 
@@ -526,7 +523,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public String getCustomeJobName() {
-        return customJobName;
+        Job job = getParentJob();
+        String fullName = job != null ? job.getFullName() : EMPTY_JOB_NAME;
+        return "[ " + fullName + " ] ";
     }
 
     @Extension
