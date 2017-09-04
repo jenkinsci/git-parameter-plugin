@@ -22,8 +22,9 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
-09/03/2017 Version 0.8.1
+09/04/2017 Version 0.8.1
 
+* JENKINS-46216: Null Pointer exception when no default parameter provided
 * JENKINS-45577: [Git Parameter Plugin] Parameter does not support the definition from CLI
 * JENKINS-46624: fix remote name
 * JENKINS-46185: Set browser focus to filter after the QuickFilter has been filled
