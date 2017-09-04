@@ -271,7 +271,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public Map<String, String> generateContents(JobWrapper jobWrapper, GitSCM git) {
-
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
             EnvVars environment = getEnvironment(jobWrapper);
