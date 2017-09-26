@@ -26,6 +26,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
+import hudson.model.StringParameterDefinition;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
@@ -852,6 +853,30 @@ public class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
+    @Test
+    public void testParameterDefinedRepositoryUrl() throws Exception {
+        project = jenkins.createFreeStyleProject("testLocalValue");
+        project.getBuildersList().add(new Shell("echo test"));
+
+        StringParameterDefinition stringParameterDef = new StringParameterDefinition("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL, "Description");
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+
+        ParametersDefinitionProperty jobProp = new ParametersDefinitionProperty(stringParameterDef,def);
+        project.addProperty(jobProp);
+        setupGit("${GIT_REPO_URL}");
+
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertEquals(build.getResult(), Result.SUCCESS);
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
 
     private void setupGit() throws IOException {
         setupGit(GIT_PARAMETER_REPOSITORY_URL);

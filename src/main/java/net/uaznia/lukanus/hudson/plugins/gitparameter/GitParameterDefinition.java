@@ -21,12 +21,15 @@ import java.util.regex.PatternSyntaxException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Util;
 import hudson.cli.CLICommand;
+import hudson.model.ChoiceParameterDefinition;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Run;
+import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.plugins.git.GitException;
@@ -278,7 +281,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 synchronized (GitParameterDefinition.class) {
                     for (URIish remoteURL : repository.getURIs()) {
                         GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
-                        String gitUrl = remoteURL.toPrivateASCIIString();
+                        String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
                         if (isTagType()) {
                             Set<String> tagSet = getTag(gitClient, gitUrl);
@@ -463,8 +466,37 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (buildEnvironments != null) {
             environment.putAll(buildEnvironments);
         }
+
+        EnvVars jobDefautEnvironments = getJobDefaultEnvironment(jobWrapper);
+        environment.putAll(jobDefautEnvironments);
+
         EnvVars.resolve(environment);
         return environment;
+    }
+
+    private EnvVars getJobDefaultEnvironment(JobWrapper jobWrapper) {
+        EnvVars environment = new EnvVars();
+        ParametersDefinitionProperty property = (ParametersDefinitionProperty) jobWrapper.getJob().getProperty(ParametersDefinitionProperty.class);
+        if (property != null) {
+            for (ParameterDefinition parameterDefinition : property.getParameterDefinitions()) {
+                if (parameterDefinition != null && isAcceptedParameterClass(parameterDefinition)) {
+                    checkAndAddDefaultParameterValue(parameterDefinition, environment);
+                }
+            }
+        }
+        return environment;
+    }
+
+    private boolean isAcceptedParameterClass(ParameterDefinition parameterDefinition) {
+        return parameterDefinition instanceof StringParameterDefinition
+                || parameterDefinition instanceof ChoiceParameterDefinition;
+    }
+
+    private void checkAndAddDefaultParameterValue(ParameterDefinition parameterDefinition, EnvVars environment) {
+        ParameterValue defaultParameterValue = parameterDefinition.getDefaultParameterValue();
+        if (defaultParameterValue != null && defaultParameterValue.getValue() != null && defaultParameterValue.getValue() instanceof String) {
+            environment.put(parameterDefinition.getName(), (String) defaultParameterValue.getValue());
+        }
     }
 
     private void initWorkspace(FilePathWrapper workspace, GitClient gitClient, URIish remoteURL) throws IOException, InterruptedException {
