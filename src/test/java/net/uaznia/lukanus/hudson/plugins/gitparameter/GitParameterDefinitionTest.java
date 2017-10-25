@@ -761,7 +761,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void testWorkflowJob() throws IOException, InterruptedException {
-        WorkflowJob p = jenkins.jenkins.createProject(WorkflowJob.class, "wfj");
+        WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
