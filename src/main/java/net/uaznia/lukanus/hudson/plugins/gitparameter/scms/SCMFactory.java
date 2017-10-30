@@ -48,10 +48,12 @@ public class SCMFactory {
     }
 
     private static List<GitSCM> getFirstGitSCM(List<SCM> scms) {
-        SCM scm = scms.get(0);
-        if (scm instanceof GitSCM) {
-            return Collections.singletonList((GitSCM) scm);
-        }
+        if(null != scms && !scms.isEmpty()){
+            SCM scm = scms.get(0);
+            if (scm instanceof GitSCM) {
+                return Collections.singletonList((GitSCM) scm);
+            }
+        }     
         return Collections.EMPTY_LIST;
     }
 
