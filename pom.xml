@@ -63,7 +63,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>2.4.4</version>
+			<version>3.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -95,14 +95,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-job</artifactId>
+			<artifactId>workflow-aggregator</artifactId>
 			<version>2.5</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-cps</artifactId>
-			<version>1.15</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
