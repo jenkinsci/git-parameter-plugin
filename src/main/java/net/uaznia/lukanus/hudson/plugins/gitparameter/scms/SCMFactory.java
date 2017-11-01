@@ -23,6 +23,9 @@ public class SCMFactory {
     public static List<GitSCM> getGitSCMs(JobWrapper jobWrapper, String repositoryRegExpName) {
 
         List<SCM> scms = getSCMs(jobWrapper);
+        if (scms.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
         if (Strings.isNullOrEmpty(repositoryRegExpName)) {
             return getFirstGitSCM(scms);
         } else {

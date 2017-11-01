@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +33,23 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
             scms.add(scmFromDefinition);
         }
 
+        Collection<? extends SCM> scmsFromLastBuild = getSCMsFromLastBuild();
+        if (scmsFromLastBuild != null && !scmsFromLastBuild.isEmpty()) {
+            scms.addAll(scmsFromLastBuild);
+        }
         return scms;
+    }
+
+    private Collection<? extends SCM> getSCMsFromLastBuild() {
+        try {
+            Object scms = invokeGetMethodFromJob("getSCMs");
+            if (scms != null && scms instanceof Collection) {
+                return (Collection<? extends SCM>) scms;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
+        }
+        return null;
     }
 
 
@@ -41,8 +58,11 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
             Object definition = invokeGetMethodFromJob("getDefinition");
 
             Class<?> cpsScmFlowDefinitionClazz = definition.getClass();
-            Method getScmMethod = cpsScmFlowDefinitionClazz.getMethod("getScm");
+            if (isNotCpsScmFlowDefinitionClass(cpsScmFlowDefinitionClazz)) {
+                return null;
+            }
 
+            Method getScmMethod = cpsScmFlowDefinitionClazz.getMethod("getScm");
             Object scm = getScmMethod.invoke(definition);
             if (scm instanceof SCM) {
                 return (SCM) scm;
@@ -79,6 +99,10 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
             LOGGER.log(Level.SEVERE, getCustomJobName() + Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
         }
         return null;
+    }
+
+    private boolean isNotCpsScmFlowDefinitionClass(Class<?> clazz) {
+        return !"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition".equals(clazz.getName());
     }
 
     private Object invokeGetMethodFromJob(String methodInvoke) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {

@@ -1,6 +1,5 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 
 import hudson.EnvVars;
@@ -41,6 +41,7 @@ import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.Des
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import org.jenkinsci.plugins.multiplescms.MultiSCM;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Rule;
@@ -77,17 +78,17 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void matchesWithBitbucketPullRequestRefs(){
+    public void matchesWithBitbucketPullRequestRefs() {
         Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
         matcher.find();
-        assertEquals(matcher.group(1),"186");
+        assertEquals(matcher.group(1), "186");
     }
 
     @Test
-    public void matchesWithGithubPullRequestRefs(){
+    public void matchesWithGithubPullRequestRefs() {
         Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
         matcher.find();
-        assertEquals(matcher.group(1),"45");
+        assertEquals(matcher.group(1), "45");
     }
 
     @Test
@@ -646,13 +647,13 @@ public class GitParameterDefinitionTest {
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
-            GitParameterDefinition.PARAMETER_TYPE_PULL_REQUEST,
-            "master",
-            "testDescription",
-            "",
-            ".*",
-            "*",
-            SortMode.NONE, SelectedValue.NONE, null, false);
+                GitParameterDefinition.PARAMETER_TYPE_PULL_REQUEST,
+                "master",
+                "testDescription",
+                "",
+                ".*",
+                "*",
+                SortMode.NONE, SelectedValue.NONE, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
 
@@ -760,7 +761,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testWorkflowJob() throws IOException, InterruptedException {
+    public void testWorkflowJobWithCpsScmFlowDefinition() throws IOException, InterruptedException {
         WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
 
@@ -775,6 +776,35 @@ public class GitParameterDefinitionTest {
 
         p.addProperty(new ParametersDefinitionProperty(def));
         ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
+        assertTrue(isListBoxItem(items, "git-parameter-0.2"));
+    }
+
+    @Test
+    public void testWorkflowJobWithCpsFlowDefinition() throws IOException, InterruptedException, ExecutionException {
+        WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
+        String script = "node {\n" +
+                " git url: '" + GIT_PARAMETER_REPOSITORY_URL + "' \n" +
+                " echo 'Some message'\n" +
+                "}";
+
+
+        p.setDefinition(new CpsFlowDefinition(script, false));
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
+
+        p.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
+        //First build is fake build! And should return no Repository configured
+        assertTrue(isListBoxItem(items, Messages.GitParameterDefinition_noRepositoryConfigured()));
+
+        p.scheduleBuild2(0).get();
+        items = def.getDescriptor().doFillValueItems(p, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
@@ -868,7 +898,7 @@ public class GitParameterDefinitionTest {
                 "*",
                 SortMode.ASCENDING, SelectedValue.NONE, null, false);
 
-        ParametersDefinitionProperty jobProp = new ParametersDefinitionProperty(stringParameterDef,def);
+        ParametersDefinitionProperty jobProp = new ParametersDefinitionProperty(stringParameterDef, def);
         project.addProperty(jobProp);
         setupGit("${GIT_REPO_URL}");
 
