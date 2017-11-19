@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.base.Strings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -283,6 +284,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
                         String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
+                        if (notMatchUseRepository(gitUrl)) {
+                            continue;
+                        }
+
                         if (isTagType()) {
                             Set<String> tagSet = getTag(gitClient, gitUrl);
                             sortAndPutToParam(tagSet, paramList);
@@ -311,6 +316,20 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             paramList.put(message, message);
         }
         return paramList;
+    }
+
+    private boolean notMatchUseRepository(String gitUrl) {
+        if (Strings.isNullOrEmpty(useRepository)) {
+            return false;
+        }
+        Pattern repositoryNamePattern;
+        try {
+            repositoryNamePattern = Pattern.compile(useRepository);
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, Messages.GitParameterDefinition_invalidUseRepositoryPattern(useRepository), e.getMessage());
+            return false;
+        }
+        return !repositoryNamePattern.matcher(gitUrl).find();
     }
 
     private boolean isRevisionType() {
