@@ -857,6 +857,40 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testMultiRepositoryInOneSCM() throws IOException, InterruptedException {
+        project = jenkins.createFreeStyleProject("projectHaveMultiRepositoryInOneSCM");
+        project.getBuildersList().add(new Shell("echo test"));
+        SCM gitSCM = getGitSCM(GIT_PARAMETER_REPOSITORY_URL, GIT_CLIENT_REPOSITORY_URL);
+        project.setScm(gitSCM);
+
+        GitParameterDefinition defGitParameter = new GitParameterDefinition("name_git_parameter",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, ".*git-parameter-plugin.git", false);
+
+        GitParameterDefinition defGitCient = new GitParameterDefinition("name_git_client",
+                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, ".*git-client-plugin.git", false);
+
+        project.addProperty(new ParametersDefinitionProperty(defGitParameter, defGitCient));
+
+        ListBoxModel items = defGitParameter.getDescriptor().doFillValueItems(project, defGitParameter.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+
+        items = defGitCient.getDescriptor().doFillValueItems(project, defGitCient.getName());
+        assertTrue(isListBoxItem(items, "origin1/master"));
+    }
+
+    @Test
     public void testMultiSCM_forSubdirectoryForRepo() throws IOException, InterruptedException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
@@ -921,10 +955,12 @@ public class GitParameterDefinitionTest {
         return getGitSCM(GIT_PARAMETER_REPOSITORY_URL);
     }
 
-    private SCM getGitSCM(String url) {
-        UserRemoteConfig config = new UserRemoteConfig(url, null, null, null);
+    private SCM getGitSCM(String... urls) {
         List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
-        configs.add(config);
+        for (String url : urls) {
+            UserRemoteConfig config = new UserRemoteConfig(url, null, null, null);
+            configs.add(config);
+        }
         return new GitSCM(configs, null, false, null, null, null, null);
     }
 

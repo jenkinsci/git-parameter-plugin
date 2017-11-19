@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.SCM;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 
@@ -43,11 +44,21 @@ public class SCMFactory {
     private static List<GitSCM> matchAndGetGitSCM(List<SCM> scms, Pattern repositoryNamePattern) {
         List<GitSCM> gitSCMs = new ArrayList<>();
         for (SCM scm : scms) {
-            if (scm instanceof GitSCM && repositoryNamePattern.matcher(((GitSCM) scm).getUserRemoteConfigs().get(0).getUrl()).find()) {
+            if (scm instanceof GitSCM && anyUserRemoteConfigMatch(scm, repositoryNamePattern)) {
                 gitSCMs.add((GitSCM) scm);
             }
         }
         return gitSCMs;
+    }
+
+    private static boolean anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern) {
+        List<UserRemoteConfig> userRemoteConfigs = ((GitSCM) scm).getUserRemoteConfigs();
+        for (UserRemoteConfig userRemoteConfig : userRemoteConfigs) {
+            if (repositoryNamePattern.matcher(userRemoteConfig.getUrl()).find()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static List<GitSCM> getFirstGitSCM(List<SCM> scms) {
