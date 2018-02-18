@@ -22,6 +22,11 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
+02/18/2017 Version 0.9.1
+
+* JENKINS-45419: 'Use Repository' setting does not find other remote urls if multiple repos are added to job
+* PR #55: Add complete French support
+
 11/02/2017 Version 0.9.0
 
 * JENKINS-47110: Retrieving Git references do not work with variable in Repository URL
