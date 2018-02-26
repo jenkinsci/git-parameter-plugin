@@ -52,12 +52,14 @@ import org.jenkinsci.plugins.gitclient.FetchCommand;
 import org.jenkinsci.plugins.gitclient.GitClient;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
 
+    private static final String DEFAULT_LIST_SIZE = "5";
     private static final String DEFAULT_REMOTE = "origin";
     private static final String REFS_TAGS_PATTERN = ".*refs/tags/";
 
@@ -83,6 +85,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private SelectedValue selectedValue;
     private String useRepository;
     private Boolean quickFilterEnabled;
+    private String listSize;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
@@ -95,6 +98,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.sortMode = sortMode;
         this.selectedValue = selectedValue;
         this.quickFilterEnabled = quickFilterEnabled;
+        this.listSize = DEFAULT_LIST_SIZE;
 
         setUseRepository(useRepository);
         setType(type);
@@ -234,6 +238,15 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         this.branchFilter = branchFilter;
+    }
+
+    public String getListSize() {
+        return listSize == null ? DEFAULT_LIST_SIZE : listSize;
+    }
+
+    @DataBoundSetter
+    public void setListSize(String listSize) {
+        this.listSize = listSize;
     }
 
     public SelectedValue getSelectedValue() {
