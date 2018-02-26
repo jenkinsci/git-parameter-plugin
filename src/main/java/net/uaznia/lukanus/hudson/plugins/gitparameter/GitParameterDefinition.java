@@ -241,7 +241,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public String getListSize() {
-        return listSize;
+        return listSize == null ? DEFAULT_LIST_SIZE : listSize;
     }
 
     @DataBoundSetter
