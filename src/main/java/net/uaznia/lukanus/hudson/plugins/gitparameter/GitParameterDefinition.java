@@ -297,27 +297,25 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
                         String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
-                        if (notMatchUseRepository(gitUrl)) {
-                            break;
-                        }
+                        if (!notMatchUseRepository(gitUrl)) {
+                            if (isTagType()) {
+                                Set<String> tagSet = getTag(gitClient, gitUrl);
+                                sortAndPutToParam(tagSet, paramList);
+                            }
 
-                        if (isTagType()) {
-                            Set<String> tagSet = getTag(gitClient, gitUrl);
-                            sortAndPutToParam(tagSet, paramList);
-                        }
+                            if (isBranchType()) {
+                                Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
+                                sortAndPutToParam(branchSet, paramList);
+                           }
 
-                        if (isBranchType()) {
-                            Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
-                            sortAndPutToParam(branchSet, paramList);
-                        }
+                            if (isRevisionType()) {
+                                getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
+                            }
 
-                        if (isRevisionType()) {
-                            getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
-                        }
-
-                        if (isPullRequestType()) {
-                            Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
-                            sortAndPutToParam(pullRequestSet, paramList);
+                            if (isPullRequestType()) {
+                                Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
+                                sortAndPutToParam(pullRequestSet, paramList);
+                           }
                         }
                     }
                 }
