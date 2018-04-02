@@ -298,26 +298,24 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
                         if (notMatchUseRepository(gitUrl)) {
-                            continue;
-                        }
+                            if (isTagType()) {
+                                Set<String> tagSet = getTag(gitClient, gitUrl);
+                                sortAndPutToParam(tagSet, paramList);
+                            }
 
-                        if (isTagType()) {
-                            Set<String> tagSet = getTag(gitClient, gitUrl);
-                            sortAndPutToParam(tagSet, paramList);
-                        }
+                            if (isBranchType()) {
+                                Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
+                                sortAndPutToParam(branchSet, paramList);
+                           }
 
-                        if (isBranchType()) {
-                            Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
-                            sortAndPutToParam(branchSet, paramList);
-                        }
+                            if (isRevisionType()) {
+                                getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
+                            }
 
-                        if (isRevisionType()) {
-                            getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
-                        }
-
-                        if (isPullRequestType()) {
-                            Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
-                            sortAndPutToParam(pullRequestSet, paramList);
+                            if (isPullRequestType()) {
+                                Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
+                                sortAndPutToParam(pullRequestSet, paramList);
+                           }
                         }
                     }
                 }
@@ -342,7 +340,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             LOGGER.log(Level.INFO, Messages.GitParameterDefinition_invalidUseRepositoryPattern(useRepository), e.getMessage());
             return false;
         }
-        return !repositoryNamePattern.matcher(gitUrl).find();
+        return repositoryNamePattern.matcher(gitUrl).find();
     }
 
     private boolean isRevisionType() {
