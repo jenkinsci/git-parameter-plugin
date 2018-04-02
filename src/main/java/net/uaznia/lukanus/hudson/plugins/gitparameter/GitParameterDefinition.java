@@ -297,7 +297,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
                         String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
-                        if (!notMatchUseRepository(gitUrl)) {
+                        if (notMatchUseRepository(gitUrl)) {
                             if (isTagType()) {
                                 Set<String> tagSet = getTag(gitClient, gitUrl);
                                 sortAndPutToParam(tagSet, paramList);
@@ -340,7 +340,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             LOGGER.log(Level.INFO, Messages.GitParameterDefinition_invalidUseRepositoryPattern(useRepository), e.getMessage());
             return false;
         }
-        return !repositoryNamePattern.matcher(gitUrl).find();
+        return repositoryNamePattern.matcher(gitUrl).find();
     }
 
     private boolean isRevisionType() {
