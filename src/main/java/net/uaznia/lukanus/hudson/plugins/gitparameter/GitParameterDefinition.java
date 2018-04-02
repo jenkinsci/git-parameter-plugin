@@ -298,7 +298,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
 
                         if (notMatchUseRepository(gitUrl)) {
-                            continue;
+                            break;
                         }
 
                         if (isTagType()) {
