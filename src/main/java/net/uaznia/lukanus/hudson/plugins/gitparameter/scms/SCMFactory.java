@@ -44,21 +44,20 @@ public class SCMFactory {
     private static List<GitSCM> matchAndGetGitSCM(List<SCM> scms, Pattern repositoryNamePattern) {
         List<GitSCM> gitSCMs = new ArrayList<>();
         for (SCM scm : scms) {
-            if (scm instanceof GitSCM && anyUserRemoteConfigMatch(scm, repositoryNamePattern)) {
-                gitSCMs.add((GitSCM) scm);
+            if (scm instanceof GitSCM) {
+                anyUserRemoteConfigMatch(scm, repositoryNamePattern, gitSCMs);
             }
         }
         return gitSCMs;
     }
 
-    private static boolean anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern) {
+    private static List<GitSCM> anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern, List<GitSCM> gitSCMs) {
         List<UserRemoteConfig> userRemoteConfigs = ((GitSCM) scm).getUserRemoteConfigs();
         for (UserRemoteConfig userRemoteConfig : userRemoteConfigs) {
             if (repositoryNamePattern.matcher(userRemoteConfig.getUrl()).find()) {
-                return true;
+                gitSCMs.add((GitSCM) scm);
             }
         }
-        return false;
     }
 
     private static List<GitSCM> getFirstGitSCM(List<SCM> scms) {
