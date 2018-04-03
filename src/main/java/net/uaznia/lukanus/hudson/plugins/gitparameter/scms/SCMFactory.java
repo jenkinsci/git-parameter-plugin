@@ -51,7 +51,7 @@ public class SCMFactory {
         return gitSCMs;
     }
 
-    private static List<GitSCM> anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern, List<GitSCM> gitSCMs) {
+    private static void anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern, List<GitSCM> gitSCMs) {
         List<UserRemoteConfig> userRemoteConfigs = ((GitSCM) scm).getUserRemoteConfigs();
         for (UserRemoteConfig userRemoteConfig : userRemoteConfigs) {
             if (repositoryNamePattern.matcher(userRemoteConfig.getUrl()).find()) {
