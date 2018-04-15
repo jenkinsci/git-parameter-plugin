@@ -73,16 +73,25 @@ var GitParameter = GitParameter || (function($) {
             else if (selectedValue == 'DEFAULT' && !isEmpty(_self.getDefaultValue())) {
                 var defaultValue = _self.getDefaultValue();
                 console.log("Search default value : " + defaultValue);
+
+                var foundExactMatch = false;
+
                 for (var i = 0; i < optionsLength; i++ ) {
                     if (filteredElement.options[i].value == defaultValue) {
                         filteredElement.options[i].selected = true;
+                        console.log("Found an exact match");
+                        foundExactMatch = true;
                         break;
                     }
                 }
-                for (var i = 0; i < optionsLength; i++ ) {
-                    if (filteredElement.options[i].value.indexOf(defaultValue) > -1) {
-                        filteredElement.options[i].selected = true;
-                        break;
+
+                if (!foundExactMatch) {
+                    for (var i = 0; i < optionsLength; i++ ) {
+                        if (filteredElement.options[i].value.indexOf(defaultValue) > -1) {
+                            filteredElement.options[i].selected = true;
+                            console.log("Found an approximate match : " + filteredElement.options[i].value);
+                            break;
+                        }
                     }
                 }
             }
