@@ -74,25 +74,24 @@ var GitParameter = GitParameter || (function($) {
                 var defaultValue = _self.getDefaultValue();
                 console.log("Search default value : " + defaultValue);
 
-                var foundExactMatch = false;
+                var approximateMatchIndex = -1;
 
                 for (var i = 0; i < optionsLength; i++ ) {
-                    if (filteredElement.options[i].value == defaultValue) {
-                        filteredElement.options[i].selected = true;
+                    var option = filteredElement.options[i];
+                    if (option.value == defaultValue) {
+                        option.selected = true;
                         console.log("Found an exact match");
-                        foundExactMatch = true;
+                        approximateMatchIndex = -1;
                         break;
+                    }
+                    if (approximateMatchIndex == -1 && option.value.indexOf(defaultValue) > -1) {
+                        approximateMatchIndex = i;
                     }
                 }
 
-                if (!foundExactMatch) {
-                    for (var i = 0; i < optionsLength; i++ ) {
-                        if (filteredElement.options[i].value.indexOf(defaultValue) > -1) {
-                            filteredElement.options[i].selected = true;
-                            console.log("Found an approximate match : " + filteredElement.options[i].value);
-                            break;
-                        }
-                    }
+                if (approximateMatchIndex != -1) {
+                    filteredElement.options[approximateMatchIndex].selected = true;
+                    console.log("Found an approximate match : " + filteredElement.options[approximateMatchIndex].value);
                 }
             }
         }
