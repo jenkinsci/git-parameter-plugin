@@ -24,8 +24,8 @@ h2. ChangeLog
 
 04/16/2017 Version 0.9.2
 
-* JENKINS-49727: Add optional parameter to specify the number of items the list will display IN PROGRESS
-* JENKINS-50776: Default selected item doesn't always honor exactly Default Value IN PROGRESS
+* JENKINS-49727: Add optional parameter to specify the number of items the list will display
+* JENKINS-50776: Default selected item doesn't always honor exactly Default Value
 
 02/18/2017 Version 0.9.1
 
