@@ -17,7 +17,8 @@ import java.util.regex.Pattern;
 public class RevisionInfoFactory {
 
     private static final Logger LOGGER = Logger.getLogger(RevisionInfoFactory.class.getName());
-    public static final Pattern AUTHOR_LINE_PATTERN = Pattern.compile("author (.* <.*@.*>) (\\d{10}) ([\\+-]\\d{4})");
+    private static final Pattern AUTHOR_LINE_PATTERN = Pattern.compile("author (.* <.*@.*>) (\\d{10}) ([\\+-]\\d{4})");
+    private static final Pattern AUTHOR_LINE_PATTERN_GENERAL_DATE = Pattern.compile("author (.* <.*@.*>) (.*)");
 
     private GitClient gitClient;
     private String branch;
@@ -46,15 +47,17 @@ public class RevisionInfoFactory {
     }
 
     private String prettyRevisionInfo(Revision revision) {
-        List<String> raw = null;
+        String shortSha1 = revision.getSha1String().substring(0, 8);
+
+        List<String> raw;
         try {
             raw = gitClient.showRevision(revision.getSha1());
         } catch (GitException e1) {
             LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e1);
-            return "";
+            return shortSha1;
         } catch (InterruptedException e1) {
             LOGGER.log(Level.SEVERE, Messages.GitParameterDefinition_unexpectedError(), e1);
-            return "";
+            return shortSha1;
         }
 
         String authorLine = getAuthorLine(raw);
@@ -63,11 +66,18 @@ public class RevisionInfoFactory {
             String author = matcher.group(1);
             String timestamp = matcher.group(2);
             DateTime date = new DateTime(Long.parseLong(timestamp) * 1000); //Convert UNIX timestamp to date
-            return revision.getSha1String().substring(0, 8) + " " + date.toString("yyyy:MM:dd HH:mm") + " " + author;
-        } else {
-            LOGGER.log(Level.WARNING, Messages.GitParameterDefinition_notFindAuthorPattern(authorLine));
-            return "";
+            return shortSha1 + " " + date.toString("yyyy-MM-dd HH:mm") + " " + author;
         }
+
+        matcher = AUTHOR_LINE_PATTERN_GENERAL_DATE.matcher(authorLine);
+        if (matcher.find()) {
+            String author = matcher.group(1);
+            String date = matcher.group(2);
+            return shortSha1 + " " + date + " " + author;
+        }
+
+        LOGGER.log(Level.WARNING, Messages.GitParameterDefinition_notFindAuthorPattern(authorLine));
+        return shortSha1;
     }
 
     private String getAuthorLine(List<String> rows) {
