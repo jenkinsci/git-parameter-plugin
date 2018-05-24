@@ -202,7 +202,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public SortMode getSortMode() {
-        return this.sortMode;
+        return this.sortMode == null ? SortMode.NONE : this.sortMode;
     }
 
     public void setSortMode(SortMode sortMode) {
@@ -557,7 +557,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         ArrayList<String> tags = new ArrayList<String>(set);
 
-        if (sortMode.getIsUsingSmartSort()) {
+        if (getSortMode().getIsUsingSmartSort()) {
             Collections.sort(tags, new SmartNumberStringComparer());
         } else {
             Collections.sort(tags);
