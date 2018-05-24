@@ -1,5 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import static java.lang.Long.parseLong;
+import static org.joda.time.DateTimeZone.forID;
+
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import org.apache.commons.lang.StringUtils;
@@ -65,7 +68,8 @@ public class RevisionInfoFactory {
         if (matcher.find()) {
             String author = matcher.group(1);
             String timestamp = matcher.group(2);
-            DateTime date = new DateTime(Long.parseLong(timestamp) * 1000); //Convert UNIX timestamp to date
+            String zone = matcher.group(3);
+            DateTime date = new DateTime(parseLong(timestamp) * 1000, forID(zone)); //Convert UNIX timestamp to date
             return shortSha1 + " " + date.toString("yyyy-MM-dd HH:mm") + " " + author;
         }
 
