@@ -4,8 +4,8 @@
     <f:entry title="${%parameter.name}" field="name">
         <f:textbox/>
     </f:entry>
-    <f:entry title="${%parameter.description}" field="description">
-        <f:textbox/>
+    <f:entry title="${%parameter.description}" help="/help/parameter/description.html" field="description">
+        <f:textarea name="description" value="${description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
     </f:entry>
     <f:entry title="${%parameter.type}" field="type">
         <select name="type">
