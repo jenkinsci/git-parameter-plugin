@@ -48,6 +48,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
 import org.jenkinsci.plugins.gitclient.GitClient;
 import org.kohsuke.stapler.AncestorInPath;
@@ -591,6 +592,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return "[ " + fullName + " ] ";
     }
 
+    @Symbol("gitParameter")
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
         private List<GitSCM> scms;

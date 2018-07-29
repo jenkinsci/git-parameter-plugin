@@ -1,8 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,12 +19,7 @@ import java.util.regex.Matcher;
 import hudson.EnvVars;
 import hudson.cli.CLICommand;
 import hudson.cli.ConsoleCommand;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.ParameterValue;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Result;
-import hudson.model.StringParameterDefinition;
+import hudson.model.*;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
@@ -41,9 +34,11 @@ import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.Des
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import org.jenkinsci.plugins.multiplescms.MultiSCM;
+import org.jenkinsci.plugins.structs.SymbolLookup;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -940,6 +935,12 @@ public class GitParameterDefinitionTest {
         assertEquals(build.getResult(), Result.SUCCESS);
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test
+    public void symbolPipelineTest() {
+        Descriptor<? extends Describable> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
+        assertNotNull(gitParameter);
     }
 
     private void setupGit() throws IOException {
