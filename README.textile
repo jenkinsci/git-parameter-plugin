@@ -22,6 +22,10 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
+08/16/2018 Version 0.9.4
+* JENKINS-52273: Support git-parameter-plugin in declarative pipeline
+* JENKINS-52132: Description with HTML support
+
 06/20/2018 Version 0.9.3
 * JENKINS-51521: Git parameter does not show branch list in case deleteDir() is present in pipeline
 * JENKINS-51476: Git parameter plugin is not retrieving revision number
