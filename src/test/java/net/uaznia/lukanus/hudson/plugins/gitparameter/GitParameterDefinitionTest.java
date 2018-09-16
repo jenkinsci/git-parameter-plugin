@@ -51,6 +51,9 @@ import org.kohsuke.stapler.StaplerRequest;
 public class GitParameterDefinitionTest {
     private static final String GIT_PARAMETER_REPOSITORY_URL = "https://github.com/jenkinsci/git-parameter-plugin.git";
     private static final String GIT_CLIENT_REPOSITORY_URL = "https://github.com/jenkinsci/git-client-plugin.git";
+    private static final String EXAMPLE_REPOSITORY_A_URL = "https://github.com/klimas7/exampleA.git";
+    private static final String EXAMPLE_REPOSITORY_B_URL = "https://github.com/klimas7/exampleB.git";
+
     public static final String NAME = "name";
     public static final String PT_REVISION = "PT_REVISION";
     public static final String DEFAULT_VALUE = "defaultValue";
@@ -830,7 +833,7 @@ public class GitParameterDefinitionTest {
     public void testMultiSCM() throws IOException, InterruptedException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
-        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(), getGitSCM(GIT_CLIENT_REPOSITORY_URL)));
+        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(EXAMPLE_REPOSITORY_A_URL), getGitSCM(EXAMPLE_REPOSITORY_B_URL)));
         project.setScm(multiSCM);
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -844,45 +847,41 @@ public class GitParameterDefinitionTest {
 
         project.addProperty(new ParametersDefinitionProperty(def));
         ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
-        assertTrue(isListBoxItem(items, "origin/master"));
+        assertTrue(isListBoxItem(items, "origin/exA_branch_1"));
+        assertFalse(isListBoxItem(items, "origin/exB_branch_1"));
 
-        def.setUseRepository(".*git-client-plugin.git");
+        def.setUseRepository(".*exampleB.git");
         items = def.getDescriptor().doFillValueItems(project, def.getName());
-        assertTrue(isListBoxItem(items, "origin/master"));
+        assertFalse(isListBoxItem(items, "origin/exA_branch_1"));
+        assertTrue(isListBoxItem(items, "origin/exB_branch_1"));
     }
 
     @Test
     public void testMultiRepositoryInOneSCM() throws IOException, InterruptedException {
         project = jenkins.createFreeStyleProject("projectHaveMultiRepositoryInOneSCM");
         project.getBuildersList().add(new Shell("echo test"));
-        SCM gitSCM = getGitSCM(GIT_PARAMETER_REPOSITORY_URL, GIT_CLIENT_REPOSITORY_URL);
+        SCM gitSCM = getGitSCM(EXAMPLE_REPOSITORY_A_URL, EXAMPLE_REPOSITORY_B_URL);
         project.setScm(gitSCM);
 
-        GitParameterDefinition defGitParameter = new GitParameterDefinition("name_git_parameter",
+        GitParameterDefinition def = new GitParameterDefinition("name_git_parameter",
                 GitParameterDefinition.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
                 ".*",
                 "*",
-                SortMode.ASCENDING, SelectedValue.TOP, ".*git-parameter-plugin.git", false);
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
-        GitParameterDefinition defGitCient = new GitParameterDefinition("name_git_client",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
-                null,
-                "testDescription",
-                null,
-                ".*",
-                "*",
-                SortMode.ASCENDING, SelectedValue.TOP, ".*git-client-plugin.git", false);
 
-        project.addProperty(new ParametersDefinitionProperty(defGitParameter, defGitCient));
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "exA_branch_1"));
+        assertFalse(isListBoxItem(items, "exB_branch_1"));
 
-        ListBoxModel items = defGitParameter.getDescriptor().doFillValueItems(project, defGitParameter.getName());
-        assertTrue(isListBoxItem(items, "origin/master"));
-
-        items = defGitCient.getDescriptor().doFillValueItems(project, defGitCient.getName());
-        assertTrue(isListBoxItem(items, "origin1/master"));
+        def.setUseRepository(".*exampleB.git");
+        items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertFalse(isListBoxItem(items, "exA_branch_1"));
+        assertTrue(isListBoxItem(items, "exB_branch_1"));
     }
 
     @Test
