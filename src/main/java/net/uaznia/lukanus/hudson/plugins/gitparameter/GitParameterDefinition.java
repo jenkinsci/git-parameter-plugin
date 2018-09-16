@@ -18,7 +18,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.google.common.base.Strings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -56,6 +55,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
@@ -110,7 +111,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Override
     public ParameterValue createValue(StaplerRequest request) {
         String value[] = request.getParameterValues(getName());
-        if (value == null || value.length == 0 || StringUtils.isBlank(value[0])) {
+        if (value == null || value.length == 0 || isBlank(value[0])) {
             return getDefaultParameterValue();
         }
         return new GitParameterValue(getName(), value[0]);
@@ -292,6 +293,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         Map<String, String> paramList = new LinkedHashMap<String, String>();
         try {
             EnvVars environment = getEnvironment(jobWrapper);
+            outForLoops:
             for (RemoteConfig repository : git.getRepositories()) {
                 synchronized (GitParameterDefinition.class) {
                     for (URIish remoteURL : repository.getURIs()) {
@@ -320,6 +322,10 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                             Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
                             sortAndPutToParam(pullRequestSet, paramList);
                         }
+
+                        if (isBlank(useRepository)) {
+                            break outForLoops;
+                        }
                     }
                 }
             }
@@ -333,7 +339,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private boolean notMatchUseRepository(String gitUrl) {
-        if (Strings.isNullOrEmpty(useRepository)) {
+        if (isBlank(useRepository)) {
             return false;
         }
         Pattern repositoryNamePattern;
@@ -583,7 +589,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public void setUseRepository(String useRepository) {
-        this.useRepository = StringUtils.isEmpty(StringUtils.trim(useRepository)) ? null : useRepository;
+        this.useRepository = isBlank(useRepository) ? null : useRepository;
     }
 
     public String getCustomeJobName() {
