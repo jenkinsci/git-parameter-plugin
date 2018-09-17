@@ -22,6 +22,9 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
+09/17/2018 Version 0.9.5
+* JENKINS-51041, JENKINS-50510, JENKINS-45419: Fixed use repository option
+
 08/16/2018 Version 0.9.4
 * JENKINS-52273: Support git-parameter-plugin in declarative pipeline
 * JENKINS-52132: Description with HTML support
