@@ -23,7 +23,7 @@ public class RevisionInfoFactoryTest {
             "",
             "    Version 0.9.2",
             "",
-            ":100644 100644 ab9cfc8ef1c067ef36fb45741be8b9444ba7085c a02738c8f727254fdcf9d03fcb0965567104a31e M\tREADME.textile"};
+            ":100644 100644 ab9cfc8ef1c067ef36fb45741be8b9444ba7085c a01738c8f727254fdcf9d03fcb0965567104a31e M\tREADME.textile"};
 
 
     private static final String COMMIT_HASH_2 = "b9a246e842a5478fe01b52eb93e0e23cdb79f616";
