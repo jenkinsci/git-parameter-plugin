@@ -5,5 +5,5 @@
   Since we don't really have anything dynamic here, let's just use static HTML. 
 -->
 <div>
-  Adds ability to choose from git repository revisions or tags
+  Adds ability to choose branches, tags  or revisions from git repositories configured in project.
 </div>
