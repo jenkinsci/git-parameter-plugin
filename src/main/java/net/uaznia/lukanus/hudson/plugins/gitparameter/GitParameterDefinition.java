@@ -333,7 +333,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
             String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
             paramList.clear();
