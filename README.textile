@@ -22,6 +22,11 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
+10/09/2018 Version 0.9.6
+* JENKINS-53911: Duplicate entries in list, if git repo is checked out twice.
+* JENKINS-52533: Display commit message on the build action
+* JENKINS-45925: Show git commit message when building with parameter "revision"
+
 09/17/2018 Version 0.9.5
 * JENKINS-51041, JENKINS-50510, JENKINS-45419: Fixed use repository option
 
