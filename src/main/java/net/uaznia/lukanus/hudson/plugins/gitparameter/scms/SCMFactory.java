@@ -95,12 +95,9 @@ public class SCMFactory {
             SCMWrapper scmWrapper;
             if (REPO_SCM_CLASS_NAME.equals(projectSCMClassName)) {
                 scmWrapper = new RepoSCM(scm);
-            }
-            else if (MULTI_SCM_CLASS_NAME.equals(projectSCMClassName))
-            {
+            } else if (MULTI_SCM_CLASS_NAME.equals(projectSCMClassName)) {
                 scmWrapper = new MultiSCM(scm);
-            }
-            else {
+            } else {
                 scmWrapper = new SingleSCM(scm);
             }
             projectSCMs.addAll(scmWrapper.getSCMs());

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.*;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.junit.Assert.*;
 
 /**
@@ -57,10 +58,10 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, null, false);
         testJob.addProperty(new ParametersDefinitionProperty(def));
         JobWrapper IJobWrapper = JobWrapperFactory.createJobWrapper(testJob);
-        assertTrue(def.getDescriptor().getProjectSCMs(IJobWrapper, null).isEmpty());
+        assertTrue(getGitSCMs(IJobWrapper, null).isEmpty());
 
         testJob.setScm(git);
-        assertTrue(git.equals(def.getDescriptor().getProjectSCMs(IJobWrapper, null).get(0)));
+        assertTrue(git.equals(getGitSCMs(IJobWrapper, null).get(0)));
     }
 
     @Test

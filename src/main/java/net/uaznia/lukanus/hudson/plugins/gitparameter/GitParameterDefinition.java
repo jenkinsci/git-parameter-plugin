@@ -56,6 +56,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
@@ -297,43 +298,44 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             outForLoops:
             for (GitSCM git : scms) {
                 for (RemoteConfig repository : git.getRepositories()) {
-                    synchronized (GitParameterDefinition.class) {
-                        GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
-                        for (URIish remoteURL : repository.getURIs()) {
-                            String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
+                    GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
+                    for (URIish remoteURL : repository.getURIs()) {
 
-                            if (notMatchUseRepository(gitUrl) || usedRepository.contains(gitUrl)) {
-                                continue;
-                            }
+                        String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
+                        if (notMatchUseRepository(gitUrl) || usedRepository.contains(gitUrl)) {
+                            continue;
+                        }
 
-                            if (isTagType()) {
-                                Set<String> tagSet = getTag(gitClient, gitUrl);
-                                sortAndPutToParam(tagSet, paramList);
-                            }
+                        if (isTagType()) {
+                            Set<String> tagSet = getTag(gitClient, gitUrl);
+                            sortAndPutToParam(tagSet, paramList);
+                        }
 
-                            if (isBranchType()) {
-                                Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
-                                sortAndPutToParam(branchSet, paramList);
-                            }
+                        if (isBranchType()) {
+                            Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
+                            sortAndPutToParam(branchSet, paramList);
+                        }
 
-                            if (isRevisionType()) {
+
+                        if (isPullRequestType()) {
+                            Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
+                            sortAndPutToParam(pullRequestSet, paramList);
+                        }
+
+                        if (isRevisionType()) {
+                            synchronized (GitParameterDefinition.class) {
                                 getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
                             }
-
-                            if (isPullRequestType()) {
-                                Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
-                                sortAndPutToParam(pullRequestSet, paramList);
-                            }
-
-                            if (isBlank(useRepository)) {
-                                break outForLoops;
-                            }
-                            usedRepository.add(gitUrl);
                         }
+
+                        if (isBlank(useRepository)) {
+                            break outForLoops;
+                        }
+                        usedRepository.add(gitUrl);
                     }
                 }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
             String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
             paramList.clear();
@@ -385,7 +387,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return tagSet;
     }
 
-    private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws InterruptedException {
+    private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws Exception {
         Set<String> branchSet = new HashSet<String>();
         Pattern branchFilterPattern = compileBranchFilterPattern();
 
@@ -405,7 +407,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return branchSet;
     }
 
-    private Set<String> getPullRequest(GitClient gitClient, String gitUrl) throws InterruptedException {
+    private Set<String> getPullRequest(GitClient gitClient, String gitUrl) throws Exception {
         Set<String> pullRequestSet = new HashSet<String>();
         Map<String, ObjectId> remoteReferences = gitClient.getRemoteReferences(gitUrl, null, false, false);
         for (String remoteReference : remoteReferences.keySet()) {
@@ -605,7 +607,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Symbol("gitParameter")
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
-        private List<GitSCM> scms;
 
         @Override
         public String getDisplayName() {
@@ -624,7 +625,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     GitParameterDefinition paramDef = (GitParameterDefinition) def;
 
                     String repositoryName = paramDef.getUseRepository();
-                    scms = getProjectSCMs(jobWrapper, repositoryName);
+                    List<GitSCM> scms = getGitSCMs(jobWrapper, repositoryName);
                     if (scms == null || scms.isEmpty()) {
                         items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
                         return items;
@@ -638,10 +639,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 }
             }
             return items;
-        }
-
-        public List<GitSCM> getProjectSCMs(JobWrapper jobWrapper, String repositoryName) {
-            return SCMFactory.getGitSCMs(jobWrapper, repositoryName);
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
