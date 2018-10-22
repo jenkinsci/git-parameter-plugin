@@ -42,7 +42,6 @@ import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
-import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
@@ -56,26 +55,12 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
-
-    private static final String DEFAULT_LIST_SIZE = "5";
-    private static final String DEFAULT_REMOTE = "origin";
-    private static final String REFS_TAGS_PATTERN = ".*refs/tags/";
-
-    public static final String PARAMETER_TYPE_TAG = "PT_TAG";
-    public static final String PARAMETER_TYPE_REVISION = "PT_REVISION";
-    public static final String PARAMETER_TYPE_BRANCH = "PT_BRANCH";
-    public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
-    public static final String PARAMETER_TYPE_PULL_REQUEST = "PT_PULL_REQUEST";
-
-    public static final Pattern PULL_REQUEST_REFS_PATTERN = Pattern.compile("refs/pull.*/(\\d+)/[from|head]");
-
-    public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
-    public static final String EMPTY_JOB_NAME = "EMPTY_JOB_NAME";
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
 
     private final UUID uuid;
@@ -190,12 +175,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
     }
 
-    private boolean isParameterTypeCorrect(String type) {
-        return type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION)
-                || type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)
-                || type.equals(PARAMETER_TYPE_PULL_REQUEST);
-    }
-
     public String getBranch() {
         return this.branch;
     }
@@ -306,23 +285,23 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                             continue;
                         }
 
-                        if (isTagType()) {
+                        if (isTagType(type)) {
                             Set<String> tagSet = getTag(gitClient, gitUrl);
                             sortAndPutToParam(tagSet, paramList);
                         }
 
-                        if (isBranchType()) {
+                        if (isBranchType(type)) {
                             Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
                             sortAndPutToParam(branchSet, paramList);
                         }
 
 
-                        if (isPullRequestType()) {
+                        if (isPullRequestType(type)) {
                             Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
                             sortAndPutToParam(pullRequestSet, paramList);
                         }
 
-                        if (isRevisionType()) {
+                        if (isRevisionType(type)) {
                             synchronized (GitParameterDefinition.class) {
                                 getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
                             }
@@ -358,22 +337,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return !repositoryNamePattern.matcher(gitUrl).find();
     }
 
-    private boolean isRevisionType() {
-        return type.equalsIgnoreCase(PARAMETER_TYPE_REVISION);
-    }
-
-    private boolean isBranchType() {
-        return type.equalsIgnoreCase(PARAMETER_TYPE_BRANCH) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH);
-    }
-
-    private boolean isTagType() {
-        return type.equalsIgnoreCase(PARAMETER_TYPE_TAG) || type.equalsIgnoreCase(PARAMETER_TYPE_TAG_BRANCH);
-    }
-
-    private boolean isPullRequestType() {
-        return type.equalsIgnoreCase(PARAMETER_TYPE_PULL_REQUEST);
-    }
-
     private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
         Set<String> tagSet = new HashSet<String>();
         try {
@@ -388,7 +351,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws Exception {
-        Set<String> branchSet = new HashSet<String>();
+        Set<String> branchSet = new HashSet<>();
         Pattern branchFilterPattern = compileBranchFilterPattern();
 
         Map<String, ObjectId> branches = gitClient.getRemoteReferences(gitUrl, null, true, false);
@@ -408,7 +371,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private Set<String> getPullRequest(GitClient gitClient, String gitUrl) throws Exception {
-        Set<String> pullRequestSet = new HashSet<String>();
+        Set<String> pullRequestSet = new HashSet<>();
         Map<String, ObjectId> remoteReferences = gitClient.getRemoteReferences(gitUrl, null, false, false);
         for (String remoteReference : remoteReferences.keySet()) {
             Matcher matcher = PULL_REQUEST_REFS_PATTERN.matcher(remoteReference);
@@ -475,7 +438,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 Collections.reverse(sorted);
             }
         } else {
-            sorted = new ArrayList<String>(toSort);
+            sorted = new ArrayList<>(toSort);
         }
         return sorted;
     }

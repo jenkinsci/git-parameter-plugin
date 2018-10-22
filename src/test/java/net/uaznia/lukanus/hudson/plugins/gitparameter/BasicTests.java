@@ -38,14 +38,14 @@ public class BasicTests {
 
     @Test
     public void matchesWithBitbucketPullRequestRefs() {
-        Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
+        Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
         matcher.find();
         assertEquals(matcher.group(1), "186");
     }
 
     @Test
     public void matchesWithGithubPullRequestRefs() {
-        Matcher matcher = GitParameterDefinition.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
+        Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
         matcher.find();
         assertEquals(matcher.group(1), "45");
     }

@@ -343,7 +343,7 @@ public class GitParameterDefinitionTest {
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_PULL_REQUEST,
+                Consts.PARAMETER_TYPE_PULL_REQUEST,
                 "master",
                 "testDescription",
                 "",
@@ -403,7 +403,7 @@ public class GitParameterDefinitionTest {
         setupGit();
         String testDefaultValue = "testDefaultValue";
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                Consts.PARAMETER_TYPE_TAG,
                 testDefaultValue,
                 "testDescription",
                 null,
@@ -422,7 +422,7 @@ public class GitParameterDefinitionTest {
         project.getBuildersList().add(new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                Consts.PARAMETER_TYPE_TAG,
                 null,
                 "testDescription",
                 null,
@@ -441,7 +441,7 @@ public class GitParameterDefinitionTest {
         project.getBuildersList().add(new Shell("echo test"));
         setupGit("$GIT_REPO_URL");
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
@@ -462,7 +462,7 @@ public class GitParameterDefinitionTest {
         p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                Consts.PARAMETER_TYPE_TAG,
                 null,
                 "testDescription",
                 null,
@@ -486,7 +486,7 @@ public class GitParameterDefinitionTest {
 
         p.setDefinition(new CpsFlowDefinition(script, false));
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                Consts.PARAMETER_TYPE_TAG,
                 null,
                 "testDescription",
                 null,
@@ -514,7 +514,7 @@ public class GitParameterDefinitionTest {
         project.setScm(new ProxySCM("AnotherProject"));
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_TAG,
+                Consts.PARAMETER_TYPE_TAG,
                 null,
                 "testDescription",
                 null,
@@ -534,7 +534,7 @@ public class GitParameterDefinitionTest {
 
         StringParameterDefinition stringParameterDef = new StringParameterDefinition("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL, "Description");
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
@@ -560,7 +560,7 @@ public class GitParameterDefinitionTest {
         project.setScm(gitSCM);
 
         GitParameterDefinition def = new GitParameterDefinition("name_git_parameter",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
@@ -588,7 +588,7 @@ public class GitParameterDefinitionTest {
         project.setScm(multiSCM);
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
@@ -617,7 +617,7 @@ public class GitParameterDefinitionTest {
         project.setScm(multiSCM);
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
@@ -644,7 +644,7 @@ public class GitParameterDefinitionTest {
         project.setScm(multiSCM);
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
-                GitParameterDefinition.PARAMETER_TYPE_BRANCH,
+                Consts.PARAMETER_TYPE_BRANCH,
                 null,
                 "testDescription",
                 null,
