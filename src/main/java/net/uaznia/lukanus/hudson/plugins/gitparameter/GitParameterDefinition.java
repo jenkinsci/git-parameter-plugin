@@ -35,12 +35,12 @@ import hudson.model.TopLevelItem;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.model.ItemsErrorModel;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
@@ -146,7 +146,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         switch (getSelectedValue()) {
             case TOP:
                 try {
-                    ListBoxModel valueItems = getDescriptor().doFillValueItems(getParentJob(), getName());
+                    ItemsErrorModel valueItems = getDescriptor().doFillValueItems(getParentJob(), getName());
                     if (valueItems.size() > 0) {
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
@@ -269,9 +269,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
 
-    public Map<String, String> generateContents(JobWrapper jobWrapper, List<GitSCM> scms) {
-        Map<String, String> paramList = new LinkedHashMap<String, String>();
+    public ItemsErrorModel generateContents(JobWrapper jobWrapper, List<GitSCM> scms) {
         try {
+            Map<String, String> paramList = new LinkedHashMap<String, String>();
             EnvVars environment = getEnvironment(jobWrapper);
             Set<String> usedRepository = new HashSet<>();
             outForLoops:
@@ -314,13 +314,19 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     }
                 }
             }
+            return convertMapToListBox(paramList);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
-            String message = e.getMessage() + Messages.GitParameterDefinition_lookAtLog();
-            paramList.clear();
-            paramList.put(message, message);
+            return ItemsErrorModel.create(getDefaultValue(), Messages.GitParameterDefinition_error(), e.getMessage(), Messages.GitParameterDefinition_lookAtLog());
         }
-        return paramList;
+    }
+
+    private ItemsErrorModel convertMapToListBox(Map<String, String> paramList) {
+        ItemsErrorModel items = new ItemsErrorModel();
+        for (Map.Entry<String, String> entry : paramList.entrySet()) {
+            items.add(entry.getValue(), entry.getKey());
+        }
+        return items;
     }
 
     private boolean notMatchUseRepository(String gitUrl) {
@@ -576,9 +582,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return Messages.GitParameterDefinition_DisplayName();
         }
 
-        public ListBoxModel doFillValueItems(@AncestorInPath Job job, @QueryParameter String param)
-                throws IOException, InterruptedException {
-            ListBoxModel items = new ListBoxModel();
+        public ItemsErrorModel doFillValueItems(@AncestorInPath Job job, @QueryParameter String param) {
             JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
 
             ParametersDefinitionProperty prop = jobWrapper.getProperty(ParametersDefinitionProperty.class);
@@ -590,18 +594,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     String repositoryName = paramDef.getUseRepository();
                     List<GitSCM> scms = getGitSCMs(jobWrapper, repositoryName);
                     if (scms == null || scms.isEmpty()) {
-                        items.add(Messages.GitParameterDefinition_noRepositoryConfigured());
-                        return items;
+                        return ItemsErrorModel.create(paramDef.getDefaultValue(), Messages.GitParameterDefinition_noRepositoryConfigured());
                     }
 
-                    Map<String, String> paramList = paramDef.generateContents(jobWrapper, scms);
-
-                    for (Map.Entry<String, String> entry : paramList.entrySet()) {
-                        items.add(entry.getValue(), entry.getKey());
-                    }
+                    return paramDef.generateContents(jobWrapper, scms);
                 }
             }
-            return items;
+            return ItemsErrorModel.EMPTY;
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {

@@ -4,14 +4,15 @@
          xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
     <st:adjunct includes="org.kohsuke.stapler.jquery"/>
     <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.script"/>
+    <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.gitParameterSelect"/>
     <j:set var="divId" value="${it.divUUID}" scope="parent"/>
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
     <f:entry title="${it.name}" description="${it.formattedDescription}">
         <div name="parameter" id="${divId}">
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
-            <select name="value" class="select" size="${it.listSize}" style="min-width: 200px" id="select"
-                    fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}">
+            <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px" id="gitParameterSelect"
+                    fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}" divId="${divId}">
                 <option value="">${%retrieving.references}</option>
             </select>
             <j:if test="${it.quickFilterEnabled}">
@@ -25,6 +26,6 @@
                                              "${it.selectedValue}", "${it.defaultValue}");
             </script>
         </div>
-        <div>${%needs.to.clone}</div>
+        <div id="git_parameter_errors_${divId}">${%needs.to.clone}</div>
     </f:entry>
 </j:jelly>
