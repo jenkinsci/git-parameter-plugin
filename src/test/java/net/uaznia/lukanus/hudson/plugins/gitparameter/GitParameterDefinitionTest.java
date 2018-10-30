@@ -10,10 +10,10 @@ import hudson.scm.SCM;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
-import hudson.util.ListBoxModel;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
+import net.uaznia.lukanus.hudson.plugins.gitparameter.model.ItemsErrorModel;
 import org.jenkinsci.plugins.multiplescms.MultiSCM;
 import org.jenkinsci.plugins.structs.SymbolLookup;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -63,7 +63,7 @@ public class GitParameterDefinitionTest {
         testJob.setScm(git);
         assertTrue(git.equals(getGitSCMs(IJobWrapper, null).get(0)));
     }
-
+    
     @Test
     public void testDoFillValueItems_withoutSCM() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
@@ -77,8 +77,10 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
-        assertTrue(isListBoxItem(items, "No Git repository configured in SCM configuration"));
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertEquals(1, items.getErrors().size());
+        assertEquals("!No Git repository configured in SCM configuration", items.getErrors().get(0));
+        assertTrue(isListBoxItem(items, def.getDefaultValue()));
     }
 
     @Test
@@ -99,7 +101,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
@@ -119,7 +121,7 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
     }
 
@@ -141,7 +143,7 @@ public class GitParameterDefinitionTest {
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         // build.run();
         project.doDoWipeOutWorkspace();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
     }
 
@@ -163,7 +165,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
     }
 
@@ -183,7 +185,7 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
     }
 
@@ -205,7 +207,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
         assertFalse(isListBoxItem(items, "origin/master"));
     }
@@ -226,7 +228,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertEquals("0.1", items.get(0).value);
     }
 
@@ -246,7 +248,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(items.isEmpty());
     }
 
@@ -266,7 +268,7 @@ public class GitParameterDefinitionTest {
                 SortMode.DESCENDING, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
 
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertEquals("0.1", items.get(items.size() - 1).value);
     }
 
@@ -288,7 +290,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
@@ -312,7 +314,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385c"));
     }
 
@@ -333,7 +335,7 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385c"));
     }
 
@@ -354,7 +356,7 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "41"));
         assertTrue(isListBoxItem(items, "44"));
     }
@@ -452,7 +454,7 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         assertEquals(build.getResult(), Result.SUCCESS);
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
@@ -471,7 +473,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         p.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(p, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
@@ -495,9 +497,9 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         p.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(p, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(p, def.getName());
         //First build is fake build! And should return no Repository configured
-        assertTrue(isListBoxItem(items, Messages.GitParameterDefinition_noRepositoryConfigured()));
+        assertEquals(((ItemsErrorModel) items).getErrors().get(0), Messages.GitParameterDefinition_noRepositoryConfigured());
 
         p.scheduleBuild2(0).get();
         items = def.getDescriptor().doFillValueItems(p, def.getName());
@@ -523,7 +525,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
@@ -548,7 +550,7 @@ public class GitParameterDefinitionTest {
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         assertEquals(build.getResult(), Result.SUCCESS);
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
@@ -570,7 +572,7 @@ public class GitParameterDefinitionTest {
 
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "exA_branch_1"));
         assertFalse(isListBoxItem(items, "exB_branch_1"));
 
@@ -597,7 +599,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/exA_branch_1"));
         assertFalse(isListBoxItem(items, "origin/exB_branch_1"));
 
@@ -626,7 +628,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
 
         def.setUseRepository(".*git-client-plugin.git");
@@ -653,7 +655,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-        ListBoxModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
         int expected = items.size();
 
@@ -691,7 +693,7 @@ public class GitParameterDefinitionTest {
         return new GitSCM(configs, null, false, null, null, null, null);
     }
 
-    private boolean isListBoxItem(ListBoxModel items, String item) {
+    private boolean isListBoxItem(ItemsErrorModel items, String item) {
         boolean itemExists = false;
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).value.contains(item)) {
