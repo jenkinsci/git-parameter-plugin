@@ -38,7 +38,7 @@ public class RevisionInfoFactoryTest {
     private static final String[] RAW_NO_AUTHOR = {"tree b9a246e842a5478fe01b52eb93e0e23cdb79f616",
             "parent 3409e0e7a3c0a2887b14c95d803b90f9314606aa",
             "committer klimas7 <klimas7@gmail.com> 2018-05-23T15:28:13+0200"};
-    private static final String SHORT_COMMIT_HASH_3 = COMMIT_HASH_3.substring(0, 8);
+    private static final String SHORT_COMMIT_HASH_3 = COMMIT_HASH_3.substring(0, 7);
 
     private static final String COMMIT_HASH_4 = "f36014bb502c66259cace1ac6a42317cb120d926";
     private static final ObjectId SHA1_4 = ObjectId.fromString(COMMIT_HASH_4);
@@ -73,9 +73,9 @@ public class RevisionInfoFactoryTest {
         List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
         assertEquals(3, revisions.size());
-        assertEquals("ee650d9b 2018-04-16 21:11 klimas7 <klimas7@gmail.com> Version 0.9.2", revisions.get(0).getRevisionInfo());
-        assertEquals("b9a246e8 2018-05-23T15:28:13+0200 klimas7 <klimas7@gmail.com>", revisions.get(1).getRevisionInfo());
-        assertEquals("f36014bb 2015-02-12 17:07 Nick Whelan <nickw@indeed.com> Performance improvements Performance improvements when listing tags and branches. It's not necessary to perform a fetch operation when listing remote ...", revisions.get(2).getRevisionInfo());
+        assertEquals("ee650d9 2018-04-16 21:11 klimas7 <klimas7@gmail.com> Version 0.9.2", revisions.get(0).getRevisionInfo());
+        assertEquals("b9a246e 2018-05-23T15:28:13+0200 klimas7 <klimas7@gmail.com>", revisions.get(1).getRevisionInfo());
+        assertEquals("f36014b 2015-02-12 17:07 Nick Whelan <nickw@indeed.com> Performance improvements Performance improvements when listing tags and branches. It's not necessary to perform a fetch operation when listing remote ...", revisions.get(2).getRevisionInfo());
     }
 
     @Test
