@@ -576,6 +576,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Symbol("gitParameter")
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
+        private boolean showNeedToCloneInformation = true;
+
+        public DescriptorImpl() {
+            load();
+        }
 
         @Override
         public String getDisplayName() {
@@ -621,6 +626,17 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 return FormValidation.error(errorMessage);
             }
             return FormValidation.ok();
+        }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            showNeedToCloneInformation = json.getBoolean("showNeedToCloneInformation");
+            save();
+            return super.configure(req, json);
+        }
+
+        public boolean getShowNeedToCloneInformation() {
+            return showNeedToCloneInformation;
         }
     }
 }

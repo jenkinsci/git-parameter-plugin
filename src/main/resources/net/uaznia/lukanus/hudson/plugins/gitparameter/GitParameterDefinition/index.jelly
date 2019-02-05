@@ -11,7 +11,7 @@
         <div name="parameter" id="${divId}">
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
-            <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px" id="gitParameterSelect"
+            <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px; font-family: monospace;" id="gitParameterSelect"
                     fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}" divId="${divId}">
                 <option value="">${%retrieving.references}</option>
             </select>
@@ -26,6 +26,9 @@
                                              "${it.selectedValue}", "${it.defaultValue}");
             </script>
         </div>
-        <div id="git_parameter_errors_${divId}">${%needs.to.clone}</div>
+        <j:if test="${it.type eq 'PT_REVISION' and it.descriptor.showRevisionWarning}">
+            <div id="git_parameter_info_${divId}">${%needs.to.clone}</div>
+        </j:if>
+        <div id="git_parameter_errors_${divId}"/>
     </f:entry>
 </j:jelly>
