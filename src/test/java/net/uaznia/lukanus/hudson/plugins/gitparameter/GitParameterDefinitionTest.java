@@ -1,6 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.EnvVars;
+import hudson.cli.CLICommand;
+import hudson.cli.ConsoleCommand;
 import hudson.model.*;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
@@ -78,8 +80,10 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
 
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
-        assertEquals(1, items.getErrors().size());
-        assertEquals("!No Git repository configured in SCM configuration", items.getErrors().get(0));
+        assertEquals(3, items.getErrors().size());
+        assertEquals("The default value has been returned", items.getErrors().get(0));
+        assertEquals("No Git repository configured in SCM configuration or plugin is configured wrong", items.getErrors().get(1));
+        assertEquals("Please check the configuration", items.getErrors().get(2));
         assertTrue(isListBoxItem(items, def.getDefaultValue()));
     }
 
@@ -399,6 +403,18 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testDefaultValueIsRequired() {
+        final DescriptorImpl descriptor = new DescriptorImpl();
+        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master");
+        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null);
+        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ");
+
+        assertTrue(okDefaultValue.kind == Kind.OK);
+        assertTrue(badDefaultValue.kind == Kind.WARNING);
+        assertTrue(badDefaultValue_2.kind == Kind.WARNING);
+    }
+
+    @Test
     public void testGetDefaultValueWhenDefaultValueIsSet() throws Exception {
         project = jenkins.createFreeStyleProject("testDefaultValue");
         project.getBuildersList().add(new Shell("echo test"));
@@ -499,7 +515,7 @@ public class GitParameterDefinitionTest {
         p.addProperty(new ParametersDefinitionProperty(def));
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(p, def.getName());
         //First build is fake build! And should return no Repository configured
-        assertEquals(((ItemsErrorModel) items).getErrors().get(0), Messages.GitParameterDefinition_noRepositoryConfigured());
+        assertEquals(((ItemsErrorModel) items).getErrors().get(1), Messages.GitParameterDefinition_noRepositoryConfigured());
 
         p.scheduleBuild2(0).get();
         items = def.getDescriptor().doFillValueItems(p, def.getName());
@@ -669,6 +685,25 @@ public class GitParameterDefinitionTest {
     public void symbolPipelineTest() {
         Descriptor<? extends Describable> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
         assertNotNull(gitParameter);
+    }
+
+    @Test
+    public void testCreateValue_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+
+        String value = "test";
+        ParameterValue result = instance.createValue(cliCommand, value);
+        assertEquals(result, new GitParameterValue(NAME, value));
+    }
+
+    @Test
+    public void testCreateValue_CLICommand_EmptyValue() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+
+        ParameterValue result = instance.createValue(cliCommand, null);
+        assertEquals(result, new GitParameterValue(NAME, DEFAULT_VALUE));
     }
 
     private void setupGit() throws IOException {
