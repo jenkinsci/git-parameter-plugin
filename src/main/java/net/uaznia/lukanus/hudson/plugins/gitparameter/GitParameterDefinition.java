@@ -55,7 +55,9 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import static hudson.util.FormValidation.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -317,7 +319,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return convertMapToListBox(paramList);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
-            return ItemsErrorModel.create(getDefaultValue(), Messages.GitParameterDefinition_error(), e.getMessage(), Messages.GitParameterDefinition_lookAtLog());
+            return ItemsErrorModel.create(getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_error(), e.getMessage(), GitParameterDefinition_lookAtLog(), GitParameterDefinition_checkConfiguration());
         }
     }
 
@@ -599,13 +601,17 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     String repositoryName = paramDef.getUseRepository();
                     List<GitSCM> scms = getGitSCMs(jobWrapper, repositoryName);
                     if (scms == null || scms.isEmpty()) {
-                        return ItemsErrorModel.create(paramDef.getDefaultValue(), Messages.GitParameterDefinition_noRepositoryConfigured());
+                        return ItemsErrorModel.create(paramDef.getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_noRepositoryConfigured(), GitParameterDefinition_checkConfiguration());
                     }
 
                     return paramDef.generateContents(jobWrapper, scms);
                 }
             }
             return ItemsErrorModel.EMPTY;
+        }
+
+        public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue) {
+            return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
@@ -623,9 +629,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 Pattern.compile(value); // Validate we've got a valid regex.
             } catch (PatternSyntaxException e) {
                 LOGGER.log(Level.WARNING, errorMessage, e);
-                return FormValidation.error(errorMessage);
+                return error(errorMessage);
             }
-            return FormValidation.ok();
+            return ok();
         }
 
         @Override

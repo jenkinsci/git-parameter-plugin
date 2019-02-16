@@ -51,7 +51,9 @@
             </j:choose>
         </select>
     </f:entry>
-
+    <f:entry title="${%parameter.default.value}" field="defaultValue">
+        <f:textbox/>
+    </f:entry>
     <f:advanced >
         <f:entry title="${%parameter.branch}" field="branch">
             <f:textbox/>
@@ -67,10 +69,6 @@
 
         <f:entry title="${%parameter.sort.mode}" field="sortMode">
             <f:enum>${it}</f:enum>
-        </f:entry>
-
-        <f:entry title="${%parameter.default.value}" field="defaultValue">
-            <f:textbox/>
         </f:entry>
 
         <f:entry title="${%parameter.selected.value}" field="selectedValue">
