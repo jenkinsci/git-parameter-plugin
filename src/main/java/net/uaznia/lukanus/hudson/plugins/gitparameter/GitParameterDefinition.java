@@ -59,7 +59,7 @@ import static hudson.util.FormValidation.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.*;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
@@ -601,13 +601,18 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     String repositoryName = paramDef.getUseRepository();
                     List<GitSCM> scms = getGitSCMs(jobWrapper, repositoryName);
                     if (scms == null || scms.isEmpty()) {
-                        return ItemsErrorModel.create(paramDef.getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_noRepositoryConfigured(), GitParameterDefinition_checkConfiguration());
+                        String useRepositoryMessage = getUseRepositoryMessage(repositoryName);
+                        return ItemsErrorModel.create(paramDef.getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_noRepositoryConfigured(), useRepositoryMessage, GitParameterDefinition_checkConfiguration());
                     }
 
                     return paramDef.generateContents(jobWrapper, scms);
                 }
             }
             return ItemsErrorModel.EMPTY;
+        }
+
+        private String getUseRepositoryMessage(String repositoryName) {
+            return isNotBlank(repositoryName) ? Messages.GitParameterDefinition_useRepositoryMessage(repositoryName): StringUtils.EMPTY;
         }
 
         public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue) {

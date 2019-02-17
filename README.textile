@@ -22,7 +22,7 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
-02/15/2019 Version 0.9.8
+02/15/2019 Version 0.9.9
 * JENKINS-55769: Tag match filter shows more entries than direct command (git tag -l "$tagFilter")
 * JENKINS-55770: Intrusive and misleading warning text from the parameter selection display
 * JENKINS-54359: Change error handling
