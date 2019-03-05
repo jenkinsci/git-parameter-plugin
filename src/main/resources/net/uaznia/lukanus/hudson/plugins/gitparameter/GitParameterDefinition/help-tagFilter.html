@@ -1,5 +1,6 @@
 <div>
     This parameter is used to get tag from git.<br/>
     If is blank, parameter is set to "*".<br/>
-    Properly is executed command: <tt>git tag -l "*"</tt> or <tt>git tag -l "$tagFilter"</tt>.
+    Properly is executed command: <tt>git ls-remote -t &lt;repository&gt; "*"</tt> or <tt>git ls-remote -t &lt;repository&gt; "$tagFilter"</tt>.<br/>
+    <a href="https://git-scm.com/docs/git-ls-remote.html">git-ls-remote</a> documentation.
 </div>

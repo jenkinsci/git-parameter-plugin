@@ -1,5 +1,6 @@
 <div>
     Ten parametr jest używany jest do pobierania tagów z repozytorium git.<br/>
     Jeżeli parametr jest nieustawiony to przyjmuje wartość "*".<br/>
-    Wykonywane jest polecenie: <tt>git tag -l "*"</tt> lub <tt>git tag -l "$tagFilter"</tt>.
+    Wykonywane jest polecenie: <tt>git ls-remote -t &lt;repository&gt; "*"</tt> lub <tt>git ls-remote -t &lt;repository&gt; "$tagFilter"</tt>.<br/>
+    Dokumentacja <a href="https://git-scm.com/docs/git-ls-remote.html">git-ls-remote</a>.
 </div>

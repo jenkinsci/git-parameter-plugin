@@ -111,25 +111,6 @@ public class BasicTests {
         assertEquals(result, new GitParameterValue("Git_param_name", "Git_param_value"));
     }
 
-    @Test
-    public void testCreateValue_CLICommand() throws IOException, InterruptedException {
-        CLICommand cliCommand = new ConsoleCommand();
-        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
-
-        String value = "test";
-        ParameterValue result = instance.createValue(cliCommand, value);
-        assertEquals(result, new GitParameterValue(NAME, value));
-    }
-
-    @Test
-    public void testCreateValue_CLICommand_EmptyValue() throws IOException, InterruptedException {
-        CLICommand cliCommand = new ConsoleCommand();
-        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
-
-        ParameterValue result = instance.createValue(cliCommand, null);
-        assertEquals(result, new GitParameterValue(NAME, DEFAULT_VALUE));
-    }
-
     /**
      * Test of getDefaultParameterValue method, of class GitParameterDefinition.
      */

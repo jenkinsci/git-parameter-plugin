@@ -55,9 +55,11 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
+import static hudson.util.FormValidation.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.*;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
@@ -317,7 +319,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return convertMapToListBox(paramList);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
-            return ItemsErrorModel.create(getDefaultValue(), Messages.GitParameterDefinition_error(), e.getMessage(), Messages.GitParameterDefinition_lookAtLog());
+            return ItemsErrorModel.create(getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_error(), e.getMessage(), GitParameterDefinition_lookAtLog(), GitParameterDefinition_checkConfiguration());
         }
     }
 
@@ -576,6 +578,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @Symbol("gitParameter")
     @Extension
     public static class DescriptorImpl extends ParameterDescriptor {
+        private boolean showNeedToCloneInformation = true;
+
+        public DescriptorImpl() {
+            load();
+        }
 
         @Override
         public String getDisplayName() {
@@ -594,13 +601,22 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                     String repositoryName = paramDef.getUseRepository();
                     List<GitSCM> scms = getGitSCMs(jobWrapper, repositoryName);
                     if (scms == null || scms.isEmpty()) {
-                        return ItemsErrorModel.create(paramDef.getDefaultValue(), Messages.GitParameterDefinition_noRepositoryConfigured());
+                        String useRepositoryMessage = getUseRepositoryMessage(repositoryName);
+                        return ItemsErrorModel.create(paramDef.getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_noRepositoryConfigured(), useRepositoryMessage, GitParameterDefinition_checkConfiguration());
                     }
 
                     return paramDef.generateContents(jobWrapper, scms);
                 }
             }
             return ItemsErrorModel.EMPTY;
+        }
+
+        private String getUseRepositoryMessage(String repositoryName) {
+            return isNotBlank(repositoryName) ? Messages.GitParameterDefinition_useRepositoryMessage(repositoryName): StringUtils.EMPTY;
+        }
+
+        public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue) {
+            return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
@@ -618,9 +634,20 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 Pattern.compile(value); // Validate we've got a valid regex.
             } catch (PatternSyntaxException e) {
                 LOGGER.log(Level.WARNING, errorMessage, e);
-                return FormValidation.error(errorMessage);
+                return error(errorMessage);
             }
-            return FormValidation.ok();
+            return ok();
+        }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            showNeedToCloneInformation = json.getBoolean("showNeedToCloneInformation");
+            save();
+            return super.configure(req, json);
+        }
+
+        public boolean getShowNeedToCloneInformation() {
+            return showNeedToCloneInformation;
         }
     }
 }
