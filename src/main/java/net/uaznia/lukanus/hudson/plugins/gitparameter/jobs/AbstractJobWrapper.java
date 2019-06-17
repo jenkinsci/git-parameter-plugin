@@ -32,16 +32,6 @@ public abstract class AbstractJobWrapper implements JobWrapper {
     }
 
     @Override
-    public int getNextBuildNumber() {
-        return job.getNextBuildNumber();
-    }
-
-    @Override
-    public void updateNextBuildNumber(int nextBuildNumber) throws IOException {
-        job.updateNextBuildNumber(nextBuildNumber);
-    }
-
-    @Override
     public String getJobName() {
         return job.getFullName();
     }

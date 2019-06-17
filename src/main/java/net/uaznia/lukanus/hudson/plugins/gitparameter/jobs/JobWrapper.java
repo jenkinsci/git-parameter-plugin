@@ -24,10 +24,6 @@ public interface JobWrapper {
 
     EnvVars getSomeBuildEnvironments();
 
-    int getNextBuildNumber();
-
-    void updateNextBuildNumber(int nextBuildNumber) throws IOException;
-
     String getJobName();
 
     String getCustomJobName();

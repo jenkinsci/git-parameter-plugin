@@ -530,13 +530,9 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private GitClient getGitClient(final JobWrapper jobWrapper, FilePathWrapper workspace, GitSCM git, EnvVars environment) throws IOException, InterruptedException {
-        int nextBuildNumber = jobWrapper.getNextBuildNumber();
+        Run build = new Run(jobWrapper.getJob(), System.currentTimeMillis()) {};
 
-        GitClient gitClient = git.createClient(TaskListener.NULL, environment, new Run(jobWrapper.getJob()) {
-        }, workspace != null ? workspace.getFilePath() : null);
-
-        jobWrapper.updateNextBuildNumber(nextBuildNumber);
-        return gitClient;
+        return git.createClient(TaskListener.NULL, environment, build, workspace != null ? workspace.getFilePath() : null);
     }
 
     public ArrayList<String> sortByName(Set<String> set) {
