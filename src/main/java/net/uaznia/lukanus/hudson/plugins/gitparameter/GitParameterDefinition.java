@@ -479,17 +479,29 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Jenkins.get() is not null")
     private EnvVars getEnvironment(JobWrapper jobWrapper) throws IOException, InterruptedException {
-        EnvVars environment = jobWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
-        EnvVars buildEnvironments = jobWrapper.getSomeBuildEnvironments();
-        if (buildEnvironments != null) {
-            environment.putAll(buildEnvironments);
-        }
+        EnvVars environment = jobWrapper.getEnvironment(Jenkins.get().toComputer().getNode(), TaskListener.NULL);
 
-        EnvVars jobDefautEnvironments = getJobDefaultEnvironment(jobWrapper);
-        environment.putAll(jobDefautEnvironments);
+        EnvVars buildEnvironment = jobWrapper.getSomeBuildEnvironments();
+        addEnvironmentIfNotExists(environment, buildEnvironment);
+
+        EnvVars jobDefautEnvironment = getJobDefaultEnvironment(jobWrapper);
+        addEnvironmentIfNotExists(environment, jobDefautEnvironment);
 
         EnvVars.resolve(environment);
         return environment;
+    }
+
+    private void addEnvironmentIfNotExists(EnvVars environment, EnvVars otherEnvironment) {
+        if (otherEnvironment == null) {
+            return;
+        }
+
+        for (Map.Entry<String, String> entry : otherEnvironment.entrySet()) {
+            String key = entry.getKey();
+            if (!environment.containsKey(key)) {
+                environment.put(key, entry.getValue());
+            }
+        }
     }
 
     private EnvVars getJobDefaultEnvironment(JobWrapper jobWrapper) {
