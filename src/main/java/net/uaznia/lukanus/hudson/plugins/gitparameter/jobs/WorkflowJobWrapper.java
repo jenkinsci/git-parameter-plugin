@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Job;
@@ -74,6 +75,7 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
     }
 
     @Override
+    @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Jenkins.getInstance() is not null")
     public FilePath getSomeWorkspace() throws IOException, InterruptedException {
         FilePath workspaceForWorkflow = Jenkins.getInstance().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
         if (workspaceForWorkflow.exists()) {
