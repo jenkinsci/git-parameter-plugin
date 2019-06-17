@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -42,7 +43,6 @@ import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.model.ItemsErrorModel;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
@@ -59,7 +59,7 @@ import static hudson.util.FormValidation.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang.StringUtils.*;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
@@ -131,7 +131,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
-        if (StringUtils.isNotEmpty(value)) {
+        if (isNotEmpty(value)) {
             return new GitParameterValue(getName(), value);
         }
         return getDefaultParameterValue();
@@ -141,7 +141,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public ParameterValue getDefaultParameterValue() {
         //If 'Default Value' is set has high priority!
         String defValue = getDefaultValue();
-        if (!StringUtils.isBlank(defValue)) {
+        if (!isBlank(defValue)) {
             return new GitParameterValue(getName(), defValue);
         }
 
@@ -198,7 +198,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public void setTagFilter(String tagFilter) {
-        if (StringUtils.isEmpty(StringUtils.trim(tagFilter))) {
+        if (isEmpty(trim(tagFilter))) {
             tagFilter = "*";
         }
         this.tagFilter = tagFilter;
@@ -217,7 +217,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     public void setBranchFilter(String branchFilter) {
-        if (StringUtils.isEmpty(StringUtils.trim(branchFilter))) {
+        if (isEmpty(trim(branchFilter))) {
             branchFilter = ".*";
         }
 
@@ -267,6 +267,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return context;
     }
 
+    @SuppressFBWarnings(value="EQ_COMPARETO_USE_OBJECT_EQUALS")
     public int compareTo(GitParameterDefinition pd) {
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
@@ -476,6 +477,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return filePathWrapper;
     }
 
+    @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Jenkins.get() is not null")
     private EnvVars getEnvironment(JobWrapper jobWrapper) throws IOException, InterruptedException {
         EnvVars environment = jobWrapper.getEnvironment(Jenkins.getInstance().toComputer().getNode(), TaskListener.NULL);
         EnvVars buildEnvironments = jobWrapper.getSomeBuildEnvironments();
@@ -612,7 +614,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         private String getUseRepositoryMessage(String repositoryName) {
-            return isNotBlank(repositoryName) ? Messages.GitParameterDefinition_useRepositoryMessage(repositoryName): StringUtils.EMPTY;
+            return isNotBlank(repositoryName) ? Messages.GitParameterDefinition_useRepositoryMessage(repositoryName): EMPTY;
         }
 
         public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue) {
