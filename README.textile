@@ -22,6 +22,12 @@ Component: git-parameter-plugin
 
 h2. ChangeLog
 
+06/17/2019 Version 0.9.11
+* JENKINS-51512: Git parameter plugin does not work with Windows agent
+* JENKINS-50711: plugin doesn't work with ssh link to git repo
+* JENKINS-57879: Build number increments by more than 1
+* JENKINS-52051: git-parameter exec: nc: not found
+
 02/18/2019 Version 0.9.10
 * PR #78: changed select element's id following previous fix in ae9de22
 
