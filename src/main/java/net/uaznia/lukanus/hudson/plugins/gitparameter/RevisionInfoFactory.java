@@ -41,7 +41,7 @@ public class RevisionInfoFactory {
             objectIds = gitClient.revList(branch);
         }
 
-        ArrayList<RevisionInfo> revisionInfoList = new ArrayList<RevisionInfo>(objectIds.size());
+        ArrayList<RevisionInfo> revisionInfoList = new ArrayList<>(objectIds.size());
         for (ObjectId objectId : objectIds) {
             Revision revision = new Revision(objectId);
             revisionInfoList.add(new RevisionInfo(revision.getSha1String(), prettyRevisionInfo(revision)));

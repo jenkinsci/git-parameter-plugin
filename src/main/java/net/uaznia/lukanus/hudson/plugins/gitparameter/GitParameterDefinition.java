@@ -274,7 +274,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public ItemsErrorModel generateContents(JobWrapper jobWrapper, List<GitSCM> scms) {
         try {
-            Map<String, String> paramList = new LinkedHashMap<String, String>();
+            Map<String, String> paramList = new LinkedHashMap<>();
             EnvVars environment = getEnvironment(jobWrapper);
             Set<String> usedRepository = new HashSet<>();
             outForLoops:
@@ -524,7 +524,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     private void checkAndAddDefaultParameterValue(ParameterDefinition parameterDefinition, EnvVars environment) {
         ParameterValue defaultParameterValue = parameterDefinition.getDefaultParameterValue();
-        if (defaultParameterValue != null && defaultParameterValue.getValue() != null && defaultParameterValue.getValue() instanceof String) {
+        if (defaultParameterValue != null && defaultParameterValue.getValue() instanceof String) {
             environment.put(parameterDefinition.getName(), (String) defaultParameterValue.getValue());
         }
     }
@@ -549,7 +549,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public ArrayList<String> sortByName(Set<String> set) {
 
-        ArrayList<String> tags = new ArrayList<String>(set);
+        ArrayList<String> tags = new ArrayList<>(set);
 
         if (getSortMode().getIsUsingSmartSort()) {
             Collections.sort(tags, new SmartNumberStringComparer());

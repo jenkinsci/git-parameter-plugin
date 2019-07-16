@@ -44,7 +44,7 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
     private Collection<? extends SCM> getSCMsFromLastBuild() {
         try {
             Object scms = invokeGetMethodFromJob("getSCMs");
-            if (scms != null && scms instanceof Collection) {
+            if (scms instanceof Collection) {
                 return (Collection<? extends SCM>) scms;
             }
         } catch (Exception e) {
@@ -77,7 +77,7 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
     @Override
     @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Jenkins.getInstance() is not null")
     public FilePath getSomeWorkspace() throws IOException, InterruptedException {
-        FilePath workspaceForWorkflow = Jenkins.getInstance().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
+        FilePath workspaceForWorkflow = Jenkins.get().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
         if (workspaceForWorkflow.exists()) {
             return workspaceForWorkflow;
         }
