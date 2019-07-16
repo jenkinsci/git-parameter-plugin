@@ -347,7 +347,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
-        Set<String> tagSet = new HashSet<String>();
+        Set<String> tagSet = new HashSet<>();
         try {
             Map<String, ObjectId> tags = gitClient.getRemoteReferences(gitUrl, tagFilter, false, true);
             for (String tagName : tags.keySet()) {
