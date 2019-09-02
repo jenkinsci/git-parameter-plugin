@@ -110,6 +110,29 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testDoFillValueItems_listAnnotatedTags() throws Exception {
+        project = jenkins.createFreeStyleProject("testListTags");
+        project.getBuildersList().add(new Shell("echo test"));
+        setupGit();
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+        		Consts.PARAMETER_TYPE_ANNOTATED_TAG,
+                "testDefaultValue",
+                "testDescription",
+                "testBranch",
+                ".*",
+                "*",
+                SortMode.DESCENDING_SMART, SelectedValue.NONE,
+                GIT_PARAMETER_REPOSITORY_URL, false);
+        project.addProperty(new ParametersDefinitionProperty(def));
+
+        // Run the build once to get the workspace
+        FreeStyleBuild build = project.scheduleBuild2(0).get();
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "git-parameter-0.2"));
+    }
+
+    @Test
     public void testGetListBranchNoBuildProject() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(new Shell("echo test"));

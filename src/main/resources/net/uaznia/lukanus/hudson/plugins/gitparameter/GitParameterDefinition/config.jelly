@@ -18,6 +18,14 @@
                 </j:otherwise>
             </j:choose>
             <j:choose>
+                <j:when test="${instance.type eq 'PT_ANNOTATED_TAG'}">
+                    <option value="PT_ANNOTATED_TAG" selected="selected">${%parameter.annotated_tag}</option>
+                </j:when>
+                <j:otherwise>
+                    <option value="PT_ANNOTATED_TAG">${%parameter.annotated_tag}</option>
+                </j:otherwise>
+            </j:choose>
+            <j:choose>
                 <j:when test="${instance.type eq 'PT_BRANCH'}">
                     <option value="PT_BRANCH" selected="selected">${%parameter.branch}</option>
                 </j:when>

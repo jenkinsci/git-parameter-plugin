@@ -1,10 +1,40 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import static hudson.util.FormValidation.error;
+import static hudson.util.FormValidation.ok;
+import static hudson.util.FormValidation.warning;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.DEFAULT_LIST_SIZE;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.DEFAULT_REMOTE;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.EMPTY_JOB_NAME;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.PARAMETER_TYPE_BRANCH;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.PULL_REQUEST_REFS_PATTERN;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.REFS_TAGS_PATTERN;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.TEMPORARY_DIRECTORY_PREFIX;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isAnnotatedTagType;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isBranchType;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isParameterTypeCorrect;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isPullRequestType;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isRevisionType;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.isTagType;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.GitParameterDefinition_checkConfiguration;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.GitParameterDefinition_error;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.GitParameterDefinition_lookAtLog;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.GitParameterDefinition_noRepositoryConfigured;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.GitParameterDefinition_returnDefaultValue;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
+import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.apache.commons.lang.StringUtils.trim;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -17,6 +47,19 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.Symbol;
+import org.jenkinsci.plugins.gitclient.FetchCommand;
+import org.jenkinsci.plugins.gitclient.GitClient;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
@@ -43,27 +86,13 @@ import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.model.ItemsErrorModel;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.URIish;
-import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.gitclient.FetchCommand;
-import org.jenkinsci.plugins.gitclient.GitClient;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-
-import static hudson.util.FormValidation.*;
-import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
-import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
-import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
-import static org.apache.commons.lang.StringUtils.*;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
+
+    private static final int MAX_COMMIT_MESSAGE_LENGTH = 150;
+    private static final String TAG_MESSAGE_SEPARATOR = " || ";
 
     private final UUID uuid;
     private String type;
@@ -293,6 +322,13 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                             sortAndPutToParam(tagSet, paramList);
                         }
 
+                        if (isAnnotatedTagType(type)) {
+                            synchronized (GitParameterDefinition.class) {
+	                            Map<String, String> tagSet = getAnnotatedTag(jobWrapper, git, paramList, environment, repository, remoteURL);
+	                            sortAnnoTagsAndPutToParam(tagSet, paramList);
+                            }
+                        }
+
                         if (isBranchType(type)) {
                             Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
                             sortAndPutToParam(branchSet, paramList);
@@ -327,7 +363,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private ItemsErrorModel convertMapToListBox(Map<String, String> paramList) {
         ItemsErrorModel items = new ItemsErrorModel();
         for (Map.Entry<String, String> entry : paramList.entrySet()) {
-            items.add(entry.getValue(), entry.getKey());
+            items.add(entry.getKey(), entry.getValue());
         }
         return items;
     }
@@ -358,7 +394,50 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
         return tagSet;
     }
+    
 
+    private Map<String, String> getAnnotatedTag(JobWrapper jobWrapper, GitSCM git, Map<String, String> paramList, EnvVars environment, RemoteConfig repository, URIish remoteURL) throws IOException, InterruptedException {
+    	boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
+        FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
+
+        GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
+        initWorkspace(workspace, gitClient, remoteURL);
+        FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+        fetch.execute();
+        
+    	Map<String, String>  tagMap = new HashMap<String, String>();
+        try {
+            Set<String> tags = gitClient.getTagNames(tagFilter);
+            for (String tagName : tags) {
+        		tagName = tagName.replaceFirst(REFS_TAGS_PATTERN, "");
+        		String tagMessage = getTagMessage(gitClient, tagName);
+        		tagMessage = trimMessage(tagMessage);
+        		if(tagMessage.isEmpty()) {
+        			tagMessage = tagName;
+        		} else {
+        			tagMessage = tagName.concat(TAG_MESSAGE_SEPARATOR).concat(tagMessage);
+        		}
+        		tagMap.put(tagMessage, tagName);
+            }
+        } catch (GitException e) {
+            LOGGER.log(Level.WARNING, getCustomeJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
+        }
+        
+        return tagMap;
+    }
+    private String getTagMessage(GitClient gitClient, String tagName) throws GitException, InterruptedException {
+    	return gitClient.getTagMessage(tagName).trim();
+    }
+    
+    private String trimMessage(String commitMessage) {
+        if (commitMessage.length() > MAX_COMMIT_MESSAGE_LENGTH) {
+            int lastSpace = commitMessage.lastIndexOf(" ", MAX_COMMIT_MESSAGE_LENGTH);
+            return commitMessage.substring(0, lastSpace) + " ...";
+        }
+        return commitMessage;
+    }
+    
+    
     private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws Exception {
         Set<String> branchSet = new HashSet<>();
         Pattern branchFilterPattern = compileBranchFilterPattern();
@@ -435,6 +514,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         for (String element : sorted) {
             paramList.put(element, element);
+        }
+    }
+
+
+    private void sortAnnoTagsAndPutToParam(Map<String, String> tags, Map<String, String> paramList) {
+    	Set<String> setElement = tags.keySet();
+        List<String> sorted = sort(setElement);
+
+        for (String element : sorted) {
+            paramList.put(element, tags.get(element));
         }
     }
 
