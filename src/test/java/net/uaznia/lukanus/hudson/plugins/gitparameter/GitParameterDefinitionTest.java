@@ -682,6 +682,30 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testMultiSCM_repositoryUrlIsNotSet() throws IOException, InterruptedException {
+        project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
+        project.getBuildersList().add(new Shell("echo test"));
+        GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
+        gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
+        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(""), gitSCM));
+        project.setScm(multiSCM);
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
+        def.setUseRepository(".*git-client-plugin.git");
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test
     public void symbolPipelineTest() {
         Descriptor<? extends Describable> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
         assertNotNull(gitParameter);
