@@ -319,7 +319,8 @@ public class GitParameterDefinitionTest {
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
-        assertTrue(isListBoxItem(items, "00a8385c"));
+        assertTrue(isListBoxItem(items, "00a8385cba1e4e32cf823775e2b3dbe5eb27931d"));
+        assertTrue(isListBoxItemName(items, "00a8385c 2011-10-30 17:11 Łukasz Miłkowski <lukanus@uaznia.net> initial readme"));
     }
 
     @Test
@@ -682,6 +683,30 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
+    public void testMultiSCM_repositoryUrlIsNotSet() throws IOException, InterruptedException {
+        project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
+        project.getBuildersList().add(new Shell("echo test"));
+        GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
+        gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
+        MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(""), gitSCM));
+        project.setScm(multiSCM);
+
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.TOP, null, false);
+        def.setUseRepository(".*git-client-plugin.git");
+
+        project.addProperty(new ParametersDefinitionProperty(def));
+        ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
+        assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test
     public void symbolPipelineTest() {
         Descriptor<? extends Describable> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
         assertNotNull(gitParameter);
@@ -732,6 +757,16 @@ public class GitParameterDefinitionTest {
         boolean itemExists = false;
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).value.contains(item)) {
+                itemExists = true;
+            }
+        }
+        return itemExists;
+    }
+
+    private boolean isListBoxItemName(ItemsErrorModel items, String item) {
+        boolean itemExists = false;
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).name.contains(item)) {
                 itemExists = true;
             }
         }
