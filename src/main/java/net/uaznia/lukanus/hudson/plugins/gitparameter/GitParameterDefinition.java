@@ -243,7 +243,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public Job getParentJob() {
         Job context = null;
-        List<Job> jobs = Jenkins.getInstance().getAllItems(Job.class);
+        List<Job> jobs = Jenkins.get().getAllItems(Job.class);
 
         for (Job job : jobs) {
             if (!(job instanceof TopLevelItem)) continue;

@@ -1,7 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import hudson.FilePath;
 
