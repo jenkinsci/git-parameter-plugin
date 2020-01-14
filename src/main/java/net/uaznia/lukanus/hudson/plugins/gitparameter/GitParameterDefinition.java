@@ -25,6 +25,7 @@ import hudson.FilePath;
 import hudson.Util;
 import hudson.cli.CLICommand;
 import hudson.model.ChoiceParameterDefinition;
+import hudson.model.Failure;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
@@ -76,6 +77,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private String useRepository;
     private Boolean quickFilterEnabled;
     private String listSize;
+    private Boolean requiredParameter;
 
     @DataBoundConstructor
     public GitParameterDefinition(String name, String type, String defaultValue, String description, String branch,
@@ -89,6 +91,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.selectedValue = selectedValue;
         this.quickFilterEnabled = quickFilterEnabled;
         this.listSize = DEFAULT_LIST_SIZE;
+        this.requiredParameter = false;
 
         setUseRepository(useRepository);
         setType(type);
@@ -100,7 +103,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public ParameterValue createValue(StaplerRequest request) {
         String value[] = request.getParameterValues(getName());
         if (value == null || value.length == 0 || isBlank(value[0])) {
-            return getDefaultParameterValue();
+            if (requiredParameter) {
+                throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
+            } else {
+                return getDefaultParameterValue();
+            }
         }
         return new GitParameterValue(getName(), value[0]);
     }
@@ -122,7 +129,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         if (strValue.length() == 0) {
-            strValue.append(defaultValue);
+            if (requiredParameter) {
+                throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
+            } else {
+                strValue.append(defaultValue);
+            }
         }
 
         GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue.toString());
@@ -134,7 +145,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isNotEmpty(value)) {
             return new GitParameterValue(getName(), value);
         }
-        return getDefaultParameterValue();
+        if (requiredParameter) {
+            throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
+        } else {
+            return getDefaultParameterValue();
+        }
     }
 
     @Override
@@ -231,6 +246,15 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     @DataBoundSetter
     public void setListSize(String listSize) {
         this.listSize = listSize;
+    }
+
+    public Boolean getRequiredParameter() {
+        return requiredParameter;
+    }
+
+    @DataBoundSetter
+    public void setRequiredParameter(Boolean requiredParameter) {
+        this.requiredParameter = requiredParameter;
     }
 
     public SelectedValue getSelectedValue() {
@@ -625,8 +649,12 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return isNotBlank(repositoryName) ? Messages.GitParameterDefinition_useRepositoryMessage(repositoryName): EMPTY;
         }
 
-        public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue) {
-            return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
+        public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue, @QueryParameter Boolean requiredParameter) {
+            if (requiredParameter) {
+                return isBlank(defaultValue) ? ok() : warning("Default parameters are ignored if parameter is required");
+            } else {
+                return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
+            }
         }
 
         public FormValidation doCheckBranchFilter(@QueryParameter String value) {
