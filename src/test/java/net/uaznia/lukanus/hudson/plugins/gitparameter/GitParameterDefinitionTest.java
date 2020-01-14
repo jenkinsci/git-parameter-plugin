@@ -709,6 +709,24 @@ public class GitParameterDefinitionTest {
         assertEquals(result, new GitParameterValue(NAME, value));
     }
 
+    @Test(expected = Failure.class)
+    public void testCreateRequiredValueFail_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+        instance.setRequiredParameter(true);
+        instance.createValue(cliCommand, "");
+    }
+
+    @Test
+    public void testCreateRequiredValuePass_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+        instance.setRequiredParameter(true);
+        String value = "test";
+        ParameterValue result = instance.createValue(cliCommand, value);
+        assertEquals(result, new GitParameterValue(NAME, value));
+    }
+
     @Test
     public void testCreateValue_CLICommand_EmptyValue() throws IOException, InterruptedException {
         CLICommand cliCommand = new ConsoleCommand();
