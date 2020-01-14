@@ -405,13 +405,25 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDefaultValueIsRequired() {
         final DescriptorImpl descriptor = new DescriptorImpl();
-        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master");
-        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null);
-        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ");
+        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", false);
+        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, false);
+        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", false);
 
         assertTrue(okDefaultValue.kind == Kind.OK);
         assertTrue(badDefaultValue.kind == Kind.WARNING);
         assertTrue(badDefaultValue_2.kind == Kind.WARNING);
+    }
+
+    @Test
+    public void testDefaultValueIsNotRequired() {
+        final DescriptorImpl descriptor = new DescriptorImpl();
+        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", true);
+        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, true);
+        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", true);
+
+        assertTrue(okDefaultValue.kind == Kind.WARNING);
+        assertTrue(badDefaultValue.kind == Kind.OK);
+        assertTrue(badDefaultValue_2.kind == Kind.OK);
     }
 
     @Test
