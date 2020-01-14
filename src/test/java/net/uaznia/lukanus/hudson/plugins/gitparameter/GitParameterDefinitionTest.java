@@ -12,6 +12,7 @@ import hudson.scm.SCM;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
@@ -25,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +37,8 @@ import java.util.concurrent.ExecutionException;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author lukanus
@@ -484,6 +488,73 @@ public class GitParameterDefinitionTest {
         assertEquals(build.getResult(), Result.SUCCESS);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test(expected = Failure.class)
+    public void testRequiredParameterStaplerFail() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        StaplerRequest request = mock(StaplerRequest.class);
+        String[] result = new String[]{""};
+        when(request.getParameterValues("testName")).thenReturn(result);
+        def.createValue(request);
+    }
+
+    @Test
+    public void testRequiredParameterStaplerPass() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        StaplerRequest request = mock(StaplerRequest.class);
+        String[] result = new String[]{"master"};
+        when(request.getParameterValues("testName")).thenReturn(result);
+        def.createValue(request);
+    }
+
+    @Test(expected = Failure.class)
+    public void testRequiredParameterJSONFail() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        JSONObject o = new JSONObject();
+        o.put("value", "");
+        def.createValue(null, o);
+    }
+
+    @Test
+    public void testRequiredParameterJSONPass() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        JSONObject o = new JSONObject();
+        o.put("value", "master");
+        o.put("name", "testName");
+        def.createValue(null, o);
     }
 
     @Test
