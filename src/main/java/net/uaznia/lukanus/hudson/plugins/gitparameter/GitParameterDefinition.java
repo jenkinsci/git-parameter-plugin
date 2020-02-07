@@ -562,7 +562,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     public String getDivUUID() {
         StringBuilder randomSelectName = new StringBuilder();
-        randomSelectName.append(getName()).append("-").append(uuid);
+        randomSelectName.append(getName().replaceAll("\\W", "_")).append("-").append(uuid);
         return randomSelectName.toString();
     }
 
