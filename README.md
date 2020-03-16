@@ -14,10 +14,10 @@ Client Plugin](https://plugins.jenkins.io/git-client/).
 ## Basic configuration
 
 #### Project configuration
-![project configuration image](docs/images/image2018-9-20_22-0-7.png){width="1000"}
+![project configuration image](docs/images/image2018-9-20_22-0-7.png)
 
 #### [Build with Parameters](http://xps15:8083/job/git_parameter/build?delay=0sec) form
-![Build with Parameters image](docs/images/image2018-9-20_22-2-47.png){width="1000"}
+![Build with Parameters image](docs/images/image2018-9-20_22-2-47.png)
 
 ## Example pipeline script
 
@@ -270,7 +270,7 @@ In release 0.9.9 or later it is good to set a default value, because this
 value is using the initial build (in Pipeline).  
 Default value is returned when some error occurred on getting data.
 
-![default value](docs/images/image2019-2-16_22-46-54.png){width="900"}
+![default value](docs/images/image2019-2-16_22-46-54.png)
 
 #### Selected Value
 Name using in pipeline
@@ -328,7 +328,7 @@ pipeline {
 
 After initial run you get 
 
-!['build with parameters' section](docs/images/image2018-9-21_22-47-52.png){height="250"}
+!['build with parameters' section](docs/images/image2018-9-21_22-47-52.png)
 
 Example when 'Use repository' is not set:
 
@@ -353,7 +353,7 @@ pipeline {
 
 After initial run you get 
 
-!['build with parameters' section](docs/images/image2018-9-21_23-3-22.png){height="250"}
+!['build with parameters' section](docs/images/image2018-9-21_23-3-22.png)
 
 #### Quick Filter
 
@@ -372,9 +372,9 @@ listSize
 **Important!**   
 Works with version 0.9.9 or greater
 
-![show 'need to clone' information](docs/images/image2019-2-16_22-26-39.png){height="150"}
+![show 'need to clone' information](docs/images/image2019-2-16_22-26-39.png)
 
-![parameter values](docs/images/image2019-2-17_13-5-14.png){width="952"}  
+![parameter values](docs/images/image2019-2-17_13-5-14.png)
 
 ## Error handling
 
@@ -389,11 +389,11 @@ error.
 Examples:
 1. This error occur when the repository is not configured or 'Use
 repository' option not match with any repository.
-![error handling 1](docs/images/image2019-2-17_17-2-14.png){height="150"}
+![error handling 1](docs/images/image2019-2-17_17-2-14.png)
 1. This error occur when the repository is not exists or URL is wrong.
-![error handling 2](docs/images/image2019-2-17_12-49-47.png){height="250"}
+![error handling 2](docs/images/image2019-2-17_12-49-47.png)
 1. This error occur when there are no ssh command on Jenkins master.
-![error handling 3](docs/images/image2019-2-17_17-4-32.png){width="1074"}
+![error handling 3](docs/images/image2019-2-17_17-4-32.png)
 
 ## Contribute
 * Visit https://jenkins.io/doc/developer/publishing/ for "information about developing Jenkins-Plugins"
