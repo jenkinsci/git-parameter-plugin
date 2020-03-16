@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<!-- Baseline Jenkins version you use to build and test the plugin. Users 
+		<!-- Baseline Jenkins version you use to build and test the plugin. Users
 			must have this version or newer to run. -->
 		<version>3.45</version>
 	</parent>
@@ -14,7 +14,7 @@
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Adds ability to choose branches, tags  or revisions from git repositories configured in project.</description>
-	<url>http://wiki.jenkins-ci.org/display/JENKINS/Git+Parameter+Plugin</url>
+	<url>https://github.com/jenkinsci/git-parameter-plugin</url>
 
 	<licenses>
 		<license>
