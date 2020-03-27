@@ -25,7 +25,7 @@ public class SCMFactory {
 
         List<SCM> scms = getSCMs(jobWrapper);
         if (scms.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (Strings.isNullOrEmpty(repositoryRegExpName)) {
             return getFirstGitSCM(scms);
@@ -67,7 +67,7 @@ public class SCMFactory {
         if (scm instanceof GitSCM) {
             return Collections.singletonList((GitSCM) scm);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     private static List<SCM> getSCMs(JobWrapper jobWrapper) {
