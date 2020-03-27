@@ -7,8 +7,8 @@
     <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.gitParameterSelect"/>
     <j:set var="divId" value="${it.divUUID}" scope="parent"/>
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
-    <f:entry title="${it.name}" description="${it.formattedDescription}">
-        <div name="parameter" id="${divId}">
+    <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
+        <div name="parameter" id="${divId}" data-default-value="${it.defaultValue}" data-selected-value="${it.selectedValue}">
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
             <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px; font-family: monospace;" id="gitParameterSelect"
@@ -21,9 +21,7 @@
             </j:if>
             <script type="text/javascript">
                 var parentDiv = jQuery('#${divId}');
-                new GitParameter.QuickFilter(parentDiv.find('.gitParameterSelect').get(0),
-                                             parentDiv.find('.git_parameter_quick_filter').get(0),
-                                             "${it.selectedValue}", "${it.defaultValue}");
+                new GitParameter.QuickFilter(parentDiv);
             </script>
         </div>
         <j:if test="${it.type eq 'PT_REVISION' and it.descriptor.showNeedToCloneInformation}">

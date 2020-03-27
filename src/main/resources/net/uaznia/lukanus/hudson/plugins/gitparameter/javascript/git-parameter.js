@@ -28,11 +28,11 @@ jQuery.noConflict();
 var GitParameter = GitParameter || (function($) {
     var instance = {};
 
-    function QuickFilter(selectElement, filterElement, selectedValue, defaultValue) {
-        this.selectElement = selectElement;
-        this.filterElement = filterElement;
-        this.selectedValue = selectedValue;
-        this.defaultValue = defaultValue;
+    function QuickFilter(parent) {
+        this.selectElement = parent.find('.gitParameterSelect').get(0);
+        this.filterElement = parent.find('.git_parameter_quick_filter').get(0);
+        this.selectedValue = parent.data('selected-value');
+        this.defaultValue = parent.data('default-value');
         this.originalOptions = new Array();
 
         jQuery(this.filterElement).prop("disabled",true);
