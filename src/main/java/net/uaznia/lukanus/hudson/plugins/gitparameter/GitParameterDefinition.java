@@ -129,7 +129,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         if (strValue.length() == 0) {
-            if (requiredParameter) {
+            if (requiredParameter && isBlank(defaultValue)) {
                 throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
             } else {
                 strValue.append(defaultValue);
@@ -145,7 +145,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isNotEmpty(value)) {
             return new GitParameterValue(getName(), value);
         }
-        if (requiredParameter) {
+        if (requiredParameter && isBlank(getDefaultValue()) && !getSelectedValue().equals(SelectedValue.TOP)) {
             throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
         } else {
             return getDefaultParameterValue();
@@ -651,7 +651,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
         public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue, @QueryParameter Boolean requiredParameter) {
             if (requiredParameter) {
-                return isBlank(defaultValue) ? ok() : warning("Default parameters are ignored if parameter is required");
+                return isBlank(defaultValue) ? ok() : warning(Messages.GitParameterDefinition_defaultRequiredParameterWarning());
             } else {
                 return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
             }

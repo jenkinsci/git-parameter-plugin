@@ -51,9 +51,6 @@
             </j:choose>
         </select>
     </f:entry>
-    <f:entry title="${%Required Parameter}" field="requiredParameter">
-        <f:checkbox />
-    </f:entry>
     <f:entry title="${%parameter.default.value}" field="defaultValue">
         <f:textbox/>
     </f:entry>
@@ -84,6 +81,10 @@
 
         <f:entry title="${%parameter.quick.filter}" field="quickFilterEnabled">
             <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%parameter.required}" field="requiredParameter">
+            <f:checkbox />
         </f:entry>
 
         <f:entry title="${%parameter.list.size}" field="listSize">
