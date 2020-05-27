@@ -1,13 +1,10 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import hudson.cli.CLICommand;
-import hudson.cli.ConsoleCommand;
 import hudson.model.ParameterValue;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

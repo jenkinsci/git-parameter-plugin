@@ -25,7 +25,7 @@ public class SCMFactory {
 
         List<SCM> scms = getSCMs(jobWrapper);
         if (scms.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         if (Strings.isNullOrEmpty(repositoryRegExpName)) {
             return getFirstGitSCM(scms);
@@ -54,7 +54,8 @@ public class SCMFactory {
     private static boolean anyUserRemoteConfigMatch(SCM scm, Pattern repositoryNamePattern) {
         List<UserRemoteConfig> userRemoteConfigs = ((GitSCM) scm).getUserRemoteConfigs();
         for (UserRemoteConfig userRemoteConfig : userRemoteConfigs) {
-            if (repositoryNamePattern.matcher(userRemoteConfig.getUrl()).find()) {
+            String remoteUrl = userRemoteConfig.getUrl();
+            if (remoteUrl != null && repositoryNamePattern.matcher(remoteUrl).find()) {
                 return true;
             }
         }
@@ -66,7 +67,7 @@ public class SCMFactory {
         if (scm instanceof GitSCM) {
             return Collections.singletonList((GitSCM) scm);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     private static List<SCM> getSCMs(JobWrapper jobWrapper) {
