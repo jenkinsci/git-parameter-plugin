@@ -344,7 +344,7 @@ pipeline {
         stage('Example') {
             steps {
                 git url: 'https://github.com/klimas7/exampleA.git'
-		dir('dir-for-exampleB') {
+                dir('dir-for-exampleB') {
                     git url: 'https://github.com/klimas7/exampleB.git'
 		}
             }
