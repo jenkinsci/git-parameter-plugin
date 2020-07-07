@@ -106,6 +106,9 @@ public class RevisionInfoFactory {
     private String trimMessage(String commitMessage) {
         if (commitMessage.length() > MAX_COMMIT_MESSAGE_LENGTH) {
             int lastSpace = commitMessage.lastIndexOf(" ", MAX_COMMIT_MESSAGE_LENGTH);
+            if (lastSpace == -1) {
+                lastSpace = MAX_COMMIT_MESSAGE_LENGTH;
+            }
             return commitMessage.substring(0, lastSpace) + " ...";
         }
         return commitMessage;
