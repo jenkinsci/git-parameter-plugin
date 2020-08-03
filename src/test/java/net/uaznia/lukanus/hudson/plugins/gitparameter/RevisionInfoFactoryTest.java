@@ -59,22 +59,34 @@ public class RevisionInfoFactoryTest {
             ":000000 100644 0000000000000000000000000000000000000000 71b8e86fa081074b4df8f2ba4fa3321b763be722 A\tsrc/main/resources/net/uaznia/lukanus/hudson/plugins/gitparameter/GitParameterDefinition/help-filter.html",
             ":100644 100644 c5bc2243cd449f88c31262208b142a98620f9f90 4580a726212cd65f5438a79350ad1fa002bbdd11 M\tsrc/test/java/net/uaznia/lukanus/hudson/plugins/gitparameter/GitParameterDefinitionTest.java"};
 
+    private static final String COMMIT_HASH_5 = "c0c83cf111f8b2da0c7f8b63a98e812e95769f20";
+    private static final ObjectId SHA1_5 = ObjectId.fromString(COMMIT_HASH_5);
+    private static final String[] RAW_5 = {"tree c0c83cf111f8b2da0c7f8b63a98e812e95769f20",
+            "parent 3409e0e7a3c0a2887b14c95d803b90f9314606aa",
+            "author klimas7 <klimas7@gmail.com> 1523905899 +0200",
+            "committer klimas7 <klimas7@gmail.com> 1523905899 +0200",
+            "",
+            "    Very_long_commit_message_with_no_space_Lorem_ipsum_dolor_sit_amet__consectetur_adipiscing_elit__sed_do_eiusmod_tempor_incididunt_ut_labore_et_dolore_magna_aliqua",
+            "",
+            ":100644 100644 ab9cfc8ef1c067ef36fb45741be8b9444ba7085c a01738c8f727254fdcf9d03fcb0965567104a31e M\tREADME.textile"};
 
     @Test
     public void testGetRevisions() throws InterruptedException {
         GitClient gitClient = mock(GitClient.class);
-        when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_1, SHA1_2, SHA1_4));
+        when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_1, SHA1_2, SHA1_4, SHA1_5));
         when(gitClient.showRevision(SHA1_1)).thenReturn(Arrays.asList(RAW_1));
         when(gitClient.showRevision(SHA1_2)).thenReturn(Arrays.asList(RAW_2));
         when(gitClient.showRevision(SHA1_4)).thenReturn(Arrays.asList(RAW_4));
+        when(gitClient.showRevision(SHA1_5)).thenReturn(Arrays.asList(RAW_5));
 
         RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, null);
         List<RevisionInfo> revisions = revisionInfoFactory.getRevisions();
 
-        assertEquals(3, revisions.size());
+        assertEquals(4, revisions.size());
         assertEquals("ee650d9b 2018-04-16 21:11 klimas7 <klimas7@gmail.com> Version 0.9.2", revisions.get(0).getRevisionInfo());
         assertEquals("b9a246e8 2018-05-23T15:28:13+0200 klimas7 <klimas7@gmail.com>", revisions.get(1).getRevisionInfo());
         assertEquals("f36014bb 2015-02-12 17:07 Nick Whelan <nickw@indeed.com> Performance improvements Performance improvements when listing tags and branches. It's not necessary to perform a fetch operation when listing remote ...", revisions.get(2).getRevisionInfo());
+        assertEquals("c0c83cf1 2018-04-16 21:11 klimas7 <klimas7@gmail.com> Very_long_commit_message_with_no_space_Lorem_ipsum_dolor_sit_amet__consectetur_adipiscing_elit__sed_do_eiusmod_tempor_incididunt_ut_labore_et_dolore_m ...", revisions.get(3).getRevisionInfo());
     }
 
     @Test
