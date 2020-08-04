@@ -25,7 +25,7 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
                 l.selectedIndex = i;
                 selectionSet = true;
             }
-            if (opts[i].value == currentSelection)
+            if (opts[i].value === currentSelection)
                 possibleIndex = i;
         }
 
@@ -33,11 +33,11 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
         if (!selectionSet && possibleIndex != null)
             l.selectedIndex = possibleIndex;
 
-        if (originalOnSuccess != undefined)
+        if (originalOnSuccess !== undefined)
             originalOnSuccess(rsp);
 
         var errors = eval('(' + rsp.responseText + ')').errors
-        if (errors.length != 0) {
+        if (errors.length !== 0) {
             $("git_parameter_errors_" + divId).addClassName("error")
             var list = "<ul>"
             for (var j = 0; j < errors.length; j++) {
@@ -77,14 +77,14 @@ Behaviour.specify("SELECT.gitParameterSelect", 'gitParameterSelect', 1000, funct
             return false;
         var firstValue = selectEl.options[0].value;
         var selectedValue = selectEl.value;
-        if (originalValue == "" && selectedValue == firstValue) {
+        if (originalValue === "" && selectedValue === firstValue) {
             // There was no value pre-selected but after the call to updateListBox the first value is selected by
             // default. This must not be considered a change.
             return false;
         } else {
-            return originalValue != selectedValue;
+            return originalValue !== selectedValue;
         }
-    };
+    }
 
     // controls that this SELECT box depends on
     refillOnChange(e, function (params) {
