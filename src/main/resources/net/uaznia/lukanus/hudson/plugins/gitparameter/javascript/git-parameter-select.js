@@ -37,14 +37,19 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
             originalOnSuccess(rsp);
 
         var errors = eval('(' + rsp.responseText + ')').errors
+        let error_div = $("git_parameter_errors_" + divId);
         if (errors.length != 0) {
-            $("git_parameter_errors_" + divId).addClassName("error")
-            var list = "<ul>"
+            error_div.show();
+            error_div.addClassName("error");
+            let $error_ul = $("git_parameter_errors_ul_" + divId);
+            var lis = "";
             for (var j = 0; j < errors.length; j++) {
-                list += "<li>" + errors[j] + "</li>"
+                lis += "<li>" + escapeHTML(errors[j]) + "</li>"
             }
-            list += "</ul>"
-            $("git_parameter_errors_" + divId).update(list)
+            $error_ul.update(lis);
+        }
+        else {
+            $error_div.hide()
         }
 
     };
@@ -67,7 +72,6 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
     l.addClassName("select-ajax-pending");
     new Ajax.Request(url, config);
 }
-
 
 Behaviour.specify("SELECT.gitParameterSelect", 'gitParameterSelect', 1000, function (e) {
 
@@ -112,3 +116,7 @@ Behaviour.specify("SELECT.gitParameterSelect", 'gitParameterSelect', 1000, funct
         });
     });
 });
+
+function escapeHTML(str) {
+    return str.replace(/&/g, "&#38;").replace(/"/g, "&#34;").replace(/'/g, "&#39;").replace(/</g, "&#60;");
+}
