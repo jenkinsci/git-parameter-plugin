@@ -808,7 +808,7 @@ public class GitParameterDefinitionTest {
     @Test(expected = Failure.class)
     public void testCreateRequiredValueFail_CLICommand() throws IOException, InterruptedException {
         CLICommand cliCommand = new ConsoleCommand();
-        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
         instance.setRequiredParameter(true);
         instance.createValue(cliCommand, "");
     }
