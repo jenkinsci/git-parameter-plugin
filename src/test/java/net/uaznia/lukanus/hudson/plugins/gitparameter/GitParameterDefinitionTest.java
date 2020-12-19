@@ -12,6 +12,7 @@ import hudson.scm.SCM;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
+import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapperFactory;
@@ -25,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +37,8 @@ import java.util.concurrent.ExecutionException;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author lukanus
@@ -406,13 +410,25 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDefaultValueIsRequired() {
         final DescriptorImpl descriptor = new DescriptorImpl();
-        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master");
-        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null);
-        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ");
+        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", false);
+        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, false);
+        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", false);
 
         assertTrue(okDefaultValue.kind == Kind.OK);
         assertTrue(badDefaultValue.kind == Kind.WARNING);
         assertTrue(badDefaultValue_2.kind == Kind.WARNING);
+    }
+
+    @Test
+    public void testDefaultValueIsNotRequired() {
+        final DescriptorImpl descriptor = new DescriptorImpl();
+        final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", true);
+        final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, true);
+        final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", true);
+
+        assertTrue(okDefaultValue.kind == Kind.WARNING);
+        assertTrue(badDefaultValue.kind == Kind.OK);
+        assertTrue(badDefaultValue_2.kind == Kind.OK);
     }
 
     @Test
@@ -473,6 +489,73 @@ public class GitParameterDefinitionTest {
         assertEquals(build.getResult(), Result.SUCCESS);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "origin/master"));
+    }
+
+    @Test(expected = Failure.class)
+    public void testRequiredParameterStaplerFail() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        StaplerRequest request = mock(StaplerRequest.class);
+        String[] result = new String[]{""};
+        when(request.getParameterValues("testName")).thenReturn(result);
+        def.createValue(request);
+    }
+
+    @Test
+    public void testRequiredParameterStaplerPass() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        StaplerRequest request = mock(StaplerRequest.class);
+        String[] result = new String[]{"master"};
+        when(request.getParameterValues("testName")).thenReturn(result);
+        def.createValue(request);
+    }
+
+    @Test(expected = Failure.class)
+    public void testRequiredParameterJSONFail() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        JSONObject o = new JSONObject();
+        o.put("value", "");
+        def.createValue(null, o);
+    }
+
+    @Test
+    public void testRequiredParameterJSONPass() throws Exception {
+        GitParameterDefinition def = new GitParameterDefinition("testName",
+                Consts.PARAMETER_TYPE_BRANCH,
+                null,
+                "testDescription",
+                null,
+                ".*master.*",
+                "*",
+                SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        def.setRequiredParameter(true);
+        JSONObject o = new JSONObject();
+        o.put("value", "master");
+        o.put("name", "testName");
+        def.createValue(null, o);
     }
 
     @Test
@@ -717,6 +800,24 @@ public class GitParameterDefinitionTest {
         CLICommand cliCommand = new ConsoleCommand();
         GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
+        String value = "test";
+        ParameterValue result = instance.createValue(cliCommand, value);
+        assertEquals(result, new GitParameterValue(NAME, value));
+    }
+
+    @Test(expected = Failure.class)
+    public void testCreateRequiredValueFail_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, "", "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+        instance.setRequiredParameter(true);
+        instance.createValue(cliCommand, "");
+    }
+
+    @Test
+    public void testCreateRequiredValuePass_CLICommand() throws IOException, InterruptedException {
+        CLICommand cliCommand = new ConsoleCommand();
+        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
+        instance.setRequiredParameter(true);
         String value = "test";
         ParameterValue result = instance.createValue(cliCommand, value);
         assertEquals(result, new GitParameterValue(NAME, value));
