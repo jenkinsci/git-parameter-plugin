@@ -41,7 +41,7 @@ public class RevisionInfoFactory {
             objectIds = gitClient.revList(branch);
         }
 
-        ArrayList<RevisionInfo> revisionInfoList = new ArrayList<RevisionInfo>(objectIds.size());
+        ArrayList<RevisionInfo> revisionInfoList = new ArrayList<>(objectIds.size());
         for (ObjectId objectId : objectIds) {
             Revision revision = new Revision(objectId);
             revisionInfoList.add(new RevisionInfo(revision.getSha1String(), prettyRevisionInfo(revision)));
@@ -106,6 +106,9 @@ public class RevisionInfoFactory {
     private String trimMessage(String commitMessage) {
         if (commitMessage.length() > MAX_COMMIT_MESSAGE_LENGTH) {
             int lastSpace = commitMessage.lastIndexOf(" ", MAX_COMMIT_MESSAGE_LENGTH);
+            if (lastSpace == -1) {
+                lastSpace = MAX_COMMIT_MESSAGE_LENGTH;
+            }
             return commitMessage.substring(0, lastSpace) + " ...";
         }
         return commitMessage;

@@ -33,7 +33,7 @@ var GitParameter = GitParameter || (function($) {
         this.filterElement = parent.find('.git_parameter_quick_filter').get(0);
         this.selectedValue = parent.data('selected-value');
         this.defaultValue = parent.data('default-value');
-        this.originalOptions = new Array();
+        this.originalOptions = [];
 
         jQuery(this.filterElement).prop("disabled",true);
 
@@ -66,11 +66,12 @@ var GitParameter = GitParameter || (function($) {
         var selectedValue = _self.getSelectedValue();
         var optionsLength = filteredElement.length;
 
-        if (optionsLength > 0 && selectedValue != 'NONE') {
-            if (selectedValue == 'TOP') {
+        console.log("Selected value : " + selectedValue);
+        if (optionsLength > 0 && selectedValue !== 'NONE') {
+            if (selectedValue === 'TOP') {
                 filteredElement.options[0].selected = true;
             }
-            else if (selectedValue == 'DEFAULT' && !isEmpty(_self.getDefaultValue())) {
+            else if (selectedValue === 'DEFAULT' && !isEmpty(_self.getDefaultValue())) {
                 var defaultValue = _self.getDefaultValue();
                 console.log("Search default value : " + defaultValue);
 
@@ -78,18 +79,18 @@ var GitParameter = GitParameter || (function($) {
 
                 for (var i = 0; i < optionsLength; i++ ) {
                     var option = filteredElement.options[i];
-                    if (option.value == defaultValue) {
+                    if (option.value === defaultValue) {
                         option.selected = true;
                         console.log("Found an exact match");
                         approximateMatchIndex = -1;
                         break;
                     }
-                    if (approximateMatchIndex == -1 && option.value.indexOf(defaultValue) > -1) {
+                    if (approximateMatchIndex === -1 && option.value.indexOf(defaultValue) > -1) {
                         approximateMatchIndex = i;
                     }
                 }
 
-                if (approximateMatchIndex != -1) {
+                if (approximateMatchIndex !== -1) {
                     filteredElement.options[approximateMatchIndex].selected = true;
                     console.log("Found an approximate match : " + filteredElement.options[approximateMatchIndex].value);
                 }
@@ -98,7 +99,7 @@ var GitParameter = GitParameter || (function($) {
     }
 
     function isEmpty(str) {
-        return (typeof str == 'string' && str.trim().length == 0) || typeof str == 'undefined' || str === null;
+        return (typeof str == 'string' && str.trim().length === 0) || typeof str == 'undefined' || str === null;
     }
 
     QuickFilter.prototype.initEventHandler = function() {

@@ -8,6 +8,6 @@ import hudson.scm.SCM;
 public class EmptySCM implements SCMWrapper {
     @Override
     public List<SCM> getSCMs() {
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 }

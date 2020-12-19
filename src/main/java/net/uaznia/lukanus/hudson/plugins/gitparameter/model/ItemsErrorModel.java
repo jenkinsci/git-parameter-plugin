@@ -40,9 +40,9 @@ public class ItemsErrorModel implements HttpResponse {
     }
 
     @Exported
-    public List<Option> values = new ArrayList();
+    public List<Option> values = new ArrayList<>();
     @Exported
-    public List<String> errors = new ArrayList();
+    public List<String> errors = new ArrayList<>();
 
     public void add(String value) {
         values.add(new Option(value));
