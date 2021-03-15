@@ -10,7 +10,7 @@
 
 	<groupId>org.jenkins-ci.tools</groupId>
 	<artifactId>git-parameter</artifactId>
-	<version>0.9.10-WENLAN</version>
+	<version>0.9.10-MICHAEL</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Adds ability to choose branches, tags  or revisions from git repositories configured in project.</description>

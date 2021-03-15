@@ -1,5 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
+import hudson.plugins.git.Revision;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +36,8 @@ import hudson.model.TopLevelItem;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.util.FormValidation;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -288,7 +291,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                         }
 
                         if (isTagType(type)) {
-                            Set<String> tagSet = getTag(gitClient, gitUrl);
+                            Set<String> tagSet = getTagsAndInitWorkspace(jobWrapper, git, paramList, environment, repository, remoteURL, gitUrl);
                             sortAndPutToParam(tagSet, paramList);
                         }
 
@@ -345,17 +348,45 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return !repositoryNamePattern.matcher(gitUrl).find();
     }
 
+    private Set<String> getTagsAndInitWorkspace(JobWrapper jobWrapper,
+        GitSCM git, Map<String, String> paramList,
+        EnvVars environment, RemoteConfig repository,
+        URIish remoteURL,
+        String gitUrl
+    ) throws IOException, InterruptedException {
+        boolean isRepoScm = RepoSCM.isRepoSCM(repository.getName());
+        FilePathWrapper workspace = getWorkspace(jobWrapper, isRepoScm);
+
+        GitClient gitClient = getGitClient(jobWrapper, workspace, git, environment);
+        initWorkspace(workspace, gitClient, remoteURL);
+        FetchCommand fetch = gitClient.fetch_().prune().from(remoteURL, repository.getFetchRefSpecs());
+        fetch.execute();
+
+        Set<String> tags = getTag(gitClient, gitUrl);
+
+        workspace.delete();
+
+        return tags;
+    }
+
     private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
         Set<String> tagSet = new HashSet<String>();
         try {
             Map<String, ObjectId> tags = gitClient.getRemoteReferences(gitUrl, tagFilter, false, true);
-            for (String tagName : tags.keySet()) {
-                tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
+            for (Map.Entry<String, ObjectId> tagEntry : tags.entrySet()) {
+                tagSet.add(tagEntry.getKey().replaceFirst(REFS_TAGS_PATTERN, "")
+                               + " " + toTagWithRevision(tagEntry.getValue(), gitClient));
             }
         } catch (GitException e) {
             LOGGER.log(Level.WARNING, getCustomeJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
         }
         return tagSet;
+    }
+
+    private String toTagWithRevision(ObjectId objectId, GitClient gitClient) {
+        RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, branch);
+        Revision revision = new Revision(objectId);
+        return revisionInfoFactory.prettyRevisionInfo(revision, gitClient);
     }
 
     private Set<String> getBranch(GitClient gitClient, String gitUrl, String remoteName) throws Exception {
@@ -445,10 +476,35 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             if (this.getSortMode().getIsDescending()) {
                 Collections.reverse(sorted);
             }
+            if (this.getSortMode().equals(SortMode.RC_THEN_RELEASE)) {
+                Collections.reverse(sorted);
+                ArrayList<String> rcList = new ArrayList<>();
+                ArrayList<String> releaseList = new ArrayList<>();
+                ArrayList<String> otherList = new ArrayList<>();
+                ArrayList<String> concatList = new ArrayList<>();
+
+                for (String tag : sorted) {
+                    if (tag.startsWith("rc")) {
+                        rcList.add(tag);
+                    } else if (tag.startsWith("release")) {
+                        releaseList.add(tag);
+                    } else {
+                        otherList.add(tag);
+                    }
+                }
+                concatList.addAll(rcList);
+                concatList.addAll(releaseList);
+                concatList.addAll(otherList);
+                return concatList;
+            }
         } else {
             sorted = new ArrayList<>(toSort);
         }
         return sorted;
+    }
+
+    boolean startsWith(String pattern, String str) {
+        return str.startsWith(pattern);
     }
 
     private FilePathWrapper getWorkspace(JobWrapper jobWrapper, boolean isRepoScm) throws IOException, InterruptedException {
