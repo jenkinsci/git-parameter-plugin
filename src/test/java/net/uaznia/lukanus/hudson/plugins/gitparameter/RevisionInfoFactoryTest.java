@@ -6,6 +6,7 @@ import org.jenkinsci.plugins.gitclient.GitClient;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -92,7 +93,7 @@ public class RevisionInfoFactoryTest {
     @Test
     public void testNoAuthor() throws InterruptedException {
         GitClient gitClient = mock(GitClient.class);
-        when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_3));
+        when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenReturn(Arrays.asList(RAW_NO_AUTHOR));
 
         RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, null);
@@ -107,7 +108,7 @@ public class RevisionInfoFactoryTest {
     @Test
     public void testGitException() throws InterruptedException {
         GitClient gitClient = mock(GitClient.class);
-        when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_3));
+        when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenThrow(new GitException());
 
         RevisionInfoFactory revisionInfoFactory = new RevisionInfoFactory(gitClient, null);

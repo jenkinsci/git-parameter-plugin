@@ -1,15 +1,17 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import static java.lang.Long.parseLong;
-import static org.joda.time.DateTimeZone.forID;
 
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.lib.ObjectId;
 import org.jenkinsci.plugins.gitclient.GitClient;
-import org.joda.time.DateTime;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,13 +21,14 @@ import java.util.regex.Pattern;
 public class RevisionInfoFactory {
 
     private static final Logger LOGGER = Logger.getLogger(RevisionInfoFactory.class.getName());
-    private static final Pattern AUTHOR_LINE_PATTERN = Pattern.compile("author (.* <.*@.*>) (\\d{10}) ([\\+-]\\d{4})");
+    private static final Pattern AUTHOR_LINE_PATTERN = Pattern.compile("author (.* <.*@.*>) (\\d{10}) ([+-]\\d{4})");
     private static final Pattern AUTHOR_LINE_PATTERN_GENERAL_DATE = Pattern.compile("author (.* <.*@.*>) (.*)");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String COMMIT_MESSAGE_PREFIX = "    ";
     private static final int MAX_COMMIT_MESSAGE_LENGTH = 150;
 
-    private GitClient gitClient;
-    private String branch;
+    private final GitClient gitClient;
+    private final String branch;
 
     public RevisionInfoFactory(GitClient gitClient, String branch) {
         this.gitClient = gitClient;
@@ -68,8 +71,8 @@ public class RevisionInfoFactory {
             String author = matcher.group(1);
             String timestamp = matcher.group(2);
             String zone = matcher.group(3);
-            DateTime date = new DateTime(parseLong(timestamp) * 1000, forID(zone)); //Convert UNIX timestamp to date
-            String stringDate = date.toString("yyyy-MM-dd HH:mm");
+            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(parseLong(timestamp) * 1000), ZoneId.of(zone));
+            String stringDate = date.format(DATE_FORMAT);
             return StringUtils.join(new Object[]{shortSha1, stringDate, author, commitMessage}, " ").trim();
         }
 

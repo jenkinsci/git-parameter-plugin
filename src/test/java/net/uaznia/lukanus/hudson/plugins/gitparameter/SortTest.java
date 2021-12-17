@@ -17,7 +17,7 @@ public class SortTest {
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
         GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", null, null, SortMode.ASCENDING_SMART, SelectedValue.NONE, null, false);
-        Set<String> tags = new HashSet<String>();
+        Set<String> tags = new HashSet<>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
         tags.add("v_1.0.1.1");
@@ -36,7 +36,7 @@ public class SortTest {
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
         GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", null, null, SortMode.ASCENDING, SelectedValue.NONE, null, false);
-        Set<String> tags = new HashSet<String>();
+        Set<String> tags = new HashSet<>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
         tags.add("v_1.0.1.1");

@@ -13,6 +13,7 @@ import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.DEFAULT_V
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.PT_REVISION;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,14 +37,14 @@ public class BasicTests {
     @Test
     public void matchesWithBitbucketPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
-        matcher.find();
+        assertTrue(matcher.find());
         assertEquals(matcher.group(1), "186");
     }
 
     @Test
     public void matchesWithGithubPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
-        matcher.find();
+        assertTrue(matcher.find());
         assertEquals(matcher.group(1), "45");
     }
 
@@ -94,7 +95,7 @@ public class BasicTests {
         System.out.println("createValue");
         StaplerRequest request = mock(StaplerRequest.class);
 
-        Map<String, String> jsonR = new HashMap<String, String>();
+        Map<String, String> jsonR = new HashMap<>();
         jsonR.put("value", "Git_param_value");
         jsonR.put(NAME, "Git_param_name");
 

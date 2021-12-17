@@ -4,6 +4,7 @@ import hudson.EnvVars;
 import hudson.cli.CLICommand;
 import hudson.cli.ConsoleCommand;
 import hudson.model.*;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
@@ -22,6 +23,7 @@ import org.jenkinsci.plugins.structs.SymbolLookup;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -67,7 +69,7 @@ public class GitParameterDefinitionTest {
         assertTrue(getGitSCMs(IJobWrapper, null).isEmpty());
 
         testJob.setScm(git);
-        assertTrue(git.equals(getGitSCMs(IJobWrapper, null).get(0)));
+        assertEquals(git, getGitSCMs(IJobWrapper, null).get(0));
     }
     
     @Test
@@ -109,6 +111,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
@@ -149,6 +152,7 @@ public class GitParameterDefinitionTest {
                 SortMode.NONE, SelectedValue.NONE, null, false);
         project.addProperty(new ParametersDefinitionProperty(def));
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         // build.run();
         project.doDoWipeOutWorkspace();
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
@@ -173,6 +177,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
     }
@@ -215,6 +220,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
         assertFalse(isListBoxItem(items, "origin/master"));
@@ -298,6 +304,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "master"));
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
@@ -322,6 +329,7 @@ public class GitParameterDefinitionTest {
 
         // Run the build once to get the workspace
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385cba1e4e32cf823775e2b3dbe5eb27931d"));
         assertTrue(isListBoxItemName(items, "00a8385c 2011-10-30 17:11 Łukasz Miłkowski <lukanus@uaznia.net> initial readme"));
@@ -344,6 +352,7 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385c"));
     }
@@ -365,6 +374,7 @@ public class GitParameterDefinitionTest {
         project.addProperty(new ParametersDefinitionProperty(def));
 
         FreeStyleBuild build = project.scheduleBuild2(0).get();
+        assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "41"));
         assertTrue(isListBoxItem(items, "44"));
@@ -393,8 +403,8 @@ public class GitParameterDefinitionTest {
         final FormValidation okWildcard = descriptor.doCheckBranchFilter(".*");
         final FormValidation badWildcard = descriptor.doCheckBranchFilter(".**");
 
-        assertTrue(okWildcard.kind == Kind.OK);
-        assertTrue(badWildcard.kind == Kind.ERROR);
+        assertSame(okWildcard.kind, Kind.OK);
+        assertSame(badWildcard.kind, Kind.ERROR);
     }
 
     @Test
@@ -403,8 +413,8 @@ public class GitParameterDefinitionTest {
         final FormValidation okWildcard = descriptor.doCheckUseRepository(".*");
         final FormValidation badWildcard = descriptor.doCheckUseRepository(".**");
 
-        assertTrue(okWildcard.kind == Kind.OK);
-        assertTrue(badWildcard.kind == Kind.ERROR);
+        assertSame(okWildcard.kind, Kind.OK);
+        assertSame(badWildcard.kind, Kind.ERROR);
     }
 
     @Test
@@ -414,9 +424,9 @@ public class GitParameterDefinitionTest {
         final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, false);
         final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", false);
 
-        assertTrue(okDefaultValue.kind == Kind.OK);
-        assertTrue(badDefaultValue.kind == Kind.WARNING);
-        assertTrue(badDefaultValue_2.kind == Kind.WARNING);
+        assertSame(okDefaultValue.kind, Kind.OK);
+        assertSame(badDefaultValue.kind, Kind.WARNING);
+        assertSame(badDefaultValue_2.kind, Kind.WARNING);
     }
 
     @Test
@@ -426,9 +436,9 @@ public class GitParameterDefinitionTest {
         final FormValidation badDefaultValue = descriptor.doCheckDefaultValue(null, true);
         final FormValidation badDefaultValue_2 = descriptor.doCheckDefaultValue("  ", true);
 
-        assertTrue(okDefaultValue.kind == Kind.WARNING);
-        assertTrue(badDefaultValue.kind == Kind.OK);
-        assertTrue(badDefaultValue_2.kind == Kind.OK);
+        assertSame(okDefaultValue.kind, Kind.WARNING);
+        assertSame(badDefaultValue.kind, Kind.OK);
+        assertSame(badDefaultValue_2.kind, Kind.OK);
     }
 
     @Test
@@ -447,8 +457,8 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
-
-        assertTrue(testDefaultValue.equals(def.getDefaultParameterValue().getValue()));
+        assertNotNull(def.getDefaultParameterValue());
+        assertEquals(testDefaultValue, def.getDefaultParameterValue().getValue());
     }
 
     @Test
@@ -466,6 +476,7 @@ public class GitParameterDefinitionTest {
                 SortMode.ASCENDING, SelectedValue.TOP, null, false);
 
         project.addProperty(new ParametersDefinitionProperty(def));
+        assertNotNull(def.getDefaultParameterValue());
         assertEquals("0.1", def.getDefaultParameterValue().getValue());
     }
 
@@ -492,7 +503,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test(expected = Failure.class)
-    public void testRequiredParameterStaplerFail() throws Exception {
+    public void testRequiredParameterStaplerFail() {
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_BRANCH,
                 null,
@@ -509,7 +520,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testRequiredParameterStaplerPass() throws Exception {
+    public void testRequiredParameterStaplerPass() {
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_BRANCH,
                 null,
@@ -526,7 +537,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test(expected = Failure.class)
-    public void testRequiredParameterJSONFail() throws Exception {
+    public void testRequiredParameterJSONFail() {
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_BRANCH,
                 null,
@@ -542,7 +553,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testRequiredParameterJSONPass() throws Exception {
+    public void testRequiredParameterJSONPass() {
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_BRANCH,
                 null,
@@ -559,7 +570,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testWorkflowJobWithCpsScmFlowDefinition() throws IOException, InterruptedException {
+    public void testWorkflowJobWithCpsScmFlowDefinition() throws IOException {
         WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
 
@@ -599,15 +610,20 @@ public class GitParameterDefinitionTest {
         p.addProperty(new ParametersDefinitionProperty(def));
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(p, def.getName());
         //First build is fake build! And should return no Repository configured
-        assertEquals(((ItemsErrorModel) items).getErrors().get(1), Messages.GitParameterDefinition_noRepositoryConfigured());
+        assertEquals(items.getErrors().get(1), Messages.GitParameterDefinition_noRepositoryConfigured());
 
-        p.scheduleBuild2(0).get();
+        QueueTaskFuture<WorkflowRun> workflowRunQueueTaskFuture = p.scheduleBuild2(0);
+        assertNotNull(workflowRunQueueTaskFuture);
+
+        WorkflowRun workflowRun = workflowRunQueueTaskFuture.get();
+        assertNotNull(workflowRun);
+
         items = def.getDescriptor().doFillValueItems(p, def.getName());
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
     @Test
-    public void testProxySCM() throws IOException, InterruptedException {
+    public void testProxySCM() throws IOException {
         FreeStyleProject anotherProject = jenkins.createFreeStyleProject("AnotherProject");
         anotherProject.getBuildersList().add(new Shell("echo test"));
         anotherProject.setScm(getGitSCM());
@@ -655,7 +671,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testMultiRepositoryInOneSCM() throws IOException, InterruptedException {
+    public void testMultiRepositoryInOneSCM() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiRepositoryInOneSCM");
         project.getBuildersList().add(new Shell("echo test"));
         SCM gitSCM = getGitSCM(EXAMPLE_REPOSITORY_A_URL, EXAMPLE_REPOSITORY_B_URL);
@@ -683,7 +699,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testMultiSCM() throws IOException, InterruptedException {
+    public void testMultiSCM() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
         MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(EXAMPLE_REPOSITORY_A_URL), getGitSCM(EXAMPLE_REPOSITORY_B_URL)));
@@ -710,7 +726,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testMultiSCM_forSubdirectoryForRepo() throws IOException, InterruptedException {
+    public void testMultiSCM_forSubdirectoryForRepo() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
@@ -737,7 +753,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testMultiSCM_forSubdirectoryForTheSomeRepo() throws IOException, InterruptedException {
+    public void testMultiSCM_forSubdirectoryForTheSomeRepo() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
@@ -766,7 +782,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testMultiSCM_repositoryUrlIsNotSet() throws IOException, InterruptedException {
+    public void testMultiSCM_repositoryUrlIsNotSet() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
@@ -791,7 +807,7 @@ public class GitParameterDefinitionTest {
 
     @Test
     public void symbolPipelineTest() {
-        Descriptor<? extends Describable> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
+        Descriptor<?> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
         assertNotNull(gitParameter);
     }
 
@@ -846,12 +862,12 @@ public class GitParameterDefinitionTest {
     }
 
     private SCM getGitSCM(String... urls) {
-        List<UserRemoteConfig> configs = new ArrayList<UserRemoteConfig>();
+        List<UserRemoteConfig> configs = new ArrayList<>();
         for (String url : urls) {
             UserRemoteConfig config = new UserRemoteConfig(url, null, null, null);
             configs.add(config);
         }
-        return new GitSCM(configs, null, false, null, null, null, null);
+        return new GitSCM(configs, null, null, null, null);
     }
 
     private boolean isListBoxItem(ItemsErrorModel items, String item) {
