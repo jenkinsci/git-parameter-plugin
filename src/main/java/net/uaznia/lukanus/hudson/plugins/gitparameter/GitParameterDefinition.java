@@ -61,6 +61,7 @@ import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Utils.getParentJob;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
+import static org.apache.commons.lang.BooleanUtils.isTrue;
 import static org.apache.commons.lang.StringUtils.*;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
@@ -104,7 +105,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     public ParameterValue createValue(StaplerRequest request) {
         String value[] = request.getParameterValues(getName());
         if (value == null || value.length == 0 || isBlank(value[0])) {
-            if (requiredParameter) {
+            if (isTrue(requiredParameter)) {
                 throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
             } else {
                 return getDefaultParameterValue();
@@ -130,7 +131,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         if (strValue.length() == 0) {
-            if (requiredParameter && isBlank(defaultValue)) {
+            if (isTrue(requiredParameter) && isBlank(defaultValue)) {
                 throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
             } else {
                 strValue.append(defaultValue);
@@ -146,7 +147,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isNotEmpty(value)) {
             return new GitParameterValue(getName(), value);
         }
-        if (requiredParameter && isBlank(getDefaultValue()) && !getSelectedValue().equals(SelectedValue.TOP)) {
+        if (isTrue(requiredParameter) && isBlank(getDefaultValue()) && !getSelectedValue().equals(SelectedValue.TOP)) {
             throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
         } else {
             return getDefaultParameterValue();
@@ -629,7 +630,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         public FormValidation doCheckDefaultValue(@QueryParameter String defaultValue, @QueryParameter Boolean requiredParameter) {
-            if (requiredParameter) {
+            if (isTrue(requiredParameter)) {
                 return isBlank(defaultValue) ? ok() : warning(Messages.GitParameterDefinition_defaultRequiredParameterWarning());
             } else {
                 return isBlank(defaultValue) ? warning(Messages.GitParameterDefinition_requiredDefaultValue()): ok();
