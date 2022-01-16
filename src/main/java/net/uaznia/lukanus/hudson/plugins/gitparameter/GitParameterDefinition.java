@@ -33,7 +33,6 @@ import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Run;
 import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.GitSCM;
 import hudson.util.FormValidation;
@@ -55,10 +54,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.export.Exported;
 
 import static hudson.util.FormValidation.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Consts.*;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Messages.*;
+import static net.uaznia.lukanus.hudson.plugins.gitparameter.Utils.getParentJob;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.SCMFactory.getGitSCMs;
 import static org.apache.commons.lang.StringUtils.*;
 
@@ -94,7 +95,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.requiredParameter = false;
 
         setUseRepository(useRepository);
-        setType(type);
+        setParameterType(type);
         setTagFilter(tagFilter);
         setBranchFilter(branchFilter);
     }
@@ -163,12 +164,12 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         switch (getSelectedValue()) {
             case TOP:
                 try {
-                    ItemsErrorModel valueItems = getDescriptor().doFillValueItems(getParentJob(), getName());
+                    ItemsErrorModel valueItems = getAllValueItems();
                     if (valueItems.size() > 0) {
                         return new GitParameterValue(getName(), valueItems.get(0).value);
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
+                    LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
                 }
                 break;
             case DEFAULT:
@@ -179,12 +180,16 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return super.getDefaultParameterValue();
     }
 
-    @Override
-    public String getType() {
+    @Exported
+    public ItemsErrorModel getAllValueItems() {
+        return getDescriptor().doFillValueItems(getParentJob(this), getName());
+    }
+
+    public String getParameterType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setParameterType(String type) {
         if (isParameterTypeCorrect(type)) {
             this.type = type;
         } else {
@@ -265,32 +270,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return quickFilterEnabled;
     }
 
-    public Job getParentJob() {
-        Job context = null;
-        List<Job> jobs = Jenkins.get().getAllItems(Job.class);
-
-        for (Job job : jobs) {
-            if (!(job instanceof TopLevelItem)) continue;
-
-            ParametersDefinitionProperty property = (ParametersDefinitionProperty) job.getProperty(ParametersDefinitionProperty.class);
-
-            if (property != null) {
-                List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
-
-                if (parameterDefinitions != null) {
-                    for (ParameterDefinition pd : parameterDefinitions) {
-                        if (pd instanceof GitParameterDefinition && ((GitParameterDefinition) pd).compareTo(this) == 0) {
-                            context = job;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return context;
-    }
-
     @SuppressFBWarnings(value="EQ_COMPARETO_USE_OBJECT_EQUALS")
     public int compareTo(GitParameterDefinition pd) {
         return pd.uuid.equals(uuid) ? 0 : -1;
@@ -343,7 +322,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             }
             return convertMapToListBox(paramList);
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, getCustomeJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
+            LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
             return ItemsErrorModel.create(getDefaultValue(), GitParameterDefinition_returnDefaultValue(), GitParameterDefinition_error(), e.getMessage(), GitParameterDefinition_lookAtLog(), GitParameterDefinition_checkConfiguration());
         }
     }
@@ -378,7 +357,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
             }
         } catch (GitException e) {
-            LOGGER.log(Level.WARNING, getCustomeJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
+            LOGGER.log(Level.WARNING, getCustomJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
         }
         return tagSet;
     }
@@ -420,7 +399,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         try {
             branchFilterPattern = Pattern.compile(branchFilter);
         } catch (Exception e) {
-            LOGGER.log(Level.INFO, getCustomeJobName() + " " + Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
+            LOGGER.log(Level.INFO, getCustomJobName() + " " + Messages.GitParameterDefinition_branchFilterNotValid(), e.getMessage());
             branchFilterPattern = Pattern.compile(".*");
         }
         return branchFilterPattern;
@@ -557,7 +536,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         if (isEmptyWorkspace(workspace.getFilePath())) {
             gitClient.init();
             gitClient.clone(remoteURL.toASCIIString(), DEFAULT_REMOTE, false, null);
-            LOGGER.log(Level.INFO, getCustomeJobName() + " " + Messages.GitParameterDefinition_genContentsCloneDone());
+            LOGGER.log(Level.INFO, getCustomJobName() + " " + Messages.GitParameterDefinition_genContentsCloneDone());
         }
     }
 
@@ -603,8 +582,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         this.useRepository = isBlank(useRepository) ? null : useRepository;
     }
 
-    public String getCustomeJobName() {
-        Job job = getParentJob();
+    public String getCustomJobName() {
+        Job job = getParentJob(this);
         String fullName = job != null ? job.getFullName() : EMPTY_JOB_NAME;
         return "[ " + fullName + " ] ";
     }

@@ -1,5 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.model;
 
+import jenkins.security.stapler.StaplerAccessibleType;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -13,7 +14,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@ExportedBean
+@ExportedBean(defaultVisibility = 4)
+@StaplerAccessibleType
 public class ItemsErrorModel implements HttpResponse {
     public static final ItemsErrorModel EMPTY = new ItemsErrorModel();
 

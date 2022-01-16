@@ -10,7 +10,7 @@
     <f:entry title="${%parameter.type}" field="type">
         <select name="type">
             <j:choose>
-                <j:when test="${instance.type eq 'PT_TAG'}">
+                <j:when test="${instance.parameterType eq 'PT_TAG'}">
                     <option value="PT_TAG" selected="selected">${%parameter.tag}</option>
                 </j:when>
                 <j:otherwise>
@@ -18,7 +18,7 @@
                 </j:otherwise>
             </j:choose>
             <j:choose>
-                <j:when test="${instance.type eq 'PT_BRANCH'}">
+                <j:when test="${instance.parameterType eq 'PT_BRANCH'}">
                     <option value="PT_BRANCH" selected="selected">${%parameter.branch}</option>
                 </j:when>
                 <j:otherwise>
@@ -26,7 +26,7 @@
                 </j:otherwise>
             </j:choose>
             <j:choose>
-                <j:when test="${instance.type eq 'PT_BRANCH_TAG'}">
+                <j:when test="${instance.parameterType eq 'PT_BRANCH_TAG'}">
                     <option value="PT_BRANCH_TAG" selected="selected">${%parameter.branch.or.tag}</option>
                 </j:when>
                 <j:otherwise>
@@ -34,7 +34,7 @@
                 </j:otherwise>
             </j:choose>
             <j:choose>
-                <j:when test="${instance.type eq 'PT_REVISION'}">
+                <j:when test="${instance.parameterType eq 'PT_REVISION'}">
                     <option value="PT_REVISION" selected="selected">${%parameter.revision}</option>
                 </j:when>
                 <j:otherwise>
@@ -42,7 +42,7 @@
                 </j:otherwise>
             </j:choose>
             <j:choose>
-                <j:when test="${instance.type eq 'PT_PULL_REQUEST'}">
+                <j:when test="${instance.parameterType eq 'PT_PULL_REQUEST'}">
                     <option value="PT_PULL_REQUEST" selected="selected">${%parameter.pull.request}</option>
                 </j:when>
                 <j:otherwise>

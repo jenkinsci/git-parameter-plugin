@@ -32,7 +32,7 @@
 		<java.level>8</java.level>
 		<!-- Baseline Jenkins version you use to build and test the plugin. Users
 			must have this version or newer to run. -->
-		<jenkins.version>2.289.1</jenkins.version>
+		<jenkins.version>2.319.1</jenkins.version>
 	</properties>
 
 	<developers>
