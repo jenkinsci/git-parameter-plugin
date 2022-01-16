@@ -394,7 +394,7 @@ public class GitParameterDefinitionTest {
                 "*",
                 SortMode.NONE, SelectedValue.NONE, null, false);
         job1.addProperty(new ParametersDefinitionProperty(gitParameterDefinition));
-        assertEquals("folder/job1", gitParameterDefinition.getParentJob().getFullName());
+        assertEquals("folder/job1", Utils.getParentJob(gitParameterDefinition).getFullName());
     }
 
     @Test

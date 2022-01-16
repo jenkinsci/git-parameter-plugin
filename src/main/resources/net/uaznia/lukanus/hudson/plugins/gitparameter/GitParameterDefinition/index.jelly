@@ -24,7 +24,7 @@
                 new GitParameter.QuickFilter(parentDiv);
             </script>
         </div>
-        <j:if test="${it.type eq 'PT_REVISION' and it.descriptor.showNeedToCloneInformation}">
+        <j:if test="${it.parameterType eq 'PT_REVISION' and it.descriptor.showNeedToCloneInformation}">
             <div id="git_parameter_info_${divId}">${%needs.to.clone}</div>
         </j:if>
         <div id="git_parameter_errors_${divId}" style="display:none">

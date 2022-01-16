@@ -123,16 +123,14 @@ public class BasicTests {
      * Test of getType method, of class GitParameterDefinition.
      */
     @Test
-    public void testGetType() {
-        System.out.println("Test of getType method.");
+    public void testGetParameterType() {
         String expResult = PT_REVISION;
         GitParameterDefinition instance = new GitParameterDefinition(NAME, expResult, DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
-        String result = instance.getType();
+        String result = instance.getParameterType();
         assertEquals(expResult, result);
 
-
-        instance.setType(expResult);
-        result = instance.getType();
+        instance.setParameterType(expResult);
+        result = instance.getParameterType();
         assertEquals(expResult, result);
     }
 
@@ -140,13 +138,12 @@ public class BasicTests {
      * Test of setType method, of class GitParameterDefinition.
      */
     @Test
-    public void testSetType() {
-        System.out.println("Test of setType method.");
+    public void testSetParameterType() {
         String expResult = PT_REVISION;
         GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
-        instance.setType(expResult);
-        String result = instance.getType();
+        instance.setParameterType(expResult);
+        String result = instance.getParameterType();
         assertEquals(expResult, result);
     }
 
@@ -154,7 +151,7 @@ public class BasicTests {
     public void testWrongType() {
         GitParameterDefinition instance = new GitParameterDefinition(NAME, "asdf", DEFAULT_VALUE, "description", "branch", ".*", "*", SortMode.NONE, SelectedValue.NONE, null, false);
 
-        String result = instance.getType();
+        String result = instance.getParameterType();
         assertEquals("PT_BRANCH", result);
     }
 
