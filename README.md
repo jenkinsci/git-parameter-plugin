@@ -162,7 +162,7 @@ pipeline {
 }
 ```
 
-#### Pull Requst type
+#### Pull Request type
 ```groovy
 pipeline {
     agent any
