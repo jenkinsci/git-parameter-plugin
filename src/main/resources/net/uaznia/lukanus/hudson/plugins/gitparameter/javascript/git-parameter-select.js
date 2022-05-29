@@ -5,8 +5,8 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    // TODO - Remove the null check once this plugin targets https://github.com/jenkinsci/jenkins/pull/6460 or higher
-    var status = findFollowingTR(listBox, "validation-error-area") || findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+    // TODO - Remove '.firstChild?.nextSibling' once this plugin targets https://github.com/jenkinsci/jenkins/pull/6460 or higher
+    var status = findFollowingTR(listBox, "validation-error-area").firstChild?.nextSibling || findFollowingTR(listBox, "validation-error-area");
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }
