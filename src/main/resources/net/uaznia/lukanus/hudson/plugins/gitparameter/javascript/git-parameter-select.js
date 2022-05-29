@@ -5,7 +5,8 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
     config = object(config);
     var originalOnSuccess = config.onSuccess;
     var l = $(listBox);
-    var status = findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
+    // TODO - Remove
+    var status = findFollowingTR(listBox, "validation-error-area") || findFollowingTR(listBox, "validation-error-area").firstChild.nextSibling;
     if (status.firstChild && status.firstChild.getAttribute('data-select-ajax-error')) {
         status.innerHTML = "";
     }
@@ -49,7 +50,7 @@ function gitParameterUpdateSelect(listBox, url, divId, config) {
             $error_ul.update(lis);
         }
         else {
-            $error_div.hide()
+            error_div.hide()
         }
 
     };
