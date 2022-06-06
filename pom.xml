@@ -58,15 +58,11 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>4.10.0</version>
+			<version>4.11.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.jenkins-ci.plugins</groupId>
 					<artifactId>junit</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>script-security</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -94,6 +90,12 @@
 			<artifactId>junit</artifactId>
 			<version>1.53</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jenkins-ci.plugins</groupId>
+					<artifactId>script-security</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -143,7 +145,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>1.19</version>
+			<version>1.20</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
