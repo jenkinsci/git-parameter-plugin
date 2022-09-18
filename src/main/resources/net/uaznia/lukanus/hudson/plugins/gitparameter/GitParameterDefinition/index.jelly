@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
          xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
          xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-    <st:adjunct includes="org.kohsuke.stapler.jquery"/>
+    <st:adjunct includes="io.jenkins.plugins.jquery3"/>
     <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.script"/>
     <st:adjunct includes="net.uaznia.lukanus.hudson.plugins.gitparameter.gitParameterSelect"/>
     <j:set var="divId" value="${it.divUUID}" scope="parent"/>

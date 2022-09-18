@@ -32,7 +32,7 @@
 		<java.level>8</java.level>
 		<!-- Baseline Jenkins version you use to build and test the plugin. Users
 			must have this version or newer to run. -->
-		<jenkins.version>2.319.1</jenkins.version>
+		<jenkins.version>2.319.3</jenkins.version>
 	</properties>
 
 	<developers>
@@ -67,9 +67,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>jquery</artifactId>
-			<version>1.12.4-1</version>
+  			<groupId>io.jenkins.plugins</groupId>
+  			<artifactId>jquery3-api</artifactId>
+  			<version>3.6.0-4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
