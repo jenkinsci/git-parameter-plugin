@@ -1,6 +1,7 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.cli.CLICommand;
 import hudson.cli.ConsoleCommand;
 import hudson.model.*;
@@ -10,6 +11,7 @@ import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
 import hudson.plugins.templateproject.ProxySCM;
 import hudson.scm.SCM;
+import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
@@ -96,7 +98,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listTags() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -119,7 +121,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetListBranchNoBuildProject() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -139,7 +141,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetListBranchAfterWipeOutWorkspace() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -162,7 +164,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listBranches() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -185,7 +187,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void tesListBranchesWrongBranchFilter() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -205,7 +207,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listBranches_withRegexGroup() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -229,7 +231,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testSortAscendingTag() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -249,7 +251,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testWrongTagFilter() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -269,7 +271,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testSortDescendingTag() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -289,7 +291,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listTagsAndBranches() throws Exception {
         project = jenkins.createFreeStyleProject("testListTags");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -313,7 +315,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listRevisions() throws Exception {
         project = jenkins.createFreeStyleProject("testListRevisions");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
 
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -338,7 +340,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listRevisionsWithBranch() throws Exception {
         project = jenkins.createFreeStyleProject("testListRevisions");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 PT_REVISION,
@@ -360,7 +362,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testDoFillValueItems_listPullRequests() throws Exception {
         project = jenkins.createFreeStyleProject("testListPullRequests");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_PULL_REQUEST,
@@ -444,7 +446,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetDefaultValueWhenDefaultValueIsSet() throws Exception {
         project = jenkins.createFreeStyleProject("testDefaultValue");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
         String testDefaultValue = "testDefaultValue";
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -464,7 +466,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testGetDefaultValueAsTop() throws Exception {
         project = jenkins.createFreeStyleProject("testDefaultValueAsTOP");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit();
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_TAG,
@@ -484,7 +486,7 @@ public class GitParameterDefinitionTest {
     public void testGlobalVariableRepositoryUrl() throws Exception {
         EnvVars.masterEnvVars.put("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL);
         project = jenkins.createFreeStyleProject("testGlobalValue");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         setupGit("$GIT_REPO_URL");
         GitParameterDefinition def = new GitParameterDefinition("testName",
                 Consts.PARAMETER_TYPE_BRANCH,
@@ -625,7 +627,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testProxySCM() throws IOException {
         FreeStyleProject anotherProject = jenkins.createFreeStyleProject("AnotherProject");
-        anotherProject.getBuildersList().add(new Shell("echo test"));
+        anotherProject.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         anotherProject.setScm(getGitSCM());
 
         project = jenkins.createFreeStyleProject("projectHaveProxySCM");
@@ -648,7 +650,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testParameterDefinedRepositoryUrl() throws Exception {
         project = jenkins.createFreeStyleProject("testLocalValue");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
 
         StringParameterDefinition stringParameterDef = new StringParameterDefinition("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL, "Description");
         GitParameterDefinition def = new GitParameterDefinition("testName",
@@ -673,7 +675,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testMultiRepositoryInOneSCM() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiRepositoryInOneSCM");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         SCM gitSCM = getGitSCM(EXAMPLE_REPOSITORY_A_URL, EXAMPLE_REPOSITORY_B_URL);
         project.setScm(gitSCM);
 
@@ -701,7 +703,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testMultiSCM() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(EXAMPLE_REPOSITORY_A_URL), getGitSCM(EXAMPLE_REPOSITORY_B_URL)));
         project.setScm(multiSCM);
 
@@ -728,7 +730,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testMultiSCM_forSubdirectoryForRepo() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
         gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
         MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(), gitSCM));
@@ -755,7 +757,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testMultiSCM_forSubdirectoryForTheSomeRepo() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
         gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
         MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(GIT_CLIENT_REPOSITORY_URL), gitSCM));
@@ -784,7 +786,7 @@ public class GitParameterDefinitionTest {
     @Test
     public void testMultiSCM_repositoryUrlIsNotSet() throws IOException {
         project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
-        project.getBuildersList().add(new Shell("echo test"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
         GitSCM gitSCM = (GitSCM) getGitSCM(GIT_CLIENT_REPOSITORY_URL);
         gitSCM.getExtensions().add(new RelativeTargetDirectory("subDirectory"));
         MultiSCM multiSCM = new MultiSCM(Arrays.asList(getGitSCM(""), gitSCM));
