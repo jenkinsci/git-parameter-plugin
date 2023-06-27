@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.31</version>
+		<version>4.63</version>
 		<relativePath />
 	</parent>
 
@@ -29,10 +29,9 @@
 	</repositories>
 
 	<properties>
-		<java.level>8</java.level>
 		<!-- Baseline Jenkins version you use to build and test the plugin. Users
 			must have this version or newer to run. -->
-		<jenkins.version>2.319.3</jenkins.version>
+		<jenkins.version>2.361.4</jenkins.version>
 	</properties>
 
 	<developers>
@@ -54,87 +53,59 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.jenkins.tools.bom</groupId>
+				<artifactId>bom-2.361.x</artifactId>
+				<version>2081.v85885a_d2e5c5</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
-			<version>4.11.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
-  			<groupId>io.jenkins.plugins</groupId>
-  			<artifactId>jquery3-api</artifactId>
-  			<version>3.6.0-4</version>
+			<groupId>io.jenkins.plugins</groupId>
+			<artifactId>jquery3-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
 			<artifactId>rebuild</artifactId>
-			<version>1.32</version>
 			<optional>true</optional>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>matrix-project</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- Test scope -->
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>junit</artifactId>
-			<version>1.53</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>script-security</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>4.1.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-aggregator</artifactId>
-			<version>2.6</version>
+			<version>596.v8c21c963d92d</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins.workflow</groupId>
-					<artifactId>workflow-support</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-support</artifactId>
-			<version>3.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>template-project</artifactId>
 			<version>1.5.2</version>
-            <scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-lang</groupId>
-					<artifactId>commons-lang</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jenkins-ci.plugins</groupId>
-					<artifactId>matrix-project</artifactId>
-				</exclusion>
-			</exclusions>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -145,7 +116,6 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>1.20</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
