@@ -12,7 +12,7 @@
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
             <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px; font-family: monospace;" id="gitParameterSelect"
-                    fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${it.name}" divId="${divId}">
+                    fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${h.urlEncode(it.name)}" divId="${divId}">
                 <option value="">${%retrieving.references}</option>
             </select>
             <j:if test="${it.quickFilterEnabled}">
