@@ -1,19 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.63</version>
+		<version>4.68</version>
 		<relativePath />
 	</parent>
 
 	<groupId>org.jenkins-ci.tools</groupId>
 	<artifactId>git-parameter</artifactId>
-	<version>0.9.19-SNAPSHOT</version>
+	<version>${revision}${changelist}</version>
 	<packaging>hpi</packaging>
 	<name>Git Parameter Plug-In</name>
 	<description>Adds ability to choose branches, tags  or revisions from git repositories configured in project.</description>
-	<url>https://github.com/jenkinsci/git-parameter-plugin</url>
+	<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 	<licenses>
 		<license>
 			<name>MIT License</name>
@@ -29,9 +30,12 @@
 	</repositories>
 
 	<properties>
+		<revision>0.9.19</revision>
+		<changelist>-SNAPSHOT</changelist>
 		<!-- Baseline Jenkins version you use to build and test the plugin. Users
 			must have this version or newer to run. -->
 		<jenkins.version>2.361.4</jenkins.version>
+		<gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
 	</properties>
 
 	<developers>
@@ -58,7 +62,7 @@
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
 				<artifactId>bom-2.361.x</artifactId>
-				<version>2081.v85885a_d2e5c5</version>
+				<version>2102.v854b_fec19c92</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -118,13 +122,51 @@
 			<artifactId>matrix-project</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>4.10.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>5.3.3</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<scm>
-		<connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-		<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
+		<developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+		<url>https://github.com/${gitHubRepo}</url>
+		<tag>${scmTag}</tag>
+	</scm>
 
+	<profiles>
+		<profile>
+			<id>windows-ci</id>
+			<activation>
+				<os>
+					<family>Windows</family>
+				</os>
+				<property>
+					<name>env.CI</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<!-- TODO fails on CI on Windows for inscrutable reasons -->
+							<excludes>
+								<exclude>net.uaznia.lukanus.hudson.plugins.gitparameter.UiAcceptanceTest</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

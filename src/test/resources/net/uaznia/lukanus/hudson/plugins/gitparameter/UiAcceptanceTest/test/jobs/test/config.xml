@@ -1,0 +1,83 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+    <actions/>
+    <description></description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.32">
+            <autoRebuild>false</autoRebuild>
+            <rebuildDisabled>false</rebuildDisabled>
+        </com.sonyericsson.rebuild.RebuildSettings>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition plugin="git-parameter@0.9.19-SNAPSHOT">
+                    <name>Branch</name>
+                    <uuid>47b5ed4f-09f1-4825-afe1-f32fcc4925d3</uuid>
+                    <type>PT_BRANCH</type>
+                    <branch></branch>
+                    <tagFilter>*</tagFilter>
+                    <branchFilter>.*</branchFilter>
+                    <sortMode>NONE</sortMode>
+                    <defaultValue>main</defaultValue>
+                    <selectedValue>NONE</selectedValue>
+                    <quickFilterEnabled>false</quickFilterEnabled>
+                    <listSize>5</listSize>
+                    <requiredParameter>false</requiredParameter>
+                </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+                <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition plugin="git-parameter@0.9.19-SNAPSHOT">
+                    <name>Tag</name>
+                    <uuid>a7d476bb-5cfe-47db-b9e8-a3e8737f37d9</uuid>
+                    <type>PT_TAG</type>
+                    <branch></branch>
+                    <tagFilter>*</tagFilter>
+                    <branchFilter>.*</branchFilter>
+                    <sortMode>NONE</sortMode>
+                    <defaultValue>0.1</defaultValue>
+                    <selectedValue>NONE</selectedValue>
+                    <quickFilterEnabled>false</quickFilterEnabled>
+                    <listSize>5</listSize>
+                    <requiredParameter>false</requiredParameter>
+                </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+                <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition plugin="git-parameter@0.9.19-SNAPSHOT">
+                    <name>Revision</name>
+                    <uuid>81de79f5-21ee-4e09-b9a4-b11460de0a04</uuid>
+                    <type>PT_REVISION</type>
+                    <branch>origin/master</branch>
+                    <tagFilter>*</tagFilter>
+                    <branchFilter>.*</branchFilter>
+                    <sortMode>NONE</sortMode>
+                    <defaultValue></defaultValue>
+                    <selectedValue>NONE</selectedValue>
+                    <quickFilterEnabled>false</quickFilterEnabled>
+                    <listSize>5</listSize>
+                    <requiredParameter>false</requiredParameter>
+                </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@4.11.2">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <url>https://github.com/jenkinsci/git-parameter-plugin.git</url>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>*/master</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="empty-list"/>
+        <extensions/>
+    </scm>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders/>
+    <publishers/>
+    <buildWrappers/>
+</project>
