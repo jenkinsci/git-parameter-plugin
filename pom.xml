@@ -1,172 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.jenkins-ci.plugins</groupId>
-		<artifactId>plugin</artifactId>
-		<version>4.71</version>
-		<relativePath />
-	</parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.71</version>
+    <relativePath />
+  </parent>
 
-	<groupId>org.jenkins-ci.tools</groupId>
-	<artifactId>git-parameter</artifactId>
-	<version>${revision}${changelist}</version>
-	<packaging>hpi</packaging>
-	<name>Git Parameter Plug-In</name>
-	<description>Adds ability to choose branches, tags  or revisions from git repositories configured in project.</description>
-	<url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>https://opensource.org/licenses/MIT</url>
-		</license>
-	</licenses>
+  <groupId>org.jenkins-ci.tools</groupId>
+  <artifactId>git-parameter</artifactId>
+  <version>${revision}${changelist}</version>
+  <packaging>hpi</packaging>
+  <name>Git Parameter Plug-In</name>
+  <description>Adds ability to choose branches, tags  or revisions from git repositories configured in project.</description>
+  <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
-	<repositories>
-		<repository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</repository>
-	</repositories>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
 
-	<properties>
-		<revision>0.9.19</revision>
-		<changelist>-SNAPSHOT</changelist>
-		<!-- Baseline Jenkins version you use to build and test the plugin. Users
-			must have this version or newer to run. -->
-		<jenkins.version>2.361.4</jenkins.version>
-		<gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-	</properties>
+  <developers>
+    <developer>
+      <id>klimas7</id>
+      <name>Boguslaw Klimas</name>
+      <email>klimas7@gmail.com</email>
+    </developer>
+    <developer>
+      <id>lukanus</id>
+      <name>Lukasz Milkowski</name>
+    </developer>
+  </developers>
 
-	<developers>
-		<developer>
-			<id>klimas7</id>
-			<name>Boguslaw Klimas</name>
-			<email>klimas7@gmail.com</email>
-		</developer>
-		<developer>
-			<id>lukanus</id>
-			<name>Lukasz Milkowski</name>
-		</developer>
-	</developers>
+  <scm>
+    <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
+    <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+    <tag>${scmTag}</tag>
+    <url>https://github.com/${gitHubRepo}</url>
+  </scm>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
+  <properties>
+    <revision>0.9.19</revision>
+    <changelist>-SNAPSHOT</changelist>
+    <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
+    <jenkins.version>2.361.4</jenkins.version>
+    <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
+  </properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.361.x</artifactId>
-				<version>2102.v854b_fec19c92</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.361.x</artifactId>
+        <version>2102.v854b_fec19c92</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>git</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.jenkins.plugins</groupId>
-			<artifactId>jquery3-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
-			<artifactId>rebuild</artifactId>
-			<optional>true</optional>
-		</dependency>
+  <dependencies>
+    <dependency>
+      <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
+      <artifactId>rebuild</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>jquery3-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>git</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-support</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.bonigarcia</groupId>
+      <artifactId>webdrivermanager</artifactId>
+      <version>5.4.0</version>
+      <scope>test</scope>
+    </dependency>
 
-		<!-- Test scope -->
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-aggregator</artifactId>
-			<version>596.v8c21c963d92d</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-support</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>template-project</artifactId>
-			<version>1.5.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>multiple-scms</artifactId>
-			<version>0.8</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>matrix-project</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>4.10.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.github.bonigarcia</groupId>
-			<artifactId>webdrivermanager</artifactId>
-			<version>5.4.0</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <!-- Test scope -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>multiple-scms</artifactId>
+      <version>0.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>template-project</artifactId>
+      <version>1.5.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-aggregator</artifactId>
+      <version>596.v8c21c963d92d</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>4.10.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-	<scm>
-		<connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
-		<developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
-		<url>https://github.com/${gitHubRepo}</url>
-		<tag>${scmTag}</tag>
-	</scm>
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
 
-	<profiles>
-		<profile>
-			<id>windows-ci</id>
-			<activation>
-				<os>
-					<family>Windows</family>
-				</os>
-				<property>
-					<name>env.CI</name>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<!-- TODO fails on CI on Windows for inscrutable reasons -->
-							<excludes>
-								<exclude>net.uaznia.lukanus.hudson.plugins.gitparameter.UiAcceptanceTest</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <profiles>
+    <profile>
+      <id>windows-ci</id>
+      <activation>
+        <os>
+          <family>Windows</family>
+        </os>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <!-- TODO fails on CI on Windows for inscrutable reasons -->
+              <excludes>
+                <exclude>net.uaznia.lukanus.hudson.plugins.gitparameter.UiAcceptanceTest</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
