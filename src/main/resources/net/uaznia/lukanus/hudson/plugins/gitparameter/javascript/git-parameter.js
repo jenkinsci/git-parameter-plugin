@@ -127,8 +127,7 @@ var GitParameter = GitParameter || (function($) {
             var regex = new RegExp(search,"gi");
 
             var filteredOptions = Array();
-            $.each(originalOptions, function(i) {
-                var option = originalOptions[i];
+            originalOptions.forEach(option => {
                 if(option.text.match(regex) !== null) {
                     filteredOptions.push(option)
                 }
