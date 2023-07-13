@@ -1,13 +1,11 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
 
-
-import java.io.IOException;
-
 import hudson.EnvVars;
 import hudson.model.Job;
 import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TaskListener;
+import java.io.IOException;
 
 public abstract class AbstractJobWrapper implements JobWrapper {
     private Job job;

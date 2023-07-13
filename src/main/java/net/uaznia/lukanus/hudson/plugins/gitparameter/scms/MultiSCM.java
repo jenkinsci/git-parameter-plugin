@@ -1,11 +1,10 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.scms;
 
+import hudson.scm.SCM;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.scm.SCM;
 
 public class MultiSCM implements SCMWrapper {
     public static final String MULTI_SCM_CLASS_NAME = "org.jenkinsci.plugins.multiplescms.MultiSCM";
@@ -18,7 +17,7 @@ public class MultiSCM implements SCMWrapper {
 
     @Override
     public List<SCM> getSCMs() {
-        //((MultiSCM)scm).getConfiguredSCMs()
+        // ((MultiSCM)scm).getConfiguredSCMs()
         try {
             Class<?> clazz = scm.getClass();
             Method getProjectScmMethod = clazz.getDeclaredMethod("getConfiguredSCMs");

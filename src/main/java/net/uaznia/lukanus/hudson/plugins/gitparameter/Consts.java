@@ -19,8 +19,10 @@ public class Consts {
     public static final String EMPTY_JOB_NAME = "EMPTY_JOB_NAME";
 
     public static boolean isParameterTypeCorrect(String type) {
-        return type.equals(PARAMETER_TYPE_TAG) || type.equals(PARAMETER_TYPE_REVISION)
-                || type.equals(PARAMETER_TYPE_BRANCH) || type.equals(PARAMETER_TYPE_TAG_BRANCH)
+        return type.equals(PARAMETER_TYPE_TAG)
+                || type.equals(PARAMETER_TYPE_REVISION)
+                || type.equals(PARAMETER_TYPE_BRANCH)
+                || type.equals(PARAMETER_TYPE_TAG_BRANCH)
                 || type.equals(PARAMETER_TYPE_PULL_REQUEST);
     }
 

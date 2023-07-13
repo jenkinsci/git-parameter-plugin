@@ -1,11 +1,5 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.DEFAULT_VALUE;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.PT_REVISION;
@@ -13,10 +7,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import org.junit.Test;
+
 public class SortTest {
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
-        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", null, null, SortMode.ASCENDING_SMART, SelectedValue.NONE, null, false);
+        GitParameterDefinition instance = new GitParameterDefinition(
+                NAME,
+                PT_REVISION,
+                DEFAULT_VALUE,
+                "description",
+                "branch",
+                null,
+                null,
+                SortMode.ASCENDING_SMART,
+                SelectedValue.NONE,
+                null,
+                false);
         Set<String> tags = new HashSet<>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");
@@ -35,7 +45,18 @@ public class SortTest {
 
     @Test
     public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
-        GitParameterDefinition instance = new GitParameterDefinition(NAME, PT_REVISION, DEFAULT_VALUE, "description", "branch", null, null, SortMode.ASCENDING, SelectedValue.NONE, null, false);
+        GitParameterDefinition instance = new GitParameterDefinition(
+                NAME,
+                PT_REVISION,
+                DEFAULT_VALUE,
+                "description",
+                "branch",
+                null,
+                null,
+                SortMode.ASCENDING,
+                SelectedValue.NONE,
+                null,
+                false);
         Set<String> tags = new HashSet<>();
         tags.add("v_1.0.0.2");
         tags.add("v_1.0.0.5");

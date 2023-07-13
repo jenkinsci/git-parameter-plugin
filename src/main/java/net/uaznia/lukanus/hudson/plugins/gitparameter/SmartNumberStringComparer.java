@@ -19,19 +19,21 @@ class SmartNumberStringComparer implements Comparator<String>, Serializable {
      */
     private String getToken(String str, int index) {
         char nextChar = str.charAt(index++);
-        StringBuilder token =  new StringBuilder(String.valueOf(nextChar));
+        StringBuilder token = new StringBuilder(String.valueOf(nextChar));
 
         // if the first char wasn't a digit then we're already done
-        if (!Character.isDigit(nextChar))
+        if (!Character.isDigit(nextChar)) {
             return token.toString();
+        }
 
         // the first char was a digit so continue until end of string or non
         // digit
         while (index < str.length()) {
             nextChar = str.charAt(index++);
 
-            if (!Character.isDigit(nextChar))
+            if (!Character.isDigit(nextChar)) {
                 break;
+            }
 
             token.append(nextChar);
         }
@@ -44,12 +46,14 @@ class SmartNumberStringComparer implements Comparator<String>, Serializable {
      */
     private boolean stringContainsInteger(String str) {
         for (int charIndex = 0; charIndex < str.length(); charIndex++) {
-            if (!Character.isDigit(str.charAt(charIndex)))
+            if (!Character.isDigit(str.charAt(charIndex))) {
                 return false;
+            }
         }
         return true;
     }
 
+    @Override
     public int compare(String a, String b) {
 
         int aIndex = 0;
@@ -60,8 +64,7 @@ class SmartNumberStringComparer implements Comparator<String>, Serializable {
             String bToken = getToken(b, bIndex);
             int difference;
 
-            if (stringContainsInteger(aToken)
-                    && stringContainsInteger(bToken)) {
+            if (stringContainsInteger(aToken) && stringContainsInteger(bToken)) {
                 BigInteger aInt = new BigInteger(aToken);
                 BigInteger bInt = new BigInteger(bToken);
                 difference = aInt.compareTo(bInt);
@@ -69,8 +72,9 @@ class SmartNumberStringComparer implements Comparator<String>, Serializable {
                 difference = aToken.compareTo(bToken);
             }
 
-            if (difference != 0)
+            if (difference != 0) {
                 return difference;
+            }
 
             aIndex += aToken.length();
             bIndex += bToken.length();
@@ -78,5 +82,4 @@ class SmartNumberStringComparer implements Comparator<String>, Serializable {
 
         return Integer.compare(a.length(), b.length());
     }
-
 }

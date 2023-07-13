@@ -1,10 +1,9 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
-
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class SmartNumberStringComparerTest {
 
@@ -32,5 +31,4 @@ public class SmartNumberStringComparerTest {
         assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.2") < 0);
         assertTrue(comparer.compare("v_1", "v_2.0.0.0") < 0);
     }
-
 }

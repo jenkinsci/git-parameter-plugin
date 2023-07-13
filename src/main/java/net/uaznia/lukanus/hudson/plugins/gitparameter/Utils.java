@@ -4,9 +4,8 @@ import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.TopLevelItem;
-import jenkins.model.Jenkins;
-
 import java.util.List;
+import jenkins.model.Jenkins;
 
 public class Utils {
 
@@ -19,8 +18,10 @@ public class Utils {
                 .orElse(null);
     }
 
-    private static boolean haveThisGitParameterDefinition(final Job job, final GitParameterDefinition gitParameterDefinition) {
-        ParametersDefinitionProperty property = (ParametersDefinitionProperty) job.getProperty(ParametersDefinitionProperty.class);
+    private static boolean haveThisGitParameterDefinition(
+            final Job job, final GitParameterDefinition gitParameterDefinition) {
+        ParametersDefinitionProperty property =
+                (ParametersDefinitionProperty) job.getProperty(ParametersDefinitionProperty.class);
         List<ParameterDefinition> parameterDefinitions = property.getParameterDefinitions();
 
         if (parameterDefinitions != null) {

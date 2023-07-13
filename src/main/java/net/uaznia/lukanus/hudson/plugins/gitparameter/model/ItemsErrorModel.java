@@ -1,5 +1,9 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.servlet.ServletException;
 import jenkins.security.stapler.StaplerAccessibleType;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
@@ -8,11 +12,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @ExportedBean(defaultVisibility = 4)
 @StaplerAccessibleType
@@ -23,6 +22,7 @@ public class ItemsErrorModel implements HttpResponse {
     public static final class Option {
         @Exported
         public String name;
+
         @Exported
         public String value;
 
@@ -43,6 +43,7 @@ public class ItemsErrorModel implements HttpResponse {
 
     @Exported
     public List<Option> values = new ArrayList<>();
+
     @Exported
     public List<String> errors = new ArrayList<>();
 
@@ -79,7 +80,8 @@ public class ItemsErrorModel implements HttpResponse {
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
+            throws IOException, ServletException {
         writeTo(req, rsp);
     }
 

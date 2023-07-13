@@ -1,15 +1,14 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.scms;
 
+import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
+import hudson.scm.SCM;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCM;
 
 public class RepoSCM implements SCMWrapper {
     public static final String REPO_SCM_CLASS_NAME = "hudson.plugins.repo.RepoScm";
