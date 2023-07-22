@@ -1,5 +1,12 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.jobs;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.model.Job;
+import hudson.model.TaskListener;
+import hudson.model.TopLevelItem;
+import hudson.scm.SCM;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -8,14 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.EnvVars;
-import hudson.FilePath;
-import hudson.model.Job;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
-import hudson.scm.SCM;
 import jenkins.model.Jenkins;
 
 public class WorkflowJobWrapper extends AbstractJobWrapper {
@@ -48,11 +47,11 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
                 return (Collection<? extends SCM>) scms;
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
+            LOGGER.log(
+                    Level.SEVERE, getCustomJobName() + " " + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
         }
         return null;
     }
-
 
     private SCM getSCMFromDefinition() {
         try {
@@ -69,15 +68,19 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
                 return (SCM) scm;
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
+            LOGGER.log(
+                    Level.SEVERE, getCustomJobName() + " " + Messages.WorkflowJobWrapper_GetWorkflowRepoScmFail(), e);
         }
         return null;
     }
 
     @Override
-    @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Jenkins.getInstance() is not null")
+    @SuppressFBWarnings(
+            value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+            justification = "Jenkins.getInstance() is not null")
     public FilePath getSomeWorkspace() throws IOException, InterruptedException {
-        FilePath workspaceForWorkflow = Jenkins.get().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
+        FilePath workspaceForWorkflow =
+                Jenkins.get().getWorkspaceFor((TopLevelItem) getJob()).withSuffix("@script");
         if (workspaceForWorkflow.exists()) {
             return workspaceForWorkflow;
         }
@@ -98,7 +101,8 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, getCustomJobName() + Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
+            LOGGER.log(
+                    Level.SEVERE, getCustomJobName() + Messages.WorkflowJobWrapper_GetEnvironmentsFromWorkflowrun(), e);
         }
         return null;
     }
@@ -107,7 +111,8 @@ public class WorkflowJobWrapper extends AbstractJobWrapper {
         return !"org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition".equals(clazz.getName());
     }
 
-    private Object invokeGetMethodFromJob(String methodInvoke) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private Object invokeGetMethodFromJob(String methodInvoke)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class<?> workflowJobClazz = getJob().getClass();
         Method getDefinitionMethod = workflowJobClazz.getDeclaredMethod(methodInvoke);
         return getDefinitionMethod.invoke(getJob());

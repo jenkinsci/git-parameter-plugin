@@ -4,17 +4,16 @@ import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.MultiSCM.MULTI
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.ProxySCM.PROXY_SCM_CLASS_NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.scms.RepoSCM.REPO_SCM_CLASS_NAME;
 
+import com.google.common.base.Strings;
+import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
+import hudson.scm.SCM;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Strings;
-import hudson.plugins.git.GitSCM;
-import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCM;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
 
 public class SCMFactory {
@@ -34,7 +33,10 @@ public class SCMFactory {
             try {
                 repositoryNamePattern = Pattern.compile(repositoryRegExpName);
             } catch (Exception e) {
-                LOGGER.log(Level.INFO, Messages.SCMFactory_invalidUseRepositoryPattern(repositoryRegExpName), e.getMessage());
+                LOGGER.log(
+                        Level.INFO,
+                        Messages.SCMFactory_invalidUseRepositoryPattern(repositoryRegExpName),
+                        e.getMessage());
                 return getFirstGitSCM(scms);
             }
             return matchAndGetGitSCM(scms, repositoryNamePattern);
@@ -105,5 +107,4 @@ public class SCMFactory {
         }
         return projectSCMs;
     }
-
 }

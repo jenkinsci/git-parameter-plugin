@@ -12,7 +12,8 @@ public class JobWrapperFactory {
         } else if (isWorkflowJob(job)) {
             return new WorkflowJobWrapper(job);
         }
-        throw new UnsupportedJobType(Messages.JobWrapperFactory_UnsupportedJobType(job.getClass().getName()));
+        throw new UnsupportedJobType(
+                Messages.JobWrapperFactory_UnsupportedJobType(job.getClass().getName()));
     }
 
     private static boolean isWorkflowJob(Job job) {

@@ -1,8 +1,7 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import java.io.IOException;
-
 import hudson.FilePath;
+import java.io.IOException;
 
 public class FilePathWrapper {
     private final FilePath filePath;

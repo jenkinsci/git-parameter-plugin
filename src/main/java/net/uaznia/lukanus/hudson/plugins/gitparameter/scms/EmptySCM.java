@@ -1,9 +1,8 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.scms;
 
+import hudson.scm.SCM;
 import java.util.Collections;
 import java.util.List;
-
-import hudson.scm.SCM;
 
 public class EmptySCM implements SCMWrapper {
     @Override

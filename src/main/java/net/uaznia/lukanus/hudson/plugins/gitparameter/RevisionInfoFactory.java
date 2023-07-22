@@ -1,22 +1,22 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static java.lang.Long.parseLong;
-
 import hudson.plugins.git.GitException;
 import hudson.plugins.git.Revision;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.lib.ObjectId;
-import org.jenkinsci.plugins.gitclient.GitClient;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.lib.ObjectId;
+import org.jenkinsci.plugins.gitclient.GitClient;
 
 public class RevisionInfoFactory {
 
@@ -71,16 +71,19 @@ public class RevisionInfoFactory {
             String author = matcher.group(1);
             String timestamp = matcher.group(2);
             String zone = matcher.group(3);
-            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochMilli(parseLong(timestamp) * 1000), ZoneId.of(zone));
+            LocalDateTime date =
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(timestamp) * 1000), ZoneId.of(zone));
             String stringDate = date.format(DATE_FORMAT);
-            return StringUtils.join(new Object[]{shortSha1, stringDate, author, commitMessage}, " ").trim();
+            return StringUtils.join(new Object[] {shortSha1, stringDate, author, commitMessage}, " ")
+                    .trim();
         }
 
         matcher = AUTHOR_LINE_PATTERN_GENERAL_DATE.matcher(authorLine);
         if (matcher.find()) {
             String author = matcher.group(1);
             String date = matcher.group(2);
-            return StringUtils.join(new Object[]{shortSha1, date, author, commitMessage}, " ").trim();
+            return StringUtils.join(new Object[] {shortSha1, date, author, commitMessage}, " ")
+                    .trim();
         }
 
         LOGGER.log(Level.WARNING, Messages.GitParameterDefinition_notFindAuthorPattern(authorLine));
