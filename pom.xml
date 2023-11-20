@@ -84,7 +84,7 @@
     <dependency>
       <groupId>io.github.bonigarcia</groupId>
       <artifactId>webdrivermanager</artifactId>
-      <version>5.4.0</version>
+      <version>5.5.3</version>
       <scope>test</scope>
     </dependency>
 
@@ -125,7 +125,7 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>4.10.0</version>
+      <version>4.14.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
