@@ -3,9 +3,9 @@
 This plugin allows you to assign git branch, tag, pull request or
 revision number as parameter in your builds.
 
-**Important!**   
-There is no need to set up anything special in plugin settings.  
-*This plugin will read GIT SCM configuration from your projects.*  
+**Important!**
+There is no need to set up anything special in plugin settings.
+*This plugin will read GIT SCM configuration from your projects.*
 This plugin used directly the [Git
 Plugin](https://plugins.jenkins.io/git/) and [Git
 Client Plugin](https://plugins.jenkins.io/git-client/).
@@ -20,7 +20,7 @@ Client Plugin](https://plugins.jenkins.io/git-client/).
 
 ## Example pipeline script
 
-**Important!**   
+**Important!**
 Works with version 0.9.4 or greater
 
 #### Branch type - Basic usage
@@ -265,7 +265,7 @@ defaultValue
 ```
 
 In release 0.9.9 or later it is good to set a default value, because this
-value is using the initial build (in Pipeline).  
+value is using the initial build (in Pipeline).
 Default value is returned when some error occurred on getting data.
 
 ![default value](docs/images/image2019-2-16_22-46-54.png)
@@ -284,13 +284,13 @@ Name using in pipeline
 useRepository
 ```
 
-**Remember!**  
+**Remember!**
 You don't set a git repository into the plugin, this plugin
 using git repositories which are defined in project in SCM section!
 
 If in the task are defined multiple repositories, this option specifies
-which the repository is taken into account on getting data.  
-*If the option is not defined, is taken a first defined repository.*  
+which the repository is taken into account on getting data.
+*If the option is not defined, is taken a first defined repository.*
 This option is a regular expression, which is compared to the
 'Repository URL'.
 
@@ -369,7 +369,7 @@ listSize
 
 ## Global configuration
 
-**Important!**   
+**Important!**
 Works with version 0.9.9 or greater
 
 ![show 'need to clone' information](docs/images/image2019-2-16_22-26-39.png)
@@ -378,11 +378,11 @@ Works with version 0.9.9 or greater
 
 ## Error handling
 
-**Important!**   
+**Important!**
 Works with version 0.9.9 or greater
 
 If an error occurred while retrieving data, the default value is
-returned.  
+returned.
 Additional information is provided below, along with the cause of the
 error.
 
@@ -401,8 +401,8 @@ repository' option not match with any repository.
 
 #### Pull Request Policy
 
-If you want to add some changes for this plugin:  
-Add the issue in jenkins [JIRA](https://issues.jenkins.io) to the component git-parameter-plugin  
+If you want to add some changes for this plugin:
+Add the issue in jenkins [JIRA](https://issues.jenkins.io) to the component git-parameter-plugin
 Describe there why you need change the plugin.
 
 #### TODO
