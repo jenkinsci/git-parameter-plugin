@@ -146,30 +146,4 @@
     </pluginRepository>
   </pluginRepositories>
 
-  <profiles>
-    <profile>
-      <id>windows-ci</id>
-      <activation>
-        <os>
-          <family>Windows</family>
-        </os>
-        <property>
-          <name>env.CI</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <!-- TODO fails on CI on Windows for inscrutable reasons -->
-              <excludes>
-                <exclude>net.uaznia.lukanus.hudson.plugins.gitparameter.UiAcceptanceTest</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
