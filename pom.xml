@@ -25,6 +25,11 @@
 
   <developers>
     <developer>
+      <id>markewaite</id>
+      <name>Mark Waite</name>
+      <email>mark.earl.waite@gmail.com</email>
+    </developer>
+    <developer>
       <id>klimas7</id>
       <name>Boguslaw Klimas</name>
       <email>klimas7@gmail.com</email>
