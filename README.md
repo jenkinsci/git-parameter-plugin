@@ -432,4 +432,4 @@ March 2016 klimas7 (Boguslaw Klimas) he began to the care and maintenance of the
 ## Changelog
 For recent versions, see [GitHub Releases](https://github.com/jenkinsci/git-parameter-plugin/releases)
 
-For versions 0.9.11 and older, see [CHANGELOG.md](CHANGELOG.md)
+For versions 0.9.11 and older, see the [legacy CHANGELOG](https://github.com/jenkinsci/git-parameter-plugin/blob/git-parameter-0.9.19/CHANGELOG.md)
