@@ -1,5 +1,4 @@
 # Git Parameter
-<a href='https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/'><img src='https://ci.jenkins.io/buildStatus/icon?job=Plugins/git-parameter-plugin/master'></a>
 
 This plugin allows you to assign git branch, tag, pull request or
 revision number as parameter in your builds.
@@ -200,8 +199,7 @@ type: 'PT_TAG' or 'PT_BRANCH' or 'PT_BRANCH_TAG' or 'PT_REVISION' or 'PT_PULL_RE
 Explains about PT\_TAG or PT\_BRANCH or PT\_BRANCH\_TAG:
 
 Plugin using [git ls-remote](https://git-scm.com/docs/git-ls-remote.html) command to get
-remote tags or branches, this solution was implemented in  [
-JENKINS-40232](https://issues.jenkins-ci.org/browse/JENKINS-40232).
+remote tags or branches, this solution was implemented in  [JENKINS-40232](https://issues.jenkins.io/browse/JENKINS-40232).
 
 In code plugin
 [use](https://github.com/jenkinsci/git-client-plugin/blob/9f2a3ec48e699222ce3034dfe14cdb319e563ed5/src/main/java/org/jenkinsci/plugins/gitclient/GitClient.java#L631)ing 
@@ -398,16 +396,13 @@ repository' option not match with any repository.
 ![error handling 3](docs/images/image2019-2-17_17-4-32.png)
 
 ## Contribute
-* Visit https://jenkins.io/doc/developer/publishing/ for "information about developing Jenkins-Plugins"
 
 * You may checkout/clone this project and build it by simply calling `mvn clean install` in the root of the checkout. Test your changes by going to your Jenkins-CI site and import the generated `target/git-parameter.hpi` by going to your base URL + `jenkins/pluginManager/advanced`. There you find an option to upload a plugin.
-
-* The Jenkins-CI of this plugin can be seen at [DEV@cloud](https://ci.jenkins.io/job/Plugins/job/git-parameter-plugin/).  
 
 #### Pull Request Policy
 
 If you want to add some changes for this plugin:  
-Add the issue in jenkins [JIRA](https://issues.jenkins-ci.org) to the component git-parameter-plugin  
+Add the issue in jenkins [JIRA](https://issues.jenkins.io) to the component git-parameter-plugin  
 Describe there why you need change the plugin.
 
 #### TODO
@@ -430,6 +425,7 @@ In May 2014 ngiger (Niklaus Giger niklaus.giger) decided to maintain this plugin
 March 2016 klimas7 (Boguslaw Klimas) he began to the care and maintenance of the plugin.. We will see ... :)
 
 ## Changelog
+
 For recent versions, see [GitHub Releases](https://github.com/jenkinsci/git-parameter-plugin/releases)
 
 For versions 0.9.11 and older, see the [legacy CHANGELOG](https://github.com/jenkinsci/git-parameter-plugin/blob/git-parameter-0.9.19/CHANGELOG.md)
