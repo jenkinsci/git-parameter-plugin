@@ -413,7 +413,7 @@ public class GitParameterDefinitionTest {
                 PT_REVISION,
                 "testDefaultValue",
                 "testDescription",
-                "origin/preview_0_3",
+                "origin/test/my-branch",
                 ".*",
                 "*",
                 SortMode.NONE,
