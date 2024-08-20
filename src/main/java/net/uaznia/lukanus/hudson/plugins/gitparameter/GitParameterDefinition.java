@@ -382,9 +382,26 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     private Set<String> getTag(GitClient gitClient, String gitUrl) throws InterruptedException {
         Set<String> tagSet = new HashSet<>();
         try {
-            Map<String, ObjectId> tags = gitClient.getRemoteReferences(gitUrl, tagFilter, false, true);
+
+            Map<String, ObjectId> tags = null;
+
+            boolean isRegex = tagFilter != null && tagFilter.startsWith("/");
+            tags = gitClient.getRemoteReferences(gitUrl, isRegex ? "*" : tagFilter, false, true);
+
+            Pattern pattern = null;
+            if (isRegex) {
+                pattern = Pattern.compile(tagFilter.substring(1));
+            }
+
             for (String tagName : tags.keySet()) {
-                tagSet.add(tagName.replaceFirst(REFS_TAGS_PATTERN, ""));
+                tagName = tagName.replaceFirst(REFS_TAGS_PATTERN, "");
+                if (isRegex) {
+                    if (pattern.matcher(tagName).matches()) {
+                        tagSet.add(tagName);
+                    }
+                } else {
+                    tagSet.add(tagName);
+                }
             }
         } catch (GitException e) {
             LOGGER.log(Level.WARNING, getCustomJobName() + " " + Messages.GitParameterDefinition_getTag(), e);
