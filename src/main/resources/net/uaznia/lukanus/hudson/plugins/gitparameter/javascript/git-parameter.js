@@ -153,3 +153,9 @@ var GitParameter = GitParameter || (function($) {
     instance.QuickFilter = QuickFilter;
     return instance;
 })(jQuery);
+
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.git-parameter-container').forEach(function(container) {
+        new GitParameter.QuickFilter(jQuery(container));
+    });
+});

@@ -8,7 +8,7 @@
     <j:set var="divId" value="${it.divUUID}" scope="parent"/>
     <j:set var="escapeEntryTitleAndDescription" value="false"/>
     <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-        <div name="parameter" id="${divId}" data-default-value="${it.defaultValue}" data-selected-value="${it.selectedValue}">
+        <div name="parameter" class="git-parameter-container" id="${divId}" data-default-value="${it.defaultValue}" data-selected-value="${it.selectedValue}">
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
             <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px; font-family: monospace;" id="gitParameterSelect"
@@ -19,10 +19,6 @@
                 <input class='git_parameter_quick_filter' type='text' value='' name='quickFilter' placeholder='Filter'
                        style="vertical-align: top" id="filter"/>
             </j:if>
-            <script type="text/javascript">
-                var parentDiv = jQuery('#${divId}');
-                new GitParameter.QuickFilter(parentDiv);
-            </script>
         </div>
         <j:if test="${it.parameterType eq 'PT_REVISION' and it.descriptor.showNeedToCloneInformation}">
             <div id="git_parameter_info_${divId}">${%needs.to.clone}</div>
