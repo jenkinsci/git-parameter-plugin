@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.DescriptorImpl;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
@@ -701,7 +700,7 @@ public class GitParameterDefinitionTest {
     }
 
     @Test
-    public void testWorkflowJobWithCpsFlowDefinition() throws IOException, InterruptedException, ExecutionException {
+    public void testWorkflowJobWithCpsFlowDefinition() throws Exception {
         WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         String script =
                 "node {\n" + " git url: '" + GIT_PARAMETER_REPOSITORY_URL + "' \n" + " echo 'Some message'\n" + "}";
