@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import net.sf.json.JSONObject;
 import org.junit.Test;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * This test don't use jenkis rule
@@ -24,7 +24,7 @@ public class BasicTests {
      * Test of createValue method, of class GitParameterDefinition.
      */
     @Test
-    public void testCreateValue_StaplerRequest() {
+    public void testCreateValue_StaplerRequest2() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -38,7 +38,7 @@ public class BasicTests {
                 null,
                 false);
 
-        StaplerRequest request = mock(StaplerRequest.class);
+        StaplerRequest2 request = mock(StaplerRequest2.class);
         ParameterValue result = instance.createValue(request);
 
         assertEquals(result, new GitParameterValue(NAME, DEFAULT_VALUE));
@@ -59,7 +59,7 @@ public class BasicTests {
     }
 
     @Test
-    public void testCreateValue_StaplerRequest_ValueInRequest() {
+    public void testCreateValue_StaplerRequest2_ValueInRequest() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -73,7 +73,7 @@ public class BasicTests {
                 null,
                 false);
 
-        StaplerRequest request = mock(StaplerRequest.class);
+        StaplerRequest2 request = mock(StaplerRequest2.class);
         when(request.getParameterValues(instance.getName())).thenReturn(new String[] {"master"});
         ParameterValue result = instance.createValue(request);
 
@@ -156,9 +156,9 @@ public class BasicTests {
      * Test of createValue method, of class GitParameterDefinition.
      */
     @Test
-    public void testCreateValue_StaplerRequest_JSONObject() {
+    public void testCreateValue_StaplerRequest2_JSONObject() {
         System.out.println("createValue");
-        StaplerRequest request = mock(StaplerRequest.class);
+        StaplerRequest2 request = mock(StaplerRequest2.class);
 
         Map<String, String> jsonR = new HashMap<>();
         jsonR.put("value", "Git_param_value");

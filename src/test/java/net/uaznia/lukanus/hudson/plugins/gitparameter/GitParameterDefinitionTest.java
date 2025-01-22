@@ -52,7 +52,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author lukanus
@@ -608,7 +608,7 @@ public class GitParameterDefinitionTest {
                 null,
                 false);
         def.setRequiredParameter(true);
-        StaplerRequest request = mock(StaplerRequest.class);
+        StaplerRequest2 request = mock(StaplerRequest2.class);
         String[] result = new String[] {""};
         when(request.getParameterValues("testName")).thenReturn(result);
         def.createValue(request);
@@ -629,7 +629,7 @@ public class GitParameterDefinitionTest {
                 null,
                 false);
         def.setRequiredParameter(true);
-        StaplerRequest request = mock(StaplerRequest.class);
+        StaplerRequest2 request = mock(StaplerRequest2.class);
         String[] result = new String[] {"master"};
         when(request.getParameterValues("testName")).thenReturn(result);
         def.createValue(request);
@@ -652,7 +652,7 @@ public class GitParameterDefinitionTest {
         def.setRequiredParameter(true);
         JSONObject o = new JSONObject();
         o.put("value", "");
-        def.createValue(null, o);
+        def.createValue((StaplerRequest2) null, o);
     }
 
     @Test
@@ -673,7 +673,7 @@ public class GitParameterDefinitionTest {
         JSONObject o = new JSONObject();
         o.put("value", "master");
         o.put("name", "testName");
-        def.createValue(null, o);
+        def.createValue((StaplerRequest2) null, o);
     }
 
     @Test
