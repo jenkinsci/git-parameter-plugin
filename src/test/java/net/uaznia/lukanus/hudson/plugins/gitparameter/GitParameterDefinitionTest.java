@@ -1057,6 +1057,22 @@ public class GitParameterDefinitionTest {
         return new GitSCM(configs, null, null, null, null);
     }
 
+    private String itemValues(ItemsErrorModel items) {
+        String values = "";
+        for (int i = 0; i < items.size(); i++) {
+            values = values + " " + items.get(i).value;
+        }
+        return values;
+    }
+
+    private String itemNames(ItemsErrorModel items) {
+        String names = "";
+        for (int i = 0; i < items.size(); i++) {
+            names = names + " " + items.get(i).name;
+        }
+        return names;
+    }
+
     private boolean isListBoxItem(ItemsErrorModel items, String item) {
         boolean itemExists = false;
         for (int i = 0; i < items.size(); i++) {
@@ -1064,6 +1080,7 @@ public class GitParameterDefinitionTest {
                 itemExists = true;
             }
         }
+        assertTrue("Item '" + item + "' not found in values '" + itemValues(items) + "'", itemExists);
         return itemExists;
     }
 
@@ -1074,6 +1091,7 @@ public class GitParameterDefinitionTest {
                 itemExists = true;
             }
         }
+        assertTrue("Item '" + item + "' not found in names '" + itemNames(items) + "'", itemExists);
         return itemExists;
     }
 }
