@@ -67,7 +67,7 @@ import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
@@ -117,7 +117,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest request) {
+    public ParameterValue createValue(StaplerRequest2 request) {
         String value[] = request.getParameterValues(getName());
         if (value == null || value.length == 0 || isBlank(value[0])) {
             if (isTrue(requiredParameter)) {
@@ -130,7 +130,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     @Override
-    public ParameterValue createValue(StaplerRequest request, JSONObject jO) {
+    public ParameterValue createValue(StaplerRequest2 request, JSONObject jO) {
         Object value = jO.get("value");
         StringBuilder strValue = new StringBuilder();
         if (value instanceof String) {
@@ -713,7 +713,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             showNeedToCloneInformation = json.getBoolean("showNeedToCloneInformation");
             save();
             return super.configure(req, json);
