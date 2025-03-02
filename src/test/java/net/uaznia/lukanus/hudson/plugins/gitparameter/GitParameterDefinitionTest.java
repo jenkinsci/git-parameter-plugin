@@ -398,8 +398,13 @@ public class GitParameterDefinitionTest {
         assertNotNull(build);
         ItemsErrorModel items = def.getDescriptor().doFillValueItems(project, def.getName());
         assertTrue(isListBoxItem(items, "00a8385cba1e4e32cf823775e2b3dbe5eb27931d"));
-        assertTrue(isListBoxItemName(
-                items, "00a8385c 2011-10-30 17:11 Łukasz Miłkowski <lukanus@uaznia.net> initial readme"));
+        if (!Functions.isWindows() || System.getenv("CI") == null) {
+            // Windows agents on AWS ci.jenkins.io changed character set configuration compared to Azure
+            // Only test when not on Windows and not on a CI configuration
+            // TODO: Remove conditional when AWS ci.jenkins.io agent character set config is updated
+            assertTrue(isListBoxItemName(
+                    items, "00a8385c 2011-10-30 17:11 Łukasz Miłkowski <lukanus@uaznia.net> initial readme"));
+        }
     }
 
     @Test
