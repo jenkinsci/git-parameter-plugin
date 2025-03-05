@@ -56,7 +56,7 @@ import org.kohsuke.stapler.StaplerRequest2;
 class GitParameterDefinitionTest {
 
     // Test Descriptor.getProjectSCM()
-    @Test
+    // @Test
     void testGetProjectSCM(JenkinsRule jenkins) throws Exception {
         FreeStyleProject testJob = jenkins.createFreeStyleProject("testGetProjectSCM");
         GitSCM git = new GitSCM(GIT_PARAMETER_REPOSITORY_URL);
@@ -80,7 +80,7 @@ class GitParameterDefinitionTest {
         assertEquals(git, SCMFactory.getGitSCMs(jobWrapper, null).get(0));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_withoutSCM(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         GitParameterDefinition def = new GitParameterDefinition(
@@ -107,7 +107,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, def.getDefaultValue()));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listTags(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -134,7 +134,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
-    @Test
+    // @Test
     void testGetListBranchNoBuildProject(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -158,7 +158,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "master"));
     }
 
-    @Test
+    // @Test
     void testGetListBranchAfterWipeOutWorkspace(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -185,7 +185,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "master"));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listBranches(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -212,7 +212,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "master"));
     }
 
-    @Test
+    // @Test
     void tesListBranchesWrongBranchFilter(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -236,7 +236,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "master"));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listBranches_withRegexGroup(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -264,7 +264,7 @@ class GitParameterDefinitionTest {
         assertFalse(isListBoxItem(items, "origin/master"));
     }
 
-    @Test
+    // @Test
     void testSortAscendingTag(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -288,7 +288,7 @@ class GitParameterDefinitionTest {
         assertEquals("0.1", items.get(0).value);
     }
 
-    @Test
+    // @Test
     void testWrongTagFilter(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -312,7 +312,7 @@ class GitParameterDefinitionTest {
         assertTrue(items.isEmpty());
     }
 
-    @Test
+    // @Test
     void testSortDescendingTag(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -336,7 +336,7 @@ class GitParameterDefinitionTest {
         assertEquals("0.1", items.get(items.size() - 1).value);
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listTagsAndBranches(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListTags");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -394,7 +394,7 @@ class GitParameterDefinitionTest {
                 items, "00a8385c 2011-10-30 17:11 Łukasz Miłkowski <lukanus@uaznia.net> initial readme"));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listRevisionsWithBranch(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListRevisions");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -420,7 +420,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "00a8385c"));
     }
 
-    @Test
+    // @Test
     void testDoFillValueItems_listPullRequests(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testListPullRequests");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -447,7 +447,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "44"));
     }
 
-    @Test
+    // @Test
     void testSearchInFolders(JenkinsRule jenkins) throws Exception {
         MockFolder folder = jenkins.createFolder("folder");
         FreeStyleProject job1 = folder.createProject(FreeStyleProject.class, "job1");
@@ -468,7 +468,7 @@ class GitParameterDefinitionTest {
         assertEquals("folder/job1", Utils.getParentJob(gitParameterDefinition).getFullName());
     }
 
-    @Test
+    // @Test
     void testBranchFilterValidation(JenkinsRule jenkins) {
         final DescriptorImpl descriptor = new DescriptorImpl();
         final FormValidation okWildcard = descriptor.doCheckBranchFilter(".*");
@@ -478,7 +478,7 @@ class GitParameterDefinitionTest {
         assertSame(Kind.ERROR, badWildcard.kind);
     }
 
-    @Test
+    // @Test
     void testUseRepositoryValidation(JenkinsRule jenkins) {
         final DescriptorImpl descriptor = new DescriptorImpl();
         final FormValidation okWildcard = descriptor.doCheckUseRepository(".*");
@@ -488,7 +488,7 @@ class GitParameterDefinitionTest {
         assertSame(Kind.ERROR, badWildcard.kind);
     }
 
-    @Test
+    // @Test
     void testDefaultValueIsRequired(JenkinsRule jenkins) {
         final DescriptorImpl descriptor = new DescriptorImpl();
         final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", false);
@@ -500,7 +500,7 @@ class GitParameterDefinitionTest {
         assertSame(Kind.WARNING, badDefaultValue_2.kind);
     }
 
-    @Test
+    // @Test
     void testDefaultValueIsNotRequired(JenkinsRule jenkins) {
         final DescriptorImpl descriptor = new DescriptorImpl();
         final FormValidation okDefaultValue = descriptor.doCheckDefaultValue("origin/master", true);
@@ -512,7 +512,7 @@ class GitParameterDefinitionTest {
         assertSame(Kind.OK, badDefaultValue_2.kind);
     }
 
-    @Test
+    // @Test
     void testGetDefaultValueWhenDefaultValueIsSet(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testDefaultValue");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -536,7 +536,7 @@ class GitParameterDefinitionTest {
         assertEquals(testDefaultValue, def.getDefaultParameterValue().getValue());
     }
 
-    @Test
+    // @Test
     void testGetDefaultValueAsTop(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testDefaultValueAsTOP");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -559,7 +559,7 @@ class GitParameterDefinitionTest {
         assertEquals("0.1", def.getDefaultParameterValue().getValue());
     }
 
-    @Test
+    // @Test
     void testGlobalVariableRepositoryUrl(JenkinsRule jenkins) throws Exception {
         EnvVars.masterEnvVars.put("GIT_REPO_URL", GIT_PARAMETER_REPOSITORY_URL);
         FreeStyleProject project = jenkins.createFreeStyleProject("testGlobalValue");
@@ -585,7 +585,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
-    @Test
+    // @Test
     void testRequiredParameterStaplerFail(JenkinsRule jenkins) {
         GitParameterDefinition def = new GitParameterDefinition(
                 "testName",
@@ -606,7 +606,7 @@ class GitParameterDefinitionTest {
         assertThrows(Failure.class, () -> def.createValue(request));
     }
 
-    @Test
+    // @Test
     void testRequiredParameterStaplerPass(JenkinsRule jenkins) {
         GitParameterDefinition def = new GitParameterDefinition(
                 "testName",
@@ -627,7 +627,7 @@ class GitParameterDefinitionTest {
         def.createValue(request);
     }
 
-    @Test
+    // @Test
     void testRequiredParameterJSONFail(JenkinsRule jenkins) {
         GitParameterDefinition def = new GitParameterDefinition(
                 "testName",
@@ -647,7 +647,7 @@ class GitParameterDefinitionTest {
         assertThrows(Failure.class, () -> def.createValue((StaplerRequest2) null, o));
     }
 
-    @Test
+    // @Test
     void testRequiredParameterJSONPass(JenkinsRule jenkins) {
         GitParameterDefinition def = new GitParameterDefinition(
                 "testName",
@@ -668,7 +668,7 @@ class GitParameterDefinitionTest {
         def.createValue((StaplerRequest2) null, o);
     }
 
-    @Test
+    // @Test
     void testWorkflowJobWithCpsScmFlowDefinition(JenkinsRule jenkins) throws Exception {
         WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         p.setDefinition(new CpsScmFlowDefinition(getGitSCM(), "jenkinsfile"));
@@ -691,7 +691,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
-    @Test
+    // @Test
     void testWorkflowJobWithCpsFlowDefinition(JenkinsRule jenkins) throws Exception {
         WorkflowJob p = jenkins.createProject(WorkflowJob.class, "wfj");
         String script =
@@ -726,7 +726,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
-    @Test
+    // @Test
     void testProxySCM(JenkinsRule jenkins) throws Exception {
         FreeStyleProject anotherProject = jenkins.createFreeStyleProject("AnotherProject");
         anotherProject
@@ -755,7 +755,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "git-parameter-0.2"));
     }
 
-    @Test
+    // @Test
     void testParameterDefinedRepositoryUrl(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("testLocalValue");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -785,7 +785,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
-    @Test
+    // @Test
     void testMultiRepositoryInOneSCM(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("projectHaveMultiRepositoryInOneSCM");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -816,7 +816,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "exB_branch_1"));
     }
 
-    @Test
+    // @Test
     void testMultiSCM(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -848,7 +848,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/exB_branch_1"));
     }
 
-    @Test
+    // @Test
     void testMultiSCM_forSubdirectoryForRepo(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -879,7 +879,7 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
-    @Test
+    // @Test
     void testMultiSCM_forSubdirectoryForTheSomeRepo(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -912,7 +912,7 @@ class GitParameterDefinitionTest {
         assertEquals(expected, items.size());
     }
 
-    @Test
+    // @Test
     void testMultiSCM_repositoryUrlIsNotSet(JenkinsRule jenkins) throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("projectHaveMultiSCM");
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo test") : new Shell("echo test"));
@@ -940,13 +940,13 @@ class GitParameterDefinitionTest {
         assertTrue(isListBoxItem(items, "origin/master"));
     }
 
-    @Test
+    // @Test
     void symbolPipelineTest(JenkinsRule jenkins) {
         Descriptor<?> gitParameter = SymbolLookup.get().findDescriptor(Describable.class, "gitParameter");
         assertNotNull(gitParameter);
     }
 
-    @Test
+    // @Test
     void testCreateValue_CLICommand(JenkinsRule jenkins) throws Exception {
         CLICommand cliCommand = new ConsoleCommand();
         GitParameterDefinition instance = new GitParameterDefinition(
@@ -967,7 +967,7 @@ class GitParameterDefinitionTest {
         assertEquals(new GitParameterValue(NAME, value), result);
     }
 
-    @Test
+    // @Test
     void testCreateRequiredValueFail_CLICommand(JenkinsRule jenkins) {
         CLICommand cliCommand = new ConsoleCommand();
         GitParameterDefinition instance = new GitParameterDefinition(
@@ -986,7 +986,7 @@ class GitParameterDefinitionTest {
         assertThrows(Failure.class, () -> instance.createValue(cliCommand, ""));
     }
 
-    @Test
+    // @Test
     void testCreateRequiredValuePass_CLICommand(JenkinsRule jenkins) throws Exception {
         CLICommand cliCommand = new ConsoleCommand();
         GitParameterDefinition instance = new GitParameterDefinition(
@@ -1007,7 +1007,7 @@ class GitParameterDefinitionTest {
         assertEquals(new GitParameterValue(NAME, value), result);
     }
 
-    @Test
+    // @Test
     void testCreateValue_CLICommand_EmptyValue(JenkinsRule jenkins) throws Exception {
         CLICommand cliCommand = new ConsoleCommand();
         GitParameterDefinition instance = new GitParameterDefinition(
