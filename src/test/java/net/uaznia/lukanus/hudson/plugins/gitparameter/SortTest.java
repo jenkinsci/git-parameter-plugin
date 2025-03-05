@@ -3,17 +3,17 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.DEFAULT_VALUE;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.PT_REVISION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import org.junit.jupiter.api.Test;
 
-public class SortTest {
-    // @Test
-    public void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
+class SortTest {
+
+    @Test
+    void testSortTagsYieldsCorrectOrderWithSmartSortEnabled() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -42,8 +42,8 @@ public class SortTest {
         assertEquals("v_1.0.1.1", orderedTags.get(4));
     }
 
-    // @Test
-    public void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
+    @Test
+    void testSortTagsYieldsCorrectOrderWithSmartSortDisabled() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -72,8 +72,8 @@ public class SortTest {
         assertEquals("v_1.0.1.1", orderedTags.get(4));
     }
 
-    // @Test
-    public void testSortMode_getIsUsingSmartSort() {
+    @Test
+    void testSortMode_getIsUsingSmartSort() {
         assertFalse(SortMode.NONE.getIsUsingSmartSort());
         assertFalse(SortMode.ASCENDING.getIsUsingSmartSort());
         assertTrue(SortMode.ASCENDING_SMART.getIsUsingSmartSort());
@@ -81,8 +81,8 @@ public class SortTest {
         assertTrue(SortMode.DESCENDING_SMART.getIsUsingSmartSort());
     }
 
-    // @Test
-    public void testSortMode_getIsDescending() {
+    @Test
+    void testSortMode_getIsDescending() {
         assertFalse(SortMode.NONE.getIsDescending());
         assertFalse(SortMode.ASCENDING.getIsDescending());
         assertFalse(SortMode.ASCENDING_SMART.getIsDescending());
@@ -90,8 +90,8 @@ public class SortTest {
         assertTrue(SortMode.DESCENDING_SMART.getIsDescending());
     }
 
-    // @Test
-    public void testSortMode_getIsSorting() {
+    @Test
+    void testSortMode_getIsSorting() {
         assertFalse(SortMode.NONE.getIsSorting());
         assertTrue(SortMode.ASCENDING.getIsSorting());
         assertTrue(SortMode.ASCENDING_SMART.getIsSorting());

@@ -3,8 +3,8 @@ package net.uaznia.lukanus.hudson.plugins.gitparameter;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.DEFAULT_VALUE;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.PT_REVISION;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -13,17 +13,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import net.sf.json.JSONObject;
+import org.junit.jupiter.api.Test;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
- * This test don't use jenkis rule
+ * This test don't use jenkins rule
  */
-public class BasicTests {
+class BasicTests {
+
     /**
      * Test of createValue method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testCreateValue_StaplerRequest2() {
+    @Test
+    void testCreateValue_StaplerRequest2() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -40,25 +42,25 @@ public class BasicTests {
         StaplerRequest2 request = mock(StaplerRequest2.class);
         ParameterValue result = instance.createValue(request);
 
-        assertEquals(result, new GitParameterValue(NAME, DEFAULT_VALUE));
+        assertEquals(new GitParameterValue(NAME, DEFAULT_VALUE), result);
     }
 
-    // @Test
-    public void matchesWithBitbucketPullRequestRefs() {
+    @Test
+    void matchesWithBitbucketPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
         assertTrue(matcher.find());
-        assertEquals(matcher.group(1), "186");
+        assertEquals("186", matcher.group(1));
     }
 
-    // @Test
-    public void matchesWithGithubPullRequestRefs() {
+    @Test
+    void matchesWithGithubPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
         assertTrue(matcher.find());
-        assertEquals(matcher.group(1), "45");
+        assertEquals("45", matcher.group(1));
     }
 
-    // @Test
-    public void testCreateValue_StaplerRequest2_ValueInRequest() {
+    @Test
+    void testCreateValue_StaplerRequest2_ValueInRequest() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -76,11 +78,11 @@ public class BasicTests {
         when(request.getParameterValues(instance.getName())).thenReturn(new String[] {"master"});
         ParameterValue result = instance.createValue(request);
 
-        assertEquals(result, new GitParameterValue(NAME, "master"));
+        assertEquals(new GitParameterValue(NAME, "master"), result);
     }
 
-    // @Test
-    public void testConstructorInitializesTagFilterToAsteriskWhenNull() {
+    @Test
+    void testConstructorInitializesTagFilterToAsteriskWhenNull() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -97,8 +99,8 @@ public class BasicTests {
         assertEquals(".*", instance.getBranchFilter());
     }
 
-    // @Test
-    public void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
+    @Test
+    void testConstructorInitializesTagFilterToAsteriskWhenWhitespace() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -115,8 +117,8 @@ public class BasicTests {
         assertEquals(".*", instance.getBranchFilter());
     }
 
-    // @Test
-    public void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
+    @Test
+    void testConstructorInitializesTagFilterToAsteriskWhenEmpty() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -133,8 +135,8 @@ public class BasicTests {
         assertEquals(".*", instance.getBranchFilter());
     }
 
-    // @Test
-    public void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
+    @Test
+    void testConstructorInitializesTagToGivenValueWhenNotNullOrWhitespace() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 PT_REVISION,
@@ -154,8 +156,8 @@ public class BasicTests {
     /**
      * Test of createValue method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testCreateValue_StaplerRequest2_JSONObject() {
+    @Test
+    void testCreateValue_StaplerRequest2_JSONObject() {
         System.out.println("createValue");
         StaplerRequest2 request = mock(StaplerRequest2.class);
 
@@ -180,24 +182,14 @@ public class BasicTests {
 
         ParameterValue result = instance.createValue(request, jO);
 
-        assertEquals(result, new GitParameterValue("Git_param_name", "Git_param_value"));
-    }
-
-    /**
-     * Test of getDefaultParameterValue method, of class GitParameterDefinition.
-     */
-    // @Test
-    public void testGetDefaultParameterValue() {
-
-        // TODO review the generated test code and remove the default call to fail.
-        // fail("The test case is a prototype.");
+        assertEquals(new GitParameterValue("Git_param_name", "Git_param_value"), result);
     }
 
     /**
      * Test of getType method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testGetParameterType() {
+    @Test
+    void testGetParameterType() {
         String expResult = PT_REVISION;
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
@@ -222,8 +214,8 @@ public class BasicTests {
     /**
      * Test of setType method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testSetParameterType() {
+    @Test
+    void testSetParameterType() {
         String expResult = PT_REVISION;
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
@@ -243,8 +235,8 @@ public class BasicTests {
         assertEquals(expResult, result);
     }
 
-    // @Test
-    public void testWrongType() {
+    @Test
+    void testWrongType() {
         GitParameterDefinition instance = new GitParameterDefinition(
                 NAME,
                 "asdf",
@@ -265,8 +257,8 @@ public class BasicTests {
     /**
      * Test of getDefaultValue method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testGetDefaultValue() {
+    @Test
+    void testGetDefaultValue() {
         System.out.println("getDefaultValue");
         String expResult = DEFAULT_VALUE;
 
@@ -289,8 +281,8 @@ public class BasicTests {
     /**
      * Test of setDefaultValue method, of class GitParameterDefinition.
      */
-    // @Test
-    public void testSetDefaultValue() {
+    @Test
+    void testSetDefaultValue() {
         System.out.println("getDefaultValue");
         String expResult = DEFAULT_VALUE;
 
@@ -311,10 +303,4 @@ public class BasicTests {
         String result = instance.getDefaultValue();
         assertEquals(expResult, result);
     }
-
-    /**
-     * Test of generateContents method, of class GitParameterDefinition.
-     */
-    // @Test
-    public void testGenerateContents() {}
 }

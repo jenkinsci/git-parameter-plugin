@@ -1,13 +1,14 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Comparator;
+import org.junit.jupiter.api.Test;
 
-public class SmartNumberStringComparerTest {
+class SmartNumberStringComparerTest {
 
-    // @Test
-    public void testSmartNumberStringComparerWorksWithSameNumberComponents() {
+    @Test
+    void testSmartNumberStringComparerWorksWithSameNumberComponents() {
         Comparator<String> comparer = new SmartNumberStringComparer();
         assertTrue(comparer.compare("v_1.1.0.2", "v_1.1.1.1") < 0);
         assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.1.1") == 0);
@@ -15,16 +16,16 @@ public class SmartNumberStringComparerTest {
         assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.1.0") > 0);
     }
 
-    // @Test
-    public void testSmartNumberStringComparerVeryLongReleaseNumber() {
+    @Test
+    void testSmartNumberStringComparerVeryLongReleaseNumber() {
         Comparator<String> comparer = new SmartNumberStringComparer();
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449123456788.1") > 0);
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449123456789.1") == 0);
         assertTrue(comparer.compare("v_1.1.20150122112449123456789.1", "v_1.1.20150122112449223456789.1") < 0);
     }
 
-    // @Test
-    public void testSmartNumberStringComparerWorksWithDifferentNumberComponents() {
+    @Test
+    void testSmartNumberStringComparerWorksWithDifferentNumberComponents() {
         Comparator<String> comparer = new SmartNumberStringComparer();
         assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.0") > 0);
         assertTrue(comparer.compare("v_1.1.1.1", "v_1.1.2") < 0);

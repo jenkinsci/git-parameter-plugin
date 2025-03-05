@@ -1,6 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import org.eclipse.jgit.lib.ObjectId;
 import org.jenkinsci.plugins.gitclient.GitClient;
+import org.junit.jupiter.api.Test;
 
-public class RevisionInfoFactoryTest {
+class RevisionInfoFactoryTest {
+
     private static final String COMMIT_HASH_1 = "ee650d9b5dbc39ec1bdfc6608f49db94ce8d7be4";
     private static final ObjectId SHA1_1 = ObjectId.fromString(COMMIT_HASH_1);
     private static final String[] RAW_1 = {
@@ -78,8 +80,8 @@ public class RevisionInfoFactoryTest {
         ":100644 100644 ab9cfc8ef1c067ef36fb45741be8b9444ba7085c a01738c8f727254fdcf9d03fcb0965567104a31e M\tREADME.textile"
     };
 
-    // @Test
-    public void testGetRevisions() throws InterruptedException {
+    @Test
+    void testGetRevisions() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_1, SHA1_2, SHA1_4, SHA1_5));
         when(gitClient.showRevision(SHA1_1)).thenReturn(Arrays.asList(RAW_1));
@@ -105,8 +107,8 @@ public class RevisionInfoFactoryTest {
                 revisions.get(3).getRevisionInfo());
     }
 
-    // @Test
-    public void testNoAuthor() throws InterruptedException {
+    @Test
+    void testNoAuthor() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenReturn(Arrays.asList(RAW_NO_AUTHOR));
@@ -120,8 +122,8 @@ public class RevisionInfoFactoryTest {
         assertEquals(COMMIT_HASH_3, revisionInfo.getSha1());
     }
 
-    // @Test
-    public void testGitException() throws InterruptedException {
+    @Test
+    void testGitException() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenThrow(new GitException());
