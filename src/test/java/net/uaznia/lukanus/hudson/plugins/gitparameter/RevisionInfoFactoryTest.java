@@ -1,6 +1,6 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,9 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import org.eclipse.jgit.lib.ObjectId;
 import org.jenkinsci.plugins.gitclient.GitClient;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RevisionInfoFactoryTest {
+class RevisionInfoFactoryTest {
+
     private static final String COMMIT_HASH_1 = "ee650d9b5dbc39ec1bdfc6608f49db94ce8d7be4";
     private static final ObjectId SHA1_1 = ObjectId.fromString(COMMIT_HASH_1);
     private static final String[] RAW_1 = {
@@ -80,7 +81,7 @@ public class RevisionInfoFactoryTest {
     };
 
     @Test
-    public void testGetRevisions() throws InterruptedException {
+    void testGetRevisions() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Arrays.asList(SHA1_1, SHA1_2, SHA1_4, SHA1_5));
         when(gitClient.showRevision(SHA1_1)).thenReturn(Arrays.asList(RAW_1));
@@ -107,7 +108,7 @@ public class RevisionInfoFactoryTest {
     }
 
     @Test
-    public void testNoAuthor() throws InterruptedException {
+    void testNoAuthor() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenReturn(Arrays.asList(RAW_NO_AUTHOR));
@@ -122,7 +123,7 @@ public class RevisionInfoFactoryTest {
     }
 
     @Test
-    public void testGitException() throws InterruptedException {
+    void testGitException() throws Exception {
         GitClient gitClient = mock(GitClient.class);
         when(gitClient.revListAll()).thenReturn(Collections.singletonList(SHA1_3));
         when(gitClient.showRevision(SHA1_3)).thenThrow(new GitException());
