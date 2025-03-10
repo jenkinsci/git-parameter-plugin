@@ -292,7 +292,6 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
     }
 
     @Override
-    @SuppressFBWarnings(value = "EQ_COMPARETO_USE_OBJECT_EQUALS")
     public int compareTo(GitParameterDefinition pd) {
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
