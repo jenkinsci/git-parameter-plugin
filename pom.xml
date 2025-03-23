@@ -11,7 +11,7 @@
 
   <groupId>org.jenkins-ci.tools</groupId>
   <artifactId>git-parameter</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
   <name>Git Parameter Plug-In</name>
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
@@ -31,8 +31,7 @@
   </scm>
 
   <properties>
-    <revision>0.11.1</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <!-- Baseline Jenkins version you use to build and test the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
