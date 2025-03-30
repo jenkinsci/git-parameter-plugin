@@ -22,7 +22,7 @@ The git parameter plugin supports both Pipeline projects and freestyle projects.
 
 Pipeline development is best assisted by the [Pipeline syntax snippet generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) that is part of the Jenkins Pipeline plugins.
 
-Examples provided below to cover several common cases.
+Examples are provided below to cover several common cases.
 
 ### Branch type - Basic usage
 
