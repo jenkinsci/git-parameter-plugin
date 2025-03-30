@@ -1,42 +1,47 @@
 # Git Parameter
 
-This plugin allows you to assign git branch, tag, pull request or
-revision number as parameter in your builds.
+This plugin allows you to assign git branch, tag, pull request or revision number as a parameter in your builds.
 
-**Important!**
-There is no need to set up anything special in plugin settings.
-*This plugin will read GIT SCM configuration from your projects.*
-This plugin used directly the [Git
-Plugin](https://plugins.jenkins.io/git/) and [Git
-Client Plugin](https://plugins.jenkins.io/git-client/).
+There is no need to configure anything special in plugin settings.
+This plugin reads the Git SCM configuration from your projects.
+This plugin uses the [Git Plugin](https://plugins.jenkins.io/git/) and [Git Client Plugin](https://plugins.jenkins.io/git-client/).
 
 ## Basic configuration
 
-#### Project configuration
+The git parameter plugin supports both Pipeline projects and freestyle projects.
+
+### Freestyle project configuration
+
 ![project configuration image](docs/images/image2018-9-20_22-0-7.png)
 
-#### [Build with Parameters](http://xps15:8083/job/git_parameter/build?delay=0sec) form
+### Build with Parameters form
+
 ![Build with Parameters image](docs/images/image2018-9-20_22-2-47.png)
 
-## Example pipeline script
+## Pipeline script examples
 
-**Important!**
-Works with version 0.9.4 or greater
+Pipeline development is best assisted by the [Pipeline syntax snippet generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) that is part of the Jenkins Pipeline plugins.
 
-#### Branch type - Basic usage
+Examples provided below to cover several common cases.
+
+### Branch type - Basic usage
 
 * Declarative Pipeline
 ```groovy
-// Using git without checkout
+// Using git step instead of checkout scm step
 pipeline {
   agent any
   parameters {
-    gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
+    gitParameter branchFilter: 'origin/(.*)',
+                 defaultValue: 'master',
+                 name: 'A_BRANCH',
+                 type: 'PT_BRANCH'
   }
   stages {
     stage('Example') {
       steps {
-        git branch: "${params.BRANCH}", url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+        git branch: params.A_BRANCH,
+            url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
       }
     }
   }
@@ -45,33 +50,34 @@ pipeline {
 
 * Scripted Pipeline
 ```groovy
+// Using git step instead of checkout scm step
 properties([
-    parameters([
-        gitParameter(branch: '',
-                     branchFilter: 'origin/(.*)',
-                     defaultValue: 'master',
-                     description: '',
-                     name: 'BRANCH',
-                     quickFilterEnabled: false,
-                     selectedValue: 'NONE',
-                     sortMode: 'NONE',
-                     tagFilter: '*',
-                     type: 'PT_BRANCH')
+  parameters([
+    gitParameter(branch: '',
+                 branchFilter: 'origin/(.*)',
+                 defaultValue: 'master',
+                 description: 'Choose a branch for checkout',
+                 name: 'A_BRANCH',
+                 quickFilterEnabled: false,
+                 selectedValue: 'NONE',
+                 sortMode: 'NONE',
+                 tagFilter: '*',
+                 type: 'PT_BRANCH')
     ])
-])
+  ])
 node {
-    git branch: "${params.BRANCH}", url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+  git branch: params.A_BRANCH,
+      url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
 }
 ```
 
-###### Important settings:
+#### Important settings:
 
--   It should be set a `default` value because initial build must get
-    this information
--   Using `git` should be set a `branchFilter` as `*origin/(.\*)*`
-    (origin is a remote server name)
+- A `default` value must be set so that the initial build has a value for `A_BRANCH`.
+- A `branchFilter` must be set as a regular expression that returns the branch name without the Git remote name.
+  Use `*origin/(.\*)*`since origin is the default remote name of the Git server.
 
-###### Parameter type
+#### Parameter type
 
 -   `PT_TAG`
 -   `PT_BRANCH`
@@ -79,132 +85,113 @@ node {
 -   `PT_REVISION`
 -   `PT_PULL_REQUEST`
 
-**Important!**  
-If you need to use other type (other then branch) parameter, you must use git within `checkout` 
+**Important!**
+If you need to use a different type then the branch parameter type, you must use the `checkout` step.
 
-#### Tag type
+### Tag type
 ```groovy
-// Using git within checkout
+// Using checkout step
 pipeline {
-    agent any
-    parameters {
-        gitParameter name: 'TAG',
-                     type: 'PT_TAG',
-                     defaultValue: 'master'
+  agent any
+  parameters {
+    gitParameter name: 'A_TAG',
+                 type: 'PT_TAG',
+                 defaultValue: 'master'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: params.A_TAG]],
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
     }
-    stages {
-        stage('Example') {
-            steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: "${params.TAG}"]],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          gitTool: 'Default',
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']]
-                        ])
-            }
-        }
-    }
+  }
 }
 ```
 
-#### Branch Tag type
+### Branch Tag type
 ```groovy
+// Using checkout step
 pipeline {
-    agent any
-    parameters {
-        gitParameter name: 'BRANCH_TAG',
-                     type: 'PT_BRANCH_TAG',
-                     defaultValue: 'master'
+  agent any
+  parameters {
+    gitParameter name: 'A_BRANCH_TAG',
+                 type: 'PT_BRANCH_TAG',
+                 defaultValue: 'master'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: params.A_BRANCH_TAG]],
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
     }
-    stages {
-        stage('Example') {
-            steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: "${params.BRANCH_TAG}"]],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          gitTool: 'Default',
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']]
-                        ])
-            }
-        }
-    }
+  }
 }
 ```
 
-#### Revision type
+### Revision type
 ```groovy
+// Using checkout step
 pipeline {
-    agent any
-    parameters {
-        gitParameter name: 'REVISION',
-                     type: 'PT_REVISION',
-                     defaultValue: 'master'
+  agent any
+  parameters {
+    gitParameter name: 'REVISION',
+                 type: 'PT_REVISION',
+                 defaultValue: 'master'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: params.REVISION]],
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
     }
-    stages {
-        stage('Example') {
-            steps {
-                checkout([$class: 'GitSCM',
-                          branches: [[name: "${params.REVISION}"]],
-                          doGenerateSubmoduleConfigurations: false,
-                          extensions: [],
-                          gitTool: 'Default',
-                          submoduleCfg: [],
-                          userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']]
-                        ])
-            }
-        }
-    }
+  }
 }
 ```
 
-#### Pull Request type
+### Pull Request type
 ```groovy
+// Using checkout step
 pipeline {
-    agent any
-    parameters {
-        gitParameter name: 'PULL_REQUESTS',
-                     type: 'PT_PULL_REQUEST',
-                     defaultValue: '1',
-                     sortMode: 'DESCENDING_SMART'
+  agent any
+  parameters {
+    gitParameter name: 'A_PULL_REQUEST',
+                 type: 'PT_PULL_REQUEST',
+                 defaultValue: '1',
+                 sortMode: 'DESCENDING_SMART'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: "pr/${params.A_PULL_REQUEST}/head"]],
+                        userRemoteConfigs: [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
+                                             url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
     }
-    stages {
-        stage('Example') {
-            steps {
-                checkout([$class: 'GitSCM',
-                branches: [[name: "pr/${params.PULL_REQUESTS}/head"]],
-                doGenerateSubmoduleConfigurations: false,
-                extensions: [],
-                gitTool: 'Default',
-                submoduleCfg: [],
-                userRemoteConfigs: [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*', url: 'https://github.com/jenkinsci/git-parameter-plugin.git']]])
-            }
-        }
-    }
+  }
 }
 ```
 
 ## Options
 
-#### Parameter Type
-Name using in pipeline
+### Parameter Type
+Name using in Pipeline
 
 ```groovy
 type: 'PT_TAG' or 'PT_BRANCH' or 'PT_BRANCH_TAG' or 'PT_REVISION' or 'PT_PULL_REQUEST'
 ```
 
-Explains about PT\_TAG or PT\_BRANCH or PT\_BRANCH\_TAG:
+Explains about `PT_TAG` or `PT_BRANCH` or `PT_BRANCH_TAG`:
 
 Plugin using [git ls-remote](https://git-scm.com/docs/git-ls-remote.html) command to get
-remote tags or branches, this solution was implemented in  [JENKINS-40232](https://issues.jenkins.io/browse/JENKINS-40232).
+remote tags or branches, this solution was implemented in [JENKINS-40232](https://issues.jenkins.io/browse/JENKINS-40232).
 
 In code plugin
-[use](https://github.com/jenkinsci/git-client-plugin/blob/9f2a3ec48e699222ce3034dfe14cdb319e563ed5/src/main/java/org/jenkinsci/plugins/gitclient/GitClient.java#L631)ing 
-getRemoteReferences from GitClient, look implementation
-in [CliGitAPIImpl](https://github.com/jenkinsci/git-client-plugin/blob/master/src/main/java/org/jenkinsci/plugins/gitclient/CliGitAPIImpl.java). 
+[use](https://github.com/jenkinsci/git-client-plugin/blob/9f2a3ec48e699222ce3034dfe14cdb319e563ed5/src/main/java/org/jenkinsci/plugins/gitclient/GitClient.java#L631)ing
+getRemoteReferences from GitClient, look implementation
+in [CliGitAPIImpl](https://github.com/jenkinsci/git-client-plugin/blob/master/src/main/java/org/jenkinsci/plugins/gitclient/CliGitAPIImpl.java).
 
 ```java
 package org.jenkinsci.plugins.gitclient
@@ -217,29 +204,29 @@ public interface GitClient {
 }
 ```
 
-#### Branch
-Name using in pipeline
+### Branch
+Name using in Pipeline
 
 ```groovy
 branch
 ```
 
-#### Branch Filter
-Name using in pipeline
+### Branch Filter
+Name using in Pipeline
 
 ```groovy
 branchFilter
 ```
 
-#### Tag Filter
-Name using in pipeline
+### Tag Filter
+Name using in Pipeline
 
 ```groovy
 tagFilter
 ```
 
-#### Sort Mode
-Name using in pipeline
+### Sort Mode
+Name using in Pipeline
 
 ```groovy
 sortMode: 'NONE' or 'ASCENDING_SMART' or 'DESCENDING_SMART' or 'ASCENDING' or 'DESCENDING'
@@ -257,28 +244,27 @@ tags/revision/branches/branches\_or\_tags/pull requests
 For the smart variants the compare treats a sequence of digits as a
 single character. Contributed by Graeme Hill.
 
-#### Default Value
-Name using in pipeline
+### Default Value
+Name using in Pipeline
 
 ```groovy
 defaultValue
 ```
 
-In release 0.9.9 or later it is good to set a default value, because this
-value is using the initial build (in Pipeline).
-Default value is returned when some error occurred on getting data.
+Set a default value because this value is used in the initial build (in Pipeline).
+Default value is also returned when an error occurs retrieving data.
 
 ![default value](docs/images/image2019-2-16_22-46-54.png)
 
-#### Selected Value
-Name using in pipeline
+### Selected Value
+Name using in Pipeline
 
 ```groovy
-selectedValue: 'NONE' or 'TOP' or 'DEFAULT'
+selectedValue: `NONE` or `TOP` or `DEFAULT`
 ```
 
-#### Use repository
-Name using in pipeline
+### Use repository
+Name using in Pipeline
 
 ```groovy
 useRepository
@@ -294,9 +280,7 @@ which the repository is taken into account on getting data.
 This option is a regular expression, which is compared to the
 'Repository URL'.
 
-You can define the multiple SCM for few way, you can use [Multiple SCMs
-Plugin](https://plugins.jenkins.io/multiple-scms/), specified
-many 'Repository URL' in one SCM  or define them in pipeline.
+You can define the multiple SCM in a Pipeline.
 
 Consider an example based on two repositories:
 
@@ -324,7 +308,7 @@ pipeline {
 }
 ```
 
-After initial run you get 
+After initial run you get
 
 !['build with parameters' section](docs/images/image2018-9-21_22-47-52.png)
 
@@ -351,17 +335,17 @@ pipeline {
 }
 ```
 
-After initial run you get 
+After initial run you get
 
 !['build with parameters' section](docs/images/image2018-9-21_23-3-22.png)
 
-#### Quick Filter
+### Quick Filter
 
 ```groovy
 quickFilterEnabled
 ```
 
-#### List Size
+### List Size
 
 ```groovy
 listSize
@@ -378,34 +362,28 @@ Works with version 0.9.9 or greater
 
 ## Error handling
 
-**Important!**
-Works with version 0.9.9 or greater
-
-If an error occurred while retrieving data, the default value is
-returned.
-Additional information is provided below, along with the cause of the
-error.
+If an error occurred while retrieving data, the default value is returned.
+Additional information is provided below, along with the cause of the error.
 
 Examples:
-1. This error occur when the repository is not configured or 'Use
-repository' option not match with any repository.
-![error handling 1](docs/images/image2019-2-17_17-2-14.png)
-1. This error occur when the repository is not exists or URL is wrong.
-![error handling 2](docs/images/image2019-2-17_12-49-47.png)
-1. This error occur when there are no ssh command on Jenkins master.
-![error handling 3](docs/images/image2019-2-17_17-4-32.png)
+1. This error occur when the repository is not configured or 'Use repository' option not match with any repository.
+   ![error handling 1](docs/images/image2019-2-17_17-2-14.png)
+2. This error occur when the repository is not exists or URL is wrong.
+   ![error handling 2](docs/images/image2019-2-17_12-49-47.png)
+3. This error occur when there are no ssh command on Jenkins master.
+   ![error handling 3](docs/images/image2019-2-17_17-4-32.png)
 
 ## Contribute
 
 * You may checkout/clone this project and build it by simply calling `mvn clean install` in the root of the checkout. Test your changes by going to your Jenkins-CI site and import the generated `target/git-parameter.hpi` by going to your base URL + `jenkins/pluginManager/advanced`. There you find an option to upload a plugin.
 
-#### Pull Request Policy
+### Pull Request Policy
 
 If you want to add some changes for this plugin:
 Add the issue in jenkins [JIRA](https://issues.jenkins.io) to the component git-parameter-plugin
-Describe there why you need change the plugin.
+Describe there why you need to change the plugin.
 
-#### TODO
+### TODO
 
 * Add a new method `listRemoteTags(URL)` to git-client-plugin to use. Will speed up listing tags and avoids cloning/fetching the content.
 
