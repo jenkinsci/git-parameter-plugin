@@ -1,6 +1,6 @@
 # Git Parameter
 
-This plugin allows you to assign git branch, tag, pull request or revision number as a parameter in your builds.
+This plugin allows you to assign a git branch, tag, pull request, or revision number as a parameter in your builds.
 
 There is no need to configure anything special in plugin settings.
 This plugin reads the Git SCM configuration from your projects.
@@ -21,10 +21,22 @@ The git parameter plugin supports both Pipeline projects and freestyle projects.
 ## Pipeline script examples
 
 Pipeline development is best assisted by the [Pipeline syntax snippet generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) that is part of the Jenkins Pipeline plugins.
+This documentation provides several examples of the `gitParameter` Pipeline step.
 
-Examples are provided below to cover several common cases.
+The `gitParameter` Pipeline step has a required argument, `type`, that defines the type of values that will be collected from the remote repository.
+It must be assigned one of the following values:
 
-### Branch type - Basic usage
+* `PT_BRANCH`
+* `PT_BRANCH_TAG`
+* `PT_TAG`
+* `PT_PULL_REQUEST`
+* `PT_REVISION`
+
+Examples are provided below for each of those values of `type`.
+
+### `PT_BRANCH` type - Basic usage
+
+The `PT_BRANCH` type lists the remote branches that match the branch filter regular expression.
 
 * Declarative Pipeline
 ```groovy
@@ -32,10 +44,10 @@ Examples are provided below to cover several common cases.
 pipeline {
   agent any
   parameters {
-    gitParameter branchFilter: 'origin/(.*)',
+    gitParameter type: 'PT_BRANCH',
+                 name: 'A_BRANCH'
                  defaultValue: 'master',
-                 name: 'A_BRANCH',
-                 type: 'PT_BRANCH'
+                 branchFilter: 'origin/(.*)',
   }
   stages {
     stage('Example') {
@@ -71,45 +83,8 @@ node {
 }
 ```
 
-#### Important settings:
+###  `PT_BRANCH` type - full usage
 
-- A `default` value must be set so that the initial build has a value for `A_BRANCH`.
-- A `branchFilter` must be set as a regular expression that returns the branch name without the Git remote name.
-  Use `*origin/(.\*)*`since origin is the default remote name of the Git server.
-
-#### Parameter type
-
--   `PT_TAG`
--   `PT_BRANCH`
--   `PT_BRANCH_TAG`
--   `PT_REVISION`
--   `PT_PULL_REQUEST`
-
-**Important!**
-If you need to use a different type then the branch parameter type, you must use the `checkout` step.
-
-### Tag type
-```groovy
-// Using checkout step
-pipeline {
-  agent any
-  parameters {
-    gitParameter name: 'A_TAG',
-                 type: 'PT_TAG',
-                 defaultValue: 'master'
-  }
-  stages {
-    stage('Example') {
-      steps {
-        checkout scmGit(branches: [[name: params.A_TAG]],
-                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
-      }
-    }
-  }
-}
-```
-
-### Branch Tag type
 ```groovy
 // Using checkout step
 pipeline {
@@ -123,6 +98,38 @@ pipeline {
     stage('Example') {
       steps {
         checkout scmGit(branches: [[name: params.A_BRANCH_TAG]],
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
+    }
+  }
+}
+```
+
+#### Important settings:
+
+#### Parameter type
+
+
+**Important!**
+If you need to use a different type then the branch parameter type, you must use the `checkout` step.
+
+### `PT_TAG` type
+
+The `PT_TAG` type lists the remote tags that match the tag filter wild card.
+
+```groovy
+// Using checkout step
+pipeline {
+  agent any
+  parameters {
+    gitParameter type: 'PT_TAG',
+                 name: 'A_TAG',
+                 defaultValue: 'master'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: params.A_TAG]],
                         userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
       }
     }
