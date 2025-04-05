@@ -314,8 +314,8 @@ pipeline {
     stages {
         stage('Example') {
             steps {
-                git branch: "${params.BRANCH_A}", url: 'https://github.com/klimas7/exampleA.git'
-                git branch: "${params.BRANCH_B}", url: 'https://github.com/klimas7/exampleB.git'
+                git branch: params.BRANCH_A, url: 'https://github.com/klimas7/exampleA.git'
+                git branch: params.BRANCH_B, url: 'https://github.com/klimas7/exampleB.git'
             }
         }
     }
@@ -342,7 +342,7 @@ pipeline {
                 git url: 'https://github.com/klimas7/exampleA.git'
                 dir('dir-for-exampleB') {
                     git url: 'https://github.com/klimas7/exampleB.git'
-		}
+                }
             }
         }
     }
