@@ -34,7 +34,7 @@ It must be assigned one of the following values:
 
 Examples are provided below for each of those values of `type`.
 
-### `PT_BRANCH` type - Basic usage
+### `PT_BRANCH` type
 
 The `PT_BRANCH` type lists the remote branches that match the branch filter regular expression.
 
@@ -83,7 +83,7 @@ node {
 }
 ```
 
-###  `PT_BRANCH_TAG` type - full usage
+###  `PT_BRANCH_TAG` type
 
 ```groovy
 // Using checkout step
@@ -137,7 +137,11 @@ pipeline {
 }
 ```
 
-### Revision type
+### `PT_REVISION` type
+
+The `PT_REVISION` type lists the revisions in the repository.
+The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions. 
+
 ```groovy
 // Using checkout step
 pipeline {
@@ -158,7 +162,10 @@ pipeline {
 }
 ```
 
-### Pull Request type
+### `PT_PULL_REQUEST` type
+
+The `PT_PULL_REQUEST` type lists pull requests in the remote repository.
+
 ```groovy
 // Using checkout step
 pipeline {
