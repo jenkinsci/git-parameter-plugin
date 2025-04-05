@@ -65,16 +65,16 @@ pipeline {
 // Using git step instead of checkout scm step
 properties([
   parameters([
-    gitParameter(branch: '',
+    gitParameter(type: 'PT_BRANCH',
+                 name: 'A_BRANCH',
+                 branch: '',
                  branchFilter: 'origin/(.*)',
                  defaultValue: 'master',
                  description: 'Choose a branch for checkout',
-                 name: 'A_BRANCH',
                  quickFilterEnabled: false,
                  selectedValue: 'NONE',
                  sortMode: 'NONE',
-                 tagFilter: '*',
-                 type: 'PT_BRANCH')
+                 tagFilter: '*')
     ])
   ])
 node {
@@ -90,8 +90,8 @@ node {
 pipeline {
   agent any
   parameters {
-    gitParameter name: 'A_BRANCH_TAG',
-                 type: 'PT_BRANCH_TAG',
+    gitParameter type: 'PT_BRANCH_TAG',
+                 name: 'A_BRANCH_TAG',
                  defaultValue: 'master'
   }
   stages {
@@ -143,8 +143,8 @@ pipeline {
 pipeline {
   agent any
   parameters {
-    gitParameter name: 'REVISION',
-                 type: 'PT_REVISION',
+    gitParameter type: 'PT_REVISION',
+                 name: 'REVISION',
                  defaultValue: 'master'
   }
   stages {
@@ -164,8 +164,8 @@ pipeline {
 pipeline {
   agent any
   parameters {
-    gitParameter name: 'A_PULL_REQUEST',
-                 type: 'PT_PULL_REQUEST',
+    gitParameter type: 'PT_PULL_REQUEST',
+                 name: 'A_PULL_REQUEST',
                  defaultValue: '1',
                  sortMode: 'DESCENDING_SMART'
   }
