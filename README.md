@@ -83,7 +83,7 @@ node {
 }
 ```
 
-###  `PT_BRANCH` type - full usage
+###  `PT_BRANCH_TAG` type - full usage
 
 ```groovy
 // Using checkout step
