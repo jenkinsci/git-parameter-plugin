@@ -40,7 +40,6 @@ The `PT_BRANCH` type lists the remote branches that match the branch filter regu
 
 * Declarative Pipeline
 ```groovy
-// Using git step instead of checkout scm step
 pipeline {
   agent any
   parameters {
@@ -62,7 +61,6 @@ pipeline {
 
 * Scripted Pipeline
 ```groovy
-// Using git step instead of checkout scm step
 properties([
   parameters([
     gitParameter(type: 'PT_BRANCH',
@@ -86,7 +84,6 @@ node {
 ###  `PT_BRANCH_TAG` type
 
 ```groovy
-// Using checkout step
 pipeline {
   agent any
   parameters {
@@ -119,7 +116,6 @@ The `git` step only supports branches, not tags, pull requests, or other revisio
 The `PT_TAG` type lists the remote tags that match the tag filter wild card.
 
 ```groovy
-// Using checkout step
 pipeline {
   agent any
   parameters {
@@ -143,7 +139,6 @@ pipeline {
 The `PT_PULL_REQUEST` type lists pull requests in the remote repository.
 
 ```groovy
-// Using checkout step
 pipeline {
   agent any
   parameters {
@@ -170,7 +165,6 @@ The `PT_REVISION` type lists the revisions in the repository.
 The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions. 
 
 ```groovy
-// Using checkout step
 pipeline {
   agent any
   parameters {
@@ -365,9 +359,6 @@ listSize
 ```
 
 ## Global configuration
-
-**Important!**
-Works with version 0.9.9 or greater
 
 ![show 'need to clone' information](docs/images/image2019-2-16_22-26-39.png)
 
