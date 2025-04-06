@@ -26,11 +26,11 @@ This documentation provides several examples of the `gitParameter` Pipeline step
 The `gitParameter` Pipeline step has a required argument, `type`, that defines the type of values that will be collected from the remote repository.
 It must be assigned one of the following values:
 
-* [`PT_BRANCH`](#pt_branch-type)
-* [`PT_BRANCH_TAG`](#pt_branch_tag-type)
-* [`PT_TAG`](#pt_tag-type)
-* [`PT_PULL_REQUEST`](#pt_pull_request-type)
-* [`PT_REVISION`](#pt_revision-type)
+* [`PT_BRANCH`](#pt_branch-type) - lists remote branches
+* [`PT_BRANCH_TAG`](#pt_branch_tag-type) - lists remote branches and tags
+* [`PT_TAG`](#pt_tag-type) - lists remote tags
+* [`PT_PULL_REQUEST`](#pt_pull_request-type) - lists remote pull requests
+* [`PT_REVISION`](#pt_revision-type) - lists all revisions in the repository
 
 Examples are provided below for each of those values of `type`.
 
