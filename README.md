@@ -53,7 +53,7 @@ pipeline {
     stage('Example') {
       steps {
         git branch: params.A_BRANCH,
-            url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+            url: 'https://github.com/jenkinsci/git-plugin.git'
       }
     }
   }
@@ -79,7 +79,7 @@ properties([
   ])
 node {
   git branch: params.A_BRANCH,
-      url: 'https://github.com/jenkinsci/git-parameter-plugin.git'
+      url: 'https://github.com/jenkinsci/git-plugin.git'
 }
 ```
 
@@ -98,7 +98,7 @@ pipeline {
     stage('Example') {
       steps {
         checkout scmGit(branches: [[name: params.A_BRANCH_TAG]],
-                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-plugin.git']])
       }
     }
   }
@@ -130,7 +130,7 @@ pipeline {
     stage('Example') {
       steps {
         checkout scmGit(branches: [[name: params.A_TAG]],
-                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-plugin.git']])
       }
     }
   }
@@ -156,7 +156,7 @@ pipeline {
       steps {
         checkout scmGit(branches: [[name: "pr/${params.A_PULL_REQUEST}/head"]],
                         userRemoteConfigs: [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
-                                             url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+                                             url: 'https://github.com/jenkinsci/git-plugin.git']])
       }
     }
   }
@@ -181,7 +181,7 @@ pipeline {
     stage('Example') {
       steps {
         checkout scmGit(branches: [[name: params.REVISION]],
-                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-plugin.git']])
       }
     }
   }
