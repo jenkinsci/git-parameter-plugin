@@ -26,11 +26,11 @@ This documentation provides several examples of the `gitParameter` Pipeline step
 The `gitParameter` Pipeline step has a required argument, `type`, that defines the type of values that will be collected from the remote repository.
 It must be assigned one of the following values:
 
-* `PT_BRANCH`
-* `PT_BRANCH_TAG`
-* `PT_TAG`
-* `PT_PULL_REQUEST`
-* `PT_REVISION`
+* [`PT_BRANCH`](#pt_branch-type)
+* [`PT_BRANCH_TAG`](#pt_branch_tag-type)
+* [`PT_TAG`](#pt_tag-type)
+* [`PT_PULL_REQUEST`](#pt_pull_request-type)
+* [`PT_REVISION`](#pt_revision-type)
 
 Examples are provided below for each of those values of `type`.
 
@@ -137,31 +137,6 @@ pipeline {
 }
 ```
 
-### `PT_REVISION` type
-
-The `PT_REVISION` type lists the revisions in the repository.
-The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions. 
-
-```groovy
-// Using checkout step
-pipeline {
-  agent any
-  parameters {
-    gitParameter type: 'PT_REVISION',
-                 name: 'REVISION',
-                 defaultValue: 'master'
-  }
-  stages {
-    stage('Example') {
-      steps {
-        checkout scmGit(branches: [[name: params.REVISION]],
-                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
-      }
-    }
-  }
-}
-```
-
 ### `PT_PULL_REQUEST` type
 
 The `PT_PULL_REQUEST` type lists pull requests in the remote repository.
@@ -182,6 +157,31 @@ pipeline {
         checkout scmGit(branches: [[name: "pr/${params.A_PULL_REQUEST}/head"]],
                         userRemoteConfigs: [[refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
                                              url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
+      }
+    }
+  }
+}
+```
+
+### `PT_REVISION` type
+
+The `PT_REVISION` type lists the revisions in the repository.
+The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions. 
+
+```groovy
+// Using checkout step
+pipeline {
+  agent any
+  parameters {
+    gitParameter type: 'PT_REVISION',
+                 name: 'REVISION',
+                 defaultValue: 'master'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: params.REVISION]],
+                        userRemoteConfigs: [[url: 'https://github.com/jenkinsci/git-parameter-plugin.git']])
       }
     }
   }
