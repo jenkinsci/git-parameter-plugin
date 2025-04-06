@@ -111,7 +111,8 @@ pipeline {
 
 
 **Important!**
-If you need to use a different type then the branch parameter type, you must use the `checkout` step.
+If you need to use a different type other than the branch parameter type, you must use the `checkout` step.
+The `git` step only supports branches, not tags, pull requests, or other revisions.
 
 ### `PT_TAG` type
 
