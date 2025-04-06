@@ -286,16 +286,14 @@ useRepository
 ```
 
 **Remember!**
-You don't set a git repository into the plugin, this plugin
-using git repositories which are defined in project in SCM section!
+You don't set a git repository in the plugin.
+The plugin uses the git repositories defined in the SCM section of the project.
 
-If in the task are defined multiple repositories, this option specifies
-which the repository is taken into account on getting data.
-*If the option is not defined, is taken a first defined repository.*
-This option is a regular expression, which is compared to the
-'Repository URL'.
+If multiple repositories are defined, this option specifies which the repository is used to retrieve the parameter values.
+*If the `useRepository` option is not defined, the first defined repository is used.*
+This option is a regular expression, which is compared to the 'Repository URL'.
 
-You can define the multiple SCM in a Pipeline.
+You can use multiple SCM repositories in a Pipeline.
 
 Consider an example based on two repositories:
 
