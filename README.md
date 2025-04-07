@@ -21,7 +21,7 @@ The git parameter plugin supports both Pipeline projects and freestyle projects.
 ## Pipeline script examples
 
 Pipeline development is best assisted by the [Pipeline syntax snippet generator](https://www.jenkins.io/doc/book/pipeline/getting-started/#snippet-generator) that is part of the Jenkins Pipeline plugins.
-This documentation provides several examples of the `gitParameter` Pipeline step.
+Snippets for the git parameter plugin can be created with the properties step of the snippet generator or with the parameters section of the declarative directive generator.
 
 The `gitParameter` Pipeline step has a required argument, `type`, that defines the type of values that will be collected from the remote repository.
 It must be assigned one of the following values:
@@ -44,9 +44,12 @@ pipeline {
   agent any
   parameters {
     gitParameter type: 'PT_BRANCH',
-                 name: 'A_BRANCH'
-                 defaultValue: 'master',
+                 name: 'A_BRANCH',
                  branchFilter: 'origin/(.*)',
+                 defaultValue: 'master',
+                 description: 'Choose a branch to checkout',
+                 selectedValue: 'DEFAULT',
+                 sortMode: 'DESCENDING_SMART'
   }
   stages {
     stage('Example') {
@@ -65,16 +68,13 @@ properties([
   parameters([
     gitParameter(type: 'PT_BRANCH',
                  name: 'A_BRANCH',
-                 branch: '',
                  branchFilter: 'origin/(.*)',
                  defaultValue: 'master',
                  description: 'Choose a branch for checkout',
-                 quickFilterEnabled: false,
-                 selectedValue: 'NONE',
-                 sortMode: 'NONE',
-                 tagFilter: '*')
-    ])
+                 selectedValue: 'TOP',
+                 sortMode: 'ASCENDING_SMART')
   ])
+])
 node {
   git branch: params.A_BRANCH,
       url: 'https://github.com/jenkinsci/git-plugin.git'
@@ -89,7 +89,10 @@ pipeline {
   parameters {
     gitParameter type: 'PT_BRANCH_TAG',
                  name: 'A_BRANCH_TAG',
-                 defaultValue: 'master'
+                 defaultValue: 'git-5.6.0',
+                 description: 'Choose a tag or branch to checkout',
+                 selectedValue: 'DEFAULT',
+                 sortMode: 'DESCENDING_SMART'
   }
   stages {
     stage('Example') {
@@ -102,18 +105,13 @@ pipeline {
 }
 ```
 
-#### Important settings:
-
-#### Parameter type
-
-
-**Important!**
-If you need to use a different type other than the branch parameter type, you must use the `checkout` step.
-The `git` step only supports branches, not tags, pull requests, or other revisions.
+If you need to use a different type other than the `PT_BRANCH` parameter type, you **must** use the [`checkout scmGit()` step](https://www.jenkins.io/doc/pipeline/steps/params/scmgit/).
+The [`git` step](https://www.jenkins.io/doc/pipeline/steps/git/) only supports branches, not tags, pull requests, or other revisions.
 
 ### `PT_TAG` type
 
 The `PT_TAG` type lists the remote tags that match the tag filter wild card.
+Note that the tag filter is a wild card and not a regular expression.
 
 ```groovy
 pipeline {
@@ -121,7 +119,11 @@ pipeline {
   parameters {
     gitParameter type: 'PT_TAG',
                  name: 'A_TAG',
-                 defaultValue: 'master'
+                 defaultValue: 'git-5.5.2',
+                 description: 'Choose a git-5.x tag to checkout',
+                 selectedValue: 'DEFAULT',
+                 sortMode: 'DESCENDING_SMART',
+                 tagFilter: 'git-5.*' // Only show tags that start with 'git-5.'
   }
   stages {
     stage('Example') {
@@ -144,7 +146,9 @@ pipeline {
   parameters {
     gitParameter type: 'PT_PULL_REQUEST',
                  name: 'A_PULL_REQUEST',
-                 defaultValue: '1',
+                 defaultValue: '',
+                 description: 'Choose a pull request to checkout',
+                 selectedValue: 'TOP',
                  sortMode: 'DESCENDING_SMART'
   }
   stages {
@@ -161,8 +165,8 @@ pipeline {
 
 ### `PT_REVISION` type
 
-The `PT_REVISION` type lists the revisions in the repository.
-The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions. 
+The `PT_REVISION` type lists all the revisions in the repository that are part of the `branch`.
+The`PT_REVISION` type performs a full clone of the remote repository in order to generate the list of revisions.
 
 ```groovy
 pipeline {
@@ -170,7 +174,10 @@ pipeline {
   parameters {
     gitParameter type: 'PT_REVISION',
                  name: 'REVISION',
-                 defaultValue: 'master'
+                 branch: 'origin/v3.10.0.x', // Only show commits from v3.10.0.x branch
+                 defaultValue: 'HEAD',
+                 selectedValue: 'TOP',
+                 sortMode: 'DESCENDING_SMART'
   }
   stages {
     stage('Example') {
