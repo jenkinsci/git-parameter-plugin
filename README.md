@@ -81,6 +81,9 @@ node {
 }
 ```
 
+If you need to use a different type other than the `PT_BRANCH` parameter type, you **must** use the [`checkout scmGit()` step](https://www.jenkins.io/doc/pipeline/steps/params/scmgit/).
+The [`git` step](https://www.jenkins.io/doc/pipeline/steps/git/) only supports branches, not tags, pull requests, or other revisions.
+
 ###  `PT_BRANCH_TAG` type
 
 ```groovy
@@ -104,10 +107,6 @@ pipeline {
   }
 }
 ```
-
-If you need to use a different type other than the `PT_BRANCH` parameter type, you **must** use the [`checkout scmGit()` step](https://www.jenkins.io/doc/pipeline/steps/params/scmgit/).
-The [`git` step](https://www.jenkins.io/doc/pipeline/steps/git/) only supports branches, not tags, pull requests, or other revisions.
-
 ### `PT_TAG` type
 
 The `PT_TAG` type lists the remote tags that match the tag filter wild card.
