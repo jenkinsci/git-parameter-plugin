@@ -8,15 +8,7 @@ This plugin uses the [Git Plugin](https://plugins.jenkins.io/git/) and [Git Clie
 
 ## Basic configuration
 
-The git parameter plugin supports both Pipeline projects and freestyle projects.
-
-### Freestyle project configuration
-
-![project configuration image](docs/images/image2018-9-20_22-0-7.png)
-
-### Build with Parameters form
-
-![Build with Parameters image](docs/images/image2018-9-20_22-2-47.png)
+The git parameter plugin supports both [Pipeline projects](#pipeline-script-examples) and [freestyle projects](#freestyle-project-configuration).
 
 ## Pipeline script examples
 
@@ -364,6 +356,16 @@ quickFilterEnabled
 listSize
 ```
 
+## Freestyle project configuration
+
+![project configuration image](docs/images/freestyle-parameters.png)
+
+![project configuration SCM image](docs/images/freestyle-parameters-scm.png)
+
+### Build with Parameters form
+
+![Build with Parameters image](docs/images/freestyle-build.png)
+
 ## Global configuration
 
 ![show 'need to clone' information](docs/images/image2019-2-16_22-26-39.png)
@@ -382,35 +384,6 @@ Examples:
    ![error handling 2](docs/images/image2019-2-17_12-49-47.png)
 3. This error occur when there are no ssh command on Jenkins master.
    ![error handling 3](docs/images/image2019-2-17_17-4-32.png)
-
-## Contribute
-
-* You may checkout/clone this project and build it by simply calling `mvn clean install` in the root of the checkout. Test your changes by going to your Jenkins-CI site and import the generated `target/git-parameter.hpi` by going to your base URL + `jenkins/pluginManager/advanced`. There you find an option to upload a plugin.
-
-### Pull Request Policy
-
-If you want to add some changes for this plugin:
-Add the issue in jenkins [JIRA](https://issues.jenkins.io) to the component git-parameter-plugin
-Describe there why you need to change the plugin.
-
-### TODO
-
-* Add a new method `listRemoteTags(URL)` to git-client-plugin to use. Will speed up listing tags and avoids cloning/fetching the content.
-
-* Fix the pending issues from
-	* Even though the GIT SCM module has the ability to provide "credentials" (SSH key) for the repository, the git-parameter plugin doesn't seem to use them. "Issue lukanus":https://github.com/lukanus/git-parameter/issues/14
-* Allow translations by converting all html stuff to jelly
-* Add explanation when configuring the sort mode
-* Allow regular expressions when sorting.
-* Better testing. How to we test the configuration dialog? How do we test whether correct tags are listed when a user triggers a build?
-
-## Development history
-
-This plugin was offered to the community by lukanus (Łukasz Miłkowski <lukanus@uaznia.net>) end of 2011. He was active till February 2012.
-
-In May 2014 ngiger (Niklaus Giger niklaus.giger) decided to maintain this plugin and bring in the various improvements made by others.
-
-March 2016 klimas7 (Boguslaw Klimas) he began to the care and maintenance of the plugin.. We will see ... :)
 
 ## Changelog
 
