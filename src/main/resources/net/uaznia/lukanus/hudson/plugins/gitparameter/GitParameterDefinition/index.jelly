@@ -11,13 +11,13 @@
         <div name="parameter" class="git-parameter-container" id="${divId}" data-default-value="${it.defaultValue}" data-selected-value="${it.selectedValue}">
             <st:adjunct includes="lib.form.select.select"/>
             <input type="hidden" name="name" value="${it.name}"/>
-            <select name="value" class="gitParameterSelect" size="${it.listSize}" style="min-width: 200px; font-family: monospace;" id="gitParameterSelect"
+            <select name="value" class="gitParameterSelect jenkins-input" size="${it.listSize}" id="gitParameterSelect"
                     fillUrl="${h.getCurrentDescriptorByNameUrl()}/${it.descriptor.descriptorUrl}/fillValueItems?param=${h.urlEncode(it.name)}" divId="${divId}">
                 <option value="">${%retrieving.references}</option>
             </select>
             <j:if test="${it.quickFilterEnabled}">
-                <input class='git_parameter_quick_filter' type='text' value='' name='quickFilter' placeholder='Filter'
-                       style="vertical-align: top" id="filter"/>
+                <input class='git_parameter_quick_filter jenkins-input' type='text' value='' name='quickFilter' placeholder='Filter'
+                       style="vertical-align: top; margin-top: 1rem;" id="filter"/>
             </j:if>
         </div>
         <j:if test="${it.parameterType eq 'PT_REVISION' and it.descriptor.showNeedToCloneInformation}">

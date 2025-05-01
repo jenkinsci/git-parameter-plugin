@@ -1,14 +1,14 @@
 package net.uaznia.lukanus.hudson.plugins.gitparameter.model;
 
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.ServletException;
 import jenkins.security.stapler.StaplerAccessibleType;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -75,12 +75,12 @@ public class ItemsErrorModel implements HttpResponse {
         errors.add(error);
     }
 
-    public void writeTo(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void writeTo(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req, this, Flavor.JSON);
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node)
             throws IOException, ServletException {
         writeTo(req, rsp);
     }
