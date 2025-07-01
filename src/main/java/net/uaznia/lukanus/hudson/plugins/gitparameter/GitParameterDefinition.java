@@ -50,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.uaznia.lukanus.hudson.plugins.gitparameter.jobs.JobWrapper;
@@ -73,6 +74,17 @@ import org.kohsuke.stapler.export.Exported;
 public class GitParameterDefinition extends ParameterDefinition implements Comparable<GitParameterDefinition> {
     private static final long serialVersionUID = 9157832967140868122L;
     private static final Logger LOGGER = Logger.getLogger(GitParameterDefinition.class.getName());
+
+    private static final String ALLOW_ANY_PARAMETER_VALUE_PROPERTY_NAME =
+            GitParameterDefinition.class.getName() + ".allowAnyParameterValue";
+
+    /**
+     * Allow any parameter value, without validating that the value is valid.
+     * SECURITY-3419 escape hatch.
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Escape hatch must allow runtime modification")
+    public static boolean allowAnyParameterValue =
+            SystemProperties.getBoolean(ALLOW_ANY_PARAMETER_VALUE_PROPERTY_NAME, false);
 
     private final UUID uuid;
     private String type;
@@ -126,7 +138,11 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
                 return getDefaultParameterValue();
             }
         }
-        return new GitParameterValue(getName(), value[0]);
+        GitParameterValue gitParameterValue = new GitParameterValue(getName(), value[0]);
+        if (!isValid(gitParameterValue)) {
+            throw new Failure("Parameter " + getName() + " provided value '" + value[0] + "' is invalid");
+        }
+        return gitParameterValue;
     }
 
     @Override
@@ -154,20 +170,35 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         }
 
         GitParameterValue gitParameterValue = new GitParameterValue(jO.getString("name"), strValue.toString());
+        if (!strValue.toString().equals(defaultValue) && !isValid(gitParameterValue)) {
+            throw new Failure("Parameter " + jO.getString("name") + " value '" + strValue.toString() + "' is invalid");
+        }
         return gitParameterValue;
     }
 
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
+        // Clear the allowedValues cache when invoked through CLI.
+        // Cache does not need to be cleared when invoked through
+        // Stapler because generateParamList is called to fill the cache
+        allowedValues = null;
         if (isNotEmpty(value)) {
-            return new GitParameterValue(getName(), value);
+            GitParameterValue gitParameterValue = new GitParameterValue(getName(), value);
+            if (!isValid(gitParameterValue)) {
+                throw new Failure("Parameter " + getName() + " value '" + value + "' is invalid");
+            }
+            return gitParameterValue;
         }
         if (isTrue(requiredParameter)
                 && isBlank(getDefaultValue())
                 && !getSelectedValue().equals(SelectedValue.TOP)) {
             throw new Failure("Parameter: " + getName() + " is required to have a value please select an option");
         } else {
-            return getDefaultParameterValue();
+            ParameterValue defVal = getDefaultParameterValue();
+            if (defVal != null && !isValid(defVal) && defVal.getValue() instanceof String strValue) {
+                throw new Failure("Parameter " + getName() + " default value '" + strValue + "' is invalid");
+            }
+            return defVal;
         }
     }
 
@@ -296,50 +327,59 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         return pd.uuid.equals(uuid) ? 0 : -1;
     }
 
-    public ItemsErrorModel generateContents(JobWrapper jobWrapper, List<GitSCM> scms) {
-        try {
-            Map<String, String> paramList = new LinkedHashMap<>();
-            EnvVars environment = getEnvironment(jobWrapper);
-            Set<String> usedRepository = new HashSet<>();
-            outForLoops:
-            for (GitSCM git : scms) {
-                for (RemoteConfig repository : git.getRepositories()) {
-                    GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
-                    for (URIish remoteURL : repository.getURIs()) {
+    /* Set of values allowed for this parameter definition */
+    private transient Set<String> allowedValues = null;
 
-                        String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
-                        if (notMatchUseRepository(gitUrl) || usedRepository.contains(gitUrl)) {
-                            continue;
-                        }
+    private Map<String, String> generateParamList(JobWrapper jobWrapper, List<GitSCM> scms) throws Exception {
+        Map<String, String> paramList = new LinkedHashMap<>();
+        EnvVars environment = getEnvironment(jobWrapper);
+        Set<String> usedRepository = new HashSet<>();
+        outForLoops:
+        for (GitSCM git : scms) {
+            for (RemoteConfig repository : git.getRepositories()) {
+                GitClient gitClient = getGitClient(jobWrapper, null, git, environment);
+                for (URIish remoteURL : repository.getURIs()) {
 
-                        if (isTagType(type)) {
-                            Set<String> tagSet = getTag(gitClient, gitUrl);
-                            sortAndPutToParam(tagSet, paramList);
-                        }
-
-                        if (isBranchType(type)) {
-                            Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
-                            sortAndPutToParam(branchSet, paramList);
-                        }
-
-                        if (isPullRequestType(type)) {
-                            Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
-                            sortAndPutToParam(pullRequestSet, paramList);
-                        }
-
-                        if (isRevisionType(type)) {
-                            synchronized (GitParameterDefinition.class) {
-                                getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
-                            }
-                        }
-
-                        if (isBlank(useRepository)) {
-                            break outForLoops;
-                        }
-                        usedRepository.add(gitUrl);
+                    String gitUrl = Util.replaceMacro(remoteURL.toPrivateASCIIString(), environment);
+                    if (notMatchUseRepository(gitUrl) || usedRepository.contains(gitUrl)) {
+                        continue;
                     }
+
+                    if (isTagType(type)) {
+                        Set<String> tagSet = getTag(gitClient, gitUrl);
+                        sortAndPutToParam(tagSet, paramList);
+                    }
+
+                    if (isBranchType(type)) {
+                        Set<String> branchSet = getBranch(gitClient, gitUrl, repository.getName());
+                        sortAndPutToParam(branchSet, paramList);
+                    }
+
+                    if (isPullRequestType(type)) {
+                        Set<String> pullRequestSet = getPullRequest(gitClient, gitUrl);
+                        sortAndPutToParam(pullRequestSet, paramList);
+                    }
+
+                    if (isRevisionType(type)) {
+                        synchronized (GitParameterDefinition.class) {
+                            getRevision(jobWrapper, git, paramList, environment, repository, remoteURL);
+                        }
+                    }
+
+                    if (isBlank(useRepository)) {
+                        break outForLoops;
+                    }
+                    usedRepository.add(gitUrl);
                 }
             }
+        }
+        return paramList;
+    }
+
+    public ItemsErrorModel generateContents(JobWrapper jobWrapper, List<GitSCM> scms) {
+        try {
+            Map<String, String> paramList = generateParamList(jobWrapper, scms);
+            allowedValues = paramList.keySet(); // Save the allowed values for later use
             return convertMapToListBox(paramList);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, getCustomJobName() + " " + Messages.GitParameterDefinition_unexpectedError(), e);
@@ -631,6 +671,38 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         Job job = getParentJob(this);
         String fullName = job != null ? job.getFullName() : EMPTY_JOB_NAME;
         return "[ " + fullName + " ] ";
+    }
+
+    @Override
+    public boolean isValid(ParameterValue value) {
+        if (allowAnyParameterValue) {
+            return true; // SECURITY-3419
+        }
+        if (value.getValue() instanceof String strValue) {
+            if (allowedValues == null) {
+                if (Jenkins.getInstanceOrNull() == null) {
+                    return false; // Automated tests only, not a running Jenkins instance
+                }
+                Job job = getParentJob(this);
+                if (job == null) {
+                    return false; // Automated tests with a Jenkins instance
+                }
+                JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
+                List<GitSCM> scms = getGitSCMs(jobWrapper, getUseRepository());
+                if (scms == null || scms.isEmpty()) {
+                    return false;
+                }
+                try {
+                    // Populate the allowedValues set
+                    allowedValues = generateParamList(jobWrapper, scms).keySet();
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Allowed values not generated", e);
+                    return false;
+                }
+            }
+            return allowedValues.contains(strValue);
+        }
+        return false;
     }
 
     @Symbol("gitParameter")

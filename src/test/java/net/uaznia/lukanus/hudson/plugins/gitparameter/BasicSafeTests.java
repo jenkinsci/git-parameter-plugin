@@ -4,35 +4,23 @@ import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.DEFAULT_V
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.NAME;
 import static net.uaznia.lukanus.hudson.plugins.gitparameter.Constants.PT_REVISION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import hudson.model.ParameterValue;
+import hudson.model.Failure;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import net.sf.json.JSONObject;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * This test don't use jenkins rule
  */
-class BasicTests {
-    @BeforeEach
-    void disableParameterValidation() {
-        // Disable SECURITY-3419 change for tests in this class
-        GitParameterDefinition.allowAnyParameterValue = true;
-    }
-
-    @AfterEach
-    void enableParameterValidation() {
-        GitParameterDefinition.allowAnyParameterValue = false;
-    }
-
+class BasicSafeTests {
     /**
      * Test of createValue method, of class GitParameterDefinition.
      */
@@ -52,9 +40,11 @@ class BasicTests {
                 false);
 
         StaplerRequest2 request = mock(StaplerRequest2.class);
-        ParameterValue result = instance.createValue(request);
-
-        assertEquals(new GitParameterValue(NAME, DEFAULT_VALUE), result);
+        /* Invalid default value is intentionally allowed because
+         * other parameter types do not defend themselves against
+         * invalid parameter types
+         */
+        assertEquals(DEFAULT_VALUE, instance.createValue(request).getValue());
     }
 
     @Test
@@ -88,9 +78,8 @@ class BasicTests {
 
         StaplerRequest2 request = mock(StaplerRequest2.class);
         when(request.getParameterValues(instance.getName())).thenReturn(new String[] {"master"});
-        ParameterValue result = instance.createValue(request);
-
-        assertEquals(new GitParameterValue(NAME, "master"), result);
+        Failure failure = assertThrows(Failure.class, () -> instance.createValue(request));
+        assertEquals("Parameter name provided value 'master' is invalid", failure.getMessage());
     }
 
     @Test
@@ -191,9 +180,8 @@ class BasicTests {
                 null,
                 false);
 
-        ParameterValue result = instance.createValue(request, jO);
-
-        assertEquals(new GitParameterValue("Git_param_name", "Git_param_value"), result);
+        Failure failure = assertThrows(Failure.class, () -> instance.createValue(request, jO));
+        assertEquals("Parameter Git_param_name value 'Git_param_value' is invalid", failure.getMessage());
     }
 
     /**

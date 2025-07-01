@@ -14,7 +14,6 @@ import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
@@ -623,7 +622,8 @@ class GitParameterDefinitionTest {
         StaplerRequest2 request = mock(StaplerRequest2.class);
         String[] result = new String[] {"master"};
         when(request.getParameterValues("testName")).thenReturn(result);
-        def.createValue(request);
+        Failure failure = assertThrows(Failure.class, () -> def.createValue(request));
+        assertEquals("Parameter testName provided value 'master' is invalid", failure.getMessage());
     }
 
     @Test
@@ -664,7 +664,8 @@ class GitParameterDefinitionTest {
         JSONObject o = new JSONObject();
         o.put("value", "master");
         o.put("name", "testName");
-        def.createValue((StaplerRequest2) null, o);
+        Failure failure = assertThrows(Failure.class, () -> def.createValue((StaplerRequest2) null, o));
+        assertEquals("Parameter testName value 'master' is invalid", failure.getMessage());
     }
 
     @Test
@@ -962,8 +963,8 @@ class GitParameterDefinitionTest {
                 false);
 
         String value = "test";
-        ParameterValue result = instance.createValue(cliCommand, value);
-        assertEquals(new GitParameterValue(NAME, value), result);
+        Failure failure = assertThrows(Failure.class, () -> instance.createValue(cliCommand, value));
+        assertEquals("Parameter name value '" + value + "' is invalid", failure.getMessage());
     }
 
     @Test
@@ -1002,8 +1003,8 @@ class GitParameterDefinitionTest {
                 false);
         instance.setRequiredParameter(true);
         String value = "test";
-        ParameterValue result = instance.createValue(cliCommand, value);
-        assertEquals(new GitParameterValue(NAME, value), result);
+        Failure failure = assertThrows(Failure.class, () -> instance.createValue(cliCommand, value));
+        assertEquals("Parameter name value '" + value + "' is invalid", failure.getMessage());
     }
 
     @Test
@@ -1022,8 +1023,8 @@ class GitParameterDefinitionTest {
                 null,
                 false);
 
-        ParameterValue result = instance.createValue(cliCommand, null);
-        assertEquals(new GitParameterValue(NAME, DEFAULT_VALUE), result);
+        Failure failure = assertThrows(Failure.class, () -> instance.createValue(cliCommand, null));
+        assertEquals("Parameter name default value '" + DEFAULT_VALUE + "' is invalid", failure.getMessage());
     }
 
     private void setupGit(FreeStyleProject project) throws Exception {

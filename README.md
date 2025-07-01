@@ -390,3 +390,22 @@ Examples:
 For recent versions, see [GitHub Releases](https://github.com/jenkinsci/git-parameter-plugin/releases)
 
 For versions 0.9.11 and older, see the [legacy CHANGELOG](https://github.com/jenkinsci/git-parameter-plugin/blob/git-parameter-0.9.19/CHANGELOG.md)
+
+## Properties
+
+As part of SECURITY-3419, the git parameter plugin now validates the value of the parameter before starting the job.
+If a bug in the plugin prevents you from using that safer setting, the validation can be disabled by setting the system property
+
+```
+-Dnet.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition.allowAnyParameterValue=true
+```
+
+That setting can be modified as a [system property](https://www.jenkins.io/doc/book/installing/initial-settings/#jenkins-properties) from the command line that starts Jenkins.
+
+The validation can also be disabled from the [Groovy script console](https://www.jenkins.io/doc/book/managing/script-console/) with the script:
+
+```
+import net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition;
+
+GitParameterDefinition.allowAnyParameterValue=true;
+```
