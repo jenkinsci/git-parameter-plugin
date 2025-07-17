@@ -393,7 +393,7 @@ For versions 0.9.11 and older, see the [legacy CHANGELOG](https://github.com/jen
 
 ## Properties
 
-As part of SECURITY-3419, the git parameter plugin now validates the value of the parameter before starting the job.
+As part of [SECURITY-3419](https://www.jenkins.io/security/advisory/2025-07-09/#SECURITY-3419), the git parameter plugin now validates the value of the parameter before starting the job.
 If a bug in the plugin prevents you from using that safer setting, the validation can be disabled by setting the system property
 
 ```
