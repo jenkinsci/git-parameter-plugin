@@ -145,7 +145,6 @@ pipeline {
   stages {
     stage('Example') {
       steps {
-        echo "Parameter is ${params.A_PULL_REQUEST}"
         checkout scmGit(branches: [[name: "pr/${params.A_PULL_REQUEST}/head"]],
                         userRemoteConfigs: [[refspec: "+refs/pull/${params.A_PULL_REQUEST}/head:refs/pull/${params.A_PULL_REQUEST}/head",
                                              url: 'https://github.com/jenkinsci/git-plugin.git']])
