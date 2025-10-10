@@ -13,7 +13,8 @@ public class Consts {
     public static final String PARAMETER_TYPE_TAG_BRANCH = "PT_BRANCH_TAG";
     public static final String PARAMETER_TYPE_PULL_REQUEST = "PT_PULL_REQUEST";
 
-    public static final Pattern PULL_REQUEST_REFS_PATTERN = Pattern.compile("refs/(pull.*|merge-requests)/(\\d+)/(from|head)");
+    public static final Pattern PULL_REQUEST_REFS_PATTERN =
+            Pattern.compile("refs/(pull.*|merge-requests)/(\\d+)/(from|head)");
 
     public static final String TEMPORARY_DIRECTORY_PREFIX = "git_parameter_";
     public static final String EMPTY_JOB_NAME = "EMPTY_JOB_NAME";
