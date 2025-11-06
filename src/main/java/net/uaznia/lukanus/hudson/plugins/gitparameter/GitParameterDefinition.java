@@ -178,9 +178,8 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
 
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
-        // Clear the allowedValues cache when invoked through CLI.
-        // Cache does not need to be cleared when invoked through
-        // Stapler because generateParamList is called to fill the cache
+        // Clear the allowedValues cache when invoked through CLI to ensure fresh data.
+        // The isValid() method will refresh the cache if needed.
         allowedValues = null;
         if (isNotEmpty(value)) {
             GitParameterValue gitParameterValue = new GitParameterValue(getName(), value);
@@ -679,28 +678,35 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             return true; // SECURITY-3419
         }
         if (value.getValue() instanceof String strValue) {
-            if (allowedValues == null) {
-                if (Jenkins.getInstanceOrNull() == null) {
-                    return false; // Automated tests only, not a running Jenkins instance
-                }
-                Job job = getParentJob(this);
-                if (job == null) {
-                    return false; // Automated tests with a Jenkins instance
-                }
-                JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
-                List<GitSCM> scms = getGitSCMs(jobWrapper, getUseRepository());
-                if (scms == null || scms.isEmpty()) {
-                    return false;
-                }
-                try {
-                    // Populate the allowedValues set
-                    allowedValues = generateParamList(jobWrapper, scms).keySet();
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Allowed values not generated", e);
-                    return false;
-                }
+            // Fast path: check if value exists in cache
+            if (allowedValues != null && allowedValues.contains(strValue)) {
+                return true;
             }
-            return allowedValues.contains(strValue);
+
+            // Slow path: refresh cache from git and check again
+            // This handles two cases:
+            // 1. Cache is null (never populated)
+            // 2. Cache is stale (value not found, might be a newly created tag/branch)
+            if (Jenkins.getInstanceOrNull() == null) {
+                return false; // Automated tests only, not a running Jenkins instance
+            }
+            Job job = getParentJob(this);
+            if (job == null) {
+                return false; // Automated tests with a Jenkins instance
+            }
+            JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
+            List<GitSCM> scms = getGitSCMs(jobWrapper, getUseRepository());
+            if (scms == null || scms.isEmpty()) {
+                return false;
+            }
+            try {
+                // Refresh the allowedValues cache from git
+                allowedValues = generateParamList(jobWrapper, scms).keySet();
+                return allowedValues.contains(strValue);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Allowed values not generated", e);
+                return false;
+            }
         }
         return false;
     }
