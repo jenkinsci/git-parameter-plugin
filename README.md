@@ -129,7 +129,14 @@ pipeline {
 
 ### `PT_PULL_REQUEST` type
 
-The `PT_PULL_REQUEST` type lists pull requests in the remote repository.
+The `PT_PULL_REQUEST` type lists pull requests or merge requests in the remote repository.
+
+Supports:
+- GitHub Pull Requests
+- Bitbucket Pull Requests
+- GitLab Merge Requests
+
+#### GitHub Example
 
 ```groovy
 pipeline {
@@ -148,6 +155,31 @@ pipeline {
         checkout scmGit(branches: [[name: "pr/${params.A_PULL_REQUEST}/head"]],
                         userRemoteConfigs: [[refspec: "+refs/pull/${params.A_PULL_REQUEST}/head:refs/pull/${params.A_PULL_REQUEST}/head",
                                              url: 'https://github.com/jenkinsci/git-plugin.git']])
+      }
+    }
+  }
+}
+```
+
+#### GitLab Example
+
+```groovy
+pipeline {
+  agent any
+  parameters {
+    gitParameter type: 'PT_PULL_REQUEST',
+                 name: 'MERGE_REQUEST',
+                 defaultValue: '',
+                 description: 'Choose a merge request to checkout',
+                 selectedValue: 'TOP',
+                 sortMode: 'DESCENDING_SMART'
+  }
+  stages {
+    stage('Example') {
+      steps {
+        checkout scmGit(branches: [[name: "refs/remotes/origin/merge-requests/${params.MERGE_REQUEST}/head"]],
+                        userRemoteConfigs: [[refspec: '+refs/merge-requests/*:refs/remotes/origin/merge-requests/*',
+                                             url: 'https://gitlab.com/your-group/your-project.git']])
       }
     }
   }
