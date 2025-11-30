@@ -456,7 +456,7 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
         for (String remoteReference : remoteReferences.keySet()) {
             Matcher matcher = PULL_REQUEST_REFS_PATTERN.matcher(remoteReference);
             if (matcher.find()) {
-                pullRequestSet.add(matcher.group(1));
+                pullRequestSet.add(matcher.group(2));
             }
         }
         return pullRequestSet;
