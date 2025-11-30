@@ -37,8 +37,7 @@ class PipelineTest {
                 .everywhere()
                 .to("git-parameter-admin"));
         WorkflowJob project = r.createProject(WorkflowJob.class);
-        String pipeline =
-                """
+        String pipeline = """
                 pipeline {
                   agent any
                   parameters {
