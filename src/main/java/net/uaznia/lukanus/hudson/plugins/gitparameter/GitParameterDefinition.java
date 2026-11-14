@@ -731,7 +731,17 @@ public class GitParameterDefinition extends ParameterDefinition implements Compa
             if (job == null) {
                 return ItemsErrorModel.EMPTY;
             }
-            job.checkPermission(Job.BUILD);
+            try {
+                job.checkPermission(Job.BUILD);
+            } catch (org.springframework.security.access.AccessDeniedException e) {
+                // Write the exception to the logger, not to the Jenkins log.
+                //
+                // https://github.com/jenkinsci/git-parameter-plugin/issues/339
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, job.getDisplayName() + " " + e.getMessage(), e);
+                }
+                return ItemsErrorModel.EMPTY;
+            }
 
             JobWrapper jobWrapper = JobWrapperFactory.createJobWrapper(job);
 
