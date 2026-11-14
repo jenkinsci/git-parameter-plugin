@@ -51,14 +51,21 @@ class BasicSafeTests {
     void matchesWithBitbucketPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull-requests/186/from");
         assertTrue(matcher.find());
-        assertEquals("186", matcher.group(1));
+        assertEquals("186", matcher.group(2));
     }
 
     @Test
     void matchesWithGithubPullRequestRefs() {
         Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/pull/45/head");
         assertTrue(matcher.find());
-        assertEquals("45", matcher.group(1));
+        assertEquals("45", matcher.group(2));
+    }
+
+    @Test
+    void matchesWithGitLabMergeRequestRefs() {
+        Matcher matcher = Consts.PULL_REQUEST_REFS_PATTERN.matcher("refs/merge-requests/42/head");
+        assertTrue(matcher.find());
+        assertEquals("42", matcher.group(2));
     }
 
     @Test
